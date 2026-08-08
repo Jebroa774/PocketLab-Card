@@ -1,6 +1,7 @@
 # Firmware baseline
 
-The target is Arduino-ESP32 3.x under PlatformIO, with native USB enabled.
+The target is ESP32-S3-WROOM-1-N8R2 under Arduino-ESP32 3.x/PlatformIO, with
+native USB, 8 MB flash and 2 MB quad PSRAM enabled.
 This keeps PN532, CC1101, microSD and IR library options broad while retaining
 reproducible command-line builds.
 

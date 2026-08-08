@@ -23,20 +23,19 @@ This is the schematic-capture baseline. Changes must be reflected here and in
 | 18 | GNSS_TIMEPULSE | Input | GNSS PPS/timing input |
 | 19 | USB_D_N | USB | Native USB; never use as expansion GPIO |
 | 20 | USB_D_P | USB | Native USB; never use as expansion GPIO |
-| 21 | GNSS_RX_FROM_MODULE | Input | Connected to MIA-M10Q TX |
-| 26 | GNSS_TX_TO_MODULE | Output | Connected to MIA-M10Q RX |
-| 33 | IOEXP_INT_N | Input | TCA9535 shared interrupt |
-| 34 | BUZZER_PWM | Output | Buzzer MOSFET/PWM |
-| 35 | IR_TX | Output | RMT carrier to IR MOSFET driver |
-| 36 | IR_RX | Input | Demodulated IR receiver output |
-| 43 | DEBUG_TX | Output | UART0 debug header |
-| 44 | DEBUG_RX | Input | UART0 debug header |
+| 21 | GNSS_RX_FROM_MODULE | Input | Connected to MAX-M10S TX |
+| 35 | GNSS_TX_TO_MODULE | Output | Connected to MAX-M10S RX |
+| 36 | IR_TX | Output | RMT carrier to IR MOSFET driver |
+| 37 | IR_RX | Input | Demodulated IR receiver output |
+| 38 | BUZZER_PWM | Output | Buzzer MOSFET/PWM |
+| 39 | IOEXP_INT_N | Input | TCA9535 shared interrupt |
 | 45 | STRAP_VDD_SPI | Reserved | Test pad only; boot strap |
 | 46 | STRAP_BOOT | Reserved | Test pad only; boot strap |
 
 ## Direct free GPIOs
 
-These thirteen pins go directly to the 2.54 mm expansion header.
+These twelve pins go directly to the 2.54 mm expansion header. GPIO43/44 can
+be used as a normal UART pair; native USB CDC is the default debug console.
 
 | GPIO | Useful hardware capability |
 |---:|---|
@@ -45,12 +44,11 @@ These thirteen pins go directly to the 2.54 mm expansion header.
 | 4 | ADC1 channel 3, touch, digital, PWM |
 | 8 | ADC1 channel 7, touch, digital, PWM |
 | 9 | ADC1 channel 8, touch, digital, PWM |
-| 37 | Digital, PWM, interrupt |
-| 38 | Digital, PWM, interrupt |
-| 39 | Digital, PWM, interrupt |
 | 40 | Digital, PWM, interrupt |
 | 41 | Digital, PWM, interrupt |
 | 42 | Digital, PWM, interrupt |
+| 43 | Digital, PWM, UART TX candidate |
+| 44 | Digital, PWM, UART RX candidate |
 | 47 | Digital, PWM, interrupt |
 | 48 | Digital, PWM, interrupt |
 
@@ -85,30 +83,21 @@ straight or right-angle male/female breakaway headers for Dupont cables.
 | 1 | +3V3 | 2 | GND |
 | 3 | GPIO1 / ADC | 4 | GPIO2 / ADC |
 | 5 | GPIO4 / ADC | 6 | GPIO8 / ADC |
-| 7 | GPIO9 / ADC | 8 | GPIO37 |
-| 9 | GPIO38 | 10 | GPIO39 |
-| 11 | GPIO40 | 12 | GPIO41 |
-| 13 | GPIO42 | 14 | GPIO47 |
-| 15 | GPIO48 | 16 | EX0 |
-| 17 | EX1 | 18 | EX2 |
-| 19 | EX3 | 20 | EX4 |
-| 21 | EX5 | 22 | EX6 |
-| 23 | EX7 | 24 | I2C_SDA |
-| 25 | I2C_SCL | 26 | SPI_SCK |
-| 27 | SPI_MOSI | 28 | SPI_MISO |
+| 7 | GPIO9 / ADC | 8 | GPIO40 |
+| 9 | GPIO41 | 10 | GPIO42 |
+| 11 | GPIO43 / UART TX | 12 | GPIO44 / UART RX |
+| 13 | GPIO47 | 14 | GPIO48 |
+| 15 | EX0 | 16 | EX1 |
+| 17 | EX2 | 18 | EX3 |
+| 19 | EX4 | 20 | EX5 |
+| 21 | EX6 | 22 | EX7 |
+| 23 | I2C_SDA | 24 | I2C_SCL |
+| 25 | SPI_SCK | 26 | SPI_MOSI |
+| 27 | SPI_MISO | 28 | GND |
 | 29 | +5V_AUX (protected) | 30 | GND |
 
 Any direct free GPIO may be used as chip select for an external SPI device.
 External I2C and SPI wiring shares the buses with onboard devices.
-
-## J_DEBUG: 1 x 4, 2.54 mm
-
-| Pin | Net |
-|---:|---|
-| 1 | GND |
-| 2 | +3V3 |
-| 3 | DEBUG_TX / GPIO43 |
-| 4 | DEBUG_RX / GPIO44 |
 
 ## Connector labeling
 

@@ -6,15 +6,15 @@ layout, or firmware.
 
 ## V1 feature set
 
-- ESP32-S3 Wi-Fi/BLE controller with local web interface
+- ESP32-S3-WROOM-1-N8R2 Wi-Fi/BLE module with local web interface
 - PN532 13.56 MHz NFC reader/writer
-- CC1101 Sub-GHz transceiver, initially optimized for the European 868 MHz band
-- u-blox MIA-M10Q GNSS receiver with external antenna connector
+- Ebyte CC1101 Sub-GHz module, initially the European 868 MHz variant
+- u-blox MAX-M10S GNSS receiver with external antenna connector
 - microSD trip and capture storage
 - high-power 940 nm IR transmitter and 38 kHz IR receiver
 - USB-C data/power, external 1-cell LiPo connector, charging and power path
 - regulated 3.3 V rail and switchable 5 V auxiliary/IR rail
-- 6-axis IMU, barometer, RTC and battery fuel gauge
+- optional 6-axis IMU/barometer, SOIC RTC and battery fuel gauge
 - RGB LEDs, buzzer and user buttons
 - 2.54 mm expansion headers
 
@@ -22,9 +22,14 @@ layout, or firmware.
 
 - Board outline: 85.60 mm x 53.98 mm, rounded corners
 - PCB: 4 layers, 1.6 mm FR-4
-- Components on both sides where RF keep-outs allow
+- All production SMT on the top side for the initial economical assembly
 - Unpopulated 2 x 15, 2.54 mm expansion footprint
 - Initial prototype quantity: 5 assembled boards
+
+The PCB keeps the credit-card outline, but it is not a wallet-thickness card:
+the 1.6 mm PCB plus the ESP32 module is about 4.7 mm before solder and
+mechanical tolerances. The optional edge-facing 5 mm IR LED protrudes beyond
+the outline and is installed by hand after assembly.
 
 ## Repository layout
 
@@ -38,10 +43,10 @@ PocketLab-Card/
 
 ## Current status
 
-The system architecture, first-pass pin allocation, expansion header and
-power domains are frozen for schematic capture. KiCad is not currently
-installed in the local environment, so the checked design tables are the
-source of truth until the schematic can be captured and validated with ERC.
+KiCad 10 is installed and the project/board-outline scaffold is checked in.
+The hand-assembly policy, revised module choices, pin allocation and power
+domains are frozen for detailed schematic capture. The design is not ready to
+order until schematic ERC, PCB DRC and the checks in `docs/validation.md` pass.
 
 All RF transmit functions are intended only for frequencies, devices and
 systems the operator is permitted to use.

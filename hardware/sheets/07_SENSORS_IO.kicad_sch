@@ -1,0 +1,11 @@
+(kicad_sch
+	(version 20250114)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "08f048ad-1280-4627-a80b-cf9045b22031")
+	(paper "A4")
+	(title_block (title "07 SENSORS IO - CAPTURE TARGET"))
+	(lib_symbols)
+	(sheet_instances (path "/" (page "1")))
+	(embedded_fonts no)
+)

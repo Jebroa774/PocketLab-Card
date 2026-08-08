@@ -17,7 +17,7 @@ inline constexpr uint8_t NFC_IRQ_N = 7;
 
 // LEDs and sound
 inline constexpr uint8_t RGB_DATA = 10;
-inline constexpr uint8_t BUZZER_PWM = 34;
+inline constexpr uint8_t BUZZER_PWM = 38;
 
 // Sub-GHz
 inline constexpr uint8_t SUBGHZ_CS_N = 14;
@@ -30,26 +30,22 @@ inline constexpr uint8_t SD_CS_N = 17;
 // GNSS
 inline constexpr uint8_t GNSS_TIMEPULSE = 18;
 inline constexpr uint8_t GNSS_RX_FROM_MODULE = 21;
-inline constexpr uint8_t GNSS_TX_TO_MODULE = 26;
+inline constexpr uint8_t GNSS_TX_TO_MODULE = 35;
 
 // Native USB
 inline constexpr uint8_t USB_D_N = 19;
 inline constexpr uint8_t USB_D_P = 20;
 
 // I/O expander interrupt
-inline constexpr uint8_t IOEXP_INT_N = 33;
+inline constexpr uint8_t IOEXP_INT_N = 39;
 
 // Infrared
-inline constexpr uint8_t IR_TX = 35;
-inline constexpr uint8_t IR_RX = 36;
-
-// Debug UART
-inline constexpr uint8_t DEBUG_TX = 43;
-inline constexpr uint8_t DEBUG_RX = 44;
+inline constexpr uint8_t IR_TX = 36;
+inline constexpr uint8_t IR_RX = 37;
 
 // Direct expansion GPIOs
 inline constexpr uint8_t DIRECT_EXPANSION[] = {
-    1, 2, 4, 8, 9, 37, 38, 39, 40, 41, 42, 47, 48,
+    1, 2, 4, 8, 9, 40, 41, 42, 43, 44, 47, 48,
 };
 
 // TCA9535 port numbers. P10-P17 are exposed as EX0-EX7.

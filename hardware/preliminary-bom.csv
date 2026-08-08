@@ -1,25 +1,29 @@
-Ref,Manufacturer,MPN,Function,Status_or_note
-U1,Espressif,ESP32-S3-MINI-1-N8,Wi-Fi/BLE MCU,Selected
-U2,NXP,PN5321A3HN/C106,NFC controller,Selected subject to assembler stock
-U3,Texas Instruments,CC1101RGPR,Sub-GHz transceiver,Selected; 868 MHz BOM first
-U4,u-blox,MIA-M10Q-00B,GNSS receiver,Selected
-U5,Texas Instruments,BQ24074RGTR,1-cell charger and power path,Selected
-U6,Texas Instruments,TPS63070RNMR,3.3 V buck-boost,Selected
-U7,Texas Instruments,TPS61023DRLR,Switchable 5 V boost,Selected
-U8,Analog Devices,MAX17048G+T10,LiPo fuel gauge,Selected subject to stock
-U9,Texas Instruments,TCA9535RTWR,16-bit I2C I/O expander,Selected
-U10,Bosch Sensortec,BMI270,6-axis IMU,Selected
-U11,Bosch Sensortec,BMP390,Barometric pressure sensor,Selected
-U12,Micro Crystal,RV-3028-C7,Low-power RTC,Selected
-U13,Vishay,TSOP75338WTR,38 kHz IR receiver,Verify exact package and stock
-D_IR,Vishay,VSMA1294250,940 nm high-power IR emitter,Selected; validate eye safety
-LED1-LED4,Worldsemi,WS2812B-MINI-V3,Addressable RGB LEDs,Verify assembler alternate
-J_USB,GCT,USB4105-GF-A,USB-C USB 2.0 receptacle,Verify mechanical height
-J_SD,TBD,TBD,microSD push-push connector,Select from assembler stock
-J_GNSS,Hirose,U.FL-R-SMT-1(10),GNSS antenna connector,Selected or compatible alternate
-J_SUB,Hirose,U.FL-R-SMT-1(10),Sub-GHz antenna connector,Selected or compatible alternate
-J_BAT,JST,TBD,Side-entry 2-pin 1S LiPo connector,Select exact low-profile footprint
-U_BATPROT,TBD,TBD,1-cell battery protection,Select with dual MOSFET
-U_5VLIMIT,TBD,TBD,500 mA auxiliary current limiter,Select during power-sheet design
-Q_IR,TBD,TBD,Logic-level IR power MOSFET,Select after pulse-current simulation
-BZ1,TBD,TBD,Low-profile piezo buzzer,Select from assembler stock
+Ref,Manufacturer,MPN,Supplier_part,Package,Function,Assembly_class,Status_or_note
+U1,Espressif,ESP32-S3-WROOM-1-N8R2,C2913204,Module_25.5x18mm_P1.27mm,Wi-Fi/BLE MCU,JLC_TOP_OR_HAND,Selected; castellated edge pads; 8MB flash and 2MB PSRAM
+U2,NXP,PN5321A3HN/C106,C880904,QFN-40_6x6mm,NFC controller,JLC_ONLY,Selected; hidden joints; X-ray/fixture review required
+U3,Ebyte,E07-900M10S,Source_before_order,Module_20x14mm_P1.27mm,868MHz CC1101 radio,HAND_OR_JLC_SOURCE,Default EU build; module includes crystal and RF match
+U3_ALT,Ebyte,E07-400M10S,Source_before_order,Module_20x14mm_P1.27mm,433MHz CC1101 radio,DNP_ALTERNATIVE,Pin-compatible alternative; never fit together with U3
+U4,u-blox,MAX-M10S-00B,C4153167,LCC-18_10.1x9.7mm,GNSS receiver,JLC_TOP,Selected; external antenna; verify stock before order
+U5,Texas Instruments,BQ24074RGTR,C54313,QFN-16-EP_3x3mm,1-cell charger and power path,JLC_ONLY,Selected; thermal-pad part; never hand place
+U6,Texas Instruments,TPS63070RNMR,C109322,VQFN-15-HR_2.5x3mm,3.3V buck-boost,JLC_ONLY,Selected; follow TI layout exactly
+U7,Texas Instruments,TPS61023DRLR,C919459,SOT-563,Switchable 5V boost,JLC_ONLY,Selected; tiny but factory placed
+U8,Analog Devices,MAX17048G+T10,C2682616,DFN-8-EP_2x2mm,LiPo fuel gauge,JLC_ONLY,Selected; optional cost-down DNP possible
+U9,Texas Instruments,TCA9535PWR,C130204,TSSOP-24,16-bit I2C I/O expander,JLC_TOP_OR_HAND,Selected hand-reworkable package
+U10,Bosch Sensortec,BMI270,C2836813,LGA-14_2.5x3mm,6-axis IMU,JLC_STANDARD_OPTION,Optional FULL variant; Standard PCBA/X-ray only
+U11,Bosch Sensortec,BMP390,C5124834,LGA-10_2x2mm,Barometric pressure sensor,JLC_STANDARD_OPTION,Optional FULL variant; Standard PCBA/high difficulty
+U12,NXP,PCF8563T/5_518,C7440,SOIC-8,Low-power RTC,JLC_TOP_OR_HAND,Selected hand-reworkable replacement for tiny RV-3028
+U13,Vishay,TSOP75338WTR,Verify_before_order,MiniCast-3,38kHz IR receiver,JLC_TOP,Keep clear optical window and polarity marker
+D_IR,Vishay,TSAL6200,Source_before_order,THT_LED_D5.0mm,940nm high-power IR emitter,HAND_THT,Selected edge-facing hand-installed part
+Q_IR,AOS,AO3400A,C20917,SOT-23,Logic-level IR power MOSFET,JLC_TOP,Selected; large pin-1 dot on silkscreen
+LED1-LED4,Worldsemi,WS2812B-MINI-V3,Verify_before_order,LED_3535,Addressable RGB LEDs,JLC_TOP,Optional; clear corner/pin-1 marks
+J_USB,HRO,TYPE-C-31-M-12,C165948,USB-C_Hybrid_THT,USB-C USB2 receptacle,JLC_TOP,Selected; through-hole shell for mechanical strength
+J_SD,To_be_selected,Low-profile_push-push,Verify_before_order,microSD_SMD,microSD connector,JLC_ONLY,Select by exact footprint and current stock
+J_GNSS,Hirose,U.FL-R-SMT-1(10),Verify_before_order,U.FL_SMD,GNSS antenna connector,JLC_ONLY,Selected or compatible exact-footprint alternate
+J_BAT,JST,S2B-PH-SM4-TB,Verify_before_order,JST_PH_2.0mm_side-entry,External protected 1S LiPo,JLC_TOP_OR_HAND,Selected mechanical family; verify exact polarity before footprint freeze
+U_BATPROT,To_be_selected,1S_protection_pair,Verify_before_order,SOT-23-6_plus_SO-8,On-board battery fault protection,JLC_TOP,Select during power-sheet review; protected pack still recommended
+U_5VLIMIT,To_be_selected,Adjustable_load_switch,Verify_before_order,SOT-23-5_or_larger,500mA auxiliary current limiter,JLC_TOP,Select during power-sheet design
+BZ1,To_be_selected,Low-profile_piezo,Verify_before_order,SMD_9mm_or_larger,Piezo buzzer,JLC_TOP_OR_HAND,Choose low-profile part with obvious polarity marks
+J_EXT,Generic,2x15_breakaway_header,N/A,THT_P2.54mm_D1.0mm,Expansion connector,HAND_THT,Ships unpopulated; accepts Dupont-compatible header
+R_GENERAL,Multiple,1percent_resistors,JLC_basic_preferred,0805,General resistors,JLC_TOP_OR_HAND,Default passive size; non-polar
+C_GENERAL,Multiple,X7R_X5R_MLCC,JLC_basic_preferred,0805,General capacitors,JLC_TOP_OR_HAND,Default passive size; non-polar
+RF_PASSIVES,Multiple,C0G_high-Q,JLC_stock_before_order,0603,NFC and RF matching,JLC_TOP,Only permitted passive size below 0805

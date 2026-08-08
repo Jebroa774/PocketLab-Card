@@ -1,0 +1,57 @@
+{
+  "board": {},
+  "boards": [],
+  "cvpcb": {},
+  "erc": {},
+  "libraries": {},
+  "meta": {
+    "filename": "PocketLab-Card.kicad_pro",
+    "version": 1
+  },
+  "net_settings": {
+    "classes": [],
+    "meta": {
+      "version": 3
+    }
+  },
+  "pcbnew": {},
+  "schematic": {},
+  "sheets": [
+    [
+      "e728b6a7-0e10-4c16-8440-a218f9c3ea8a",
+      "Root"
+    ],
+    [
+      "78db37f3-c11c-4146-88b1-754777f8350b",
+      "01_USB_POWER"
+    ],
+    [
+      "7f93ed6b-cc00-4e44-b1ed-b16e0f1b907c",
+      "02_MCU"
+    ],
+    [
+      "059208bb-d997-4a12-9121-9bbb782cb522",
+      "03_NFC"
+    ],
+    [
+      "431cd00f-6b6c-4088-abab-9a92fab680d5",
+      "04_SUBGHZ"
+    ],
+    [
+      "b4ee44d3-0a76-4a79-8cce-bfe762ad53ab",
+      "05_GNSS_SD"
+    ],
+    [
+      "ae254c4a-1841-4a41-8cd3-b4397a466a35",
+      "06_IR_UI"
+    ],
+    [
+      "fa3fc582-9a62-468e-91de-57e7c6750b89",
+      "07_SENSORS_IO"
+    ]
+  ],
+  "text_variables": {
+    "BOARD_NAME": "PocketLab Card",
+    "BOARD_REV": "V1"
+  }
+}

@@ -1,0 +1,11 @@
+(kicad_sch
+	(version 20250114)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "caa3f573-9b7f-4f1f-8c2c-e7f2228e2991")
+	(paper "A4")
+	(title_block (title "01 USB POWER - CAPTURE TARGET"))
+	(lib_symbols)
+	(sheet_instances (path "/" (page "1")))
+	(embedded_fonts no)
+)

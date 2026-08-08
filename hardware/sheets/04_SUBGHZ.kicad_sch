@@ -1,0 +1,11 @@
+(kicad_sch
+	(version 20250114)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "61bc1ca9-7b0a-41cc-b500-2459012981c0")
+	(paper "A4")
+	(title_block (title "04 SUBGHZ - CAPTURE TARGET"))
+	(lib_symbols)
+	(sheet_instances (path "/" (page "1")))
+	(embedded_fonts no)
+)

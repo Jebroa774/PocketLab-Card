@@ -8,6 +8,7 @@ firmware/.pio/
 *.kicad_prl
 *.kicad_sch-bak
 *.kicad_pcb-bak
+hardware/*.rpt
 
 # Manufacturing outputs are generated for tagged releases
 manufacturing/*.zip

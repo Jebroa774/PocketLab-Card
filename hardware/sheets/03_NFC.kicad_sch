@@ -1,0 +1,11 @@
+(kicad_sch
+	(version 20250114)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "ab2b211a-9106-45b3-bd90-b4f22551ae66")
+	(paper "A4")
+	(title_block (title "03 NFC - CAPTURE TARGET"))
+	(lib_symbols)
+	(sheet_instances (path "/" (page "1")))
+	(embedded_fonts no)
+)

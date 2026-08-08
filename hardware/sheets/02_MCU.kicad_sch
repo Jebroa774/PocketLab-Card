@@ -1,0 +1,11 @@
+(kicad_sch
+	(version 20250114)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "251950ec-52e2-4169-ab30-774c9708116e")
+	(paper "A4")
+	(title_block (title "02 MCU - CAPTURE TARGET"))
+	(lib_symbols)
+	(sheet_instances (path "/" (page "1")))
+	(embedded_fonts no)
+)

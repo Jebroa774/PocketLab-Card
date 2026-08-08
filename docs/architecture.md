@@ -10,10 +10,10 @@ flowchart LR
     SYS --> REG33[TPS63070 3.3 V buck-boost]
     SYS --> REG5[TPS61023 switchable 5 V boost]
 
-    REG33 --> MCU[ESP32-S3-MINI-1-N8]
+    REG33 --> MCU[ESP32-S3-WROOM-1-N8R2]
     REG33 --> NFC[PN532 + NFC loop]
-    REG33 --> SUB[CC1101 + 868 MHz RF path]
-    REG33 --> GPS[MIA-M10Q + GNSS U.FL]
+    REG33 --> SUB[E07-900M10S CC1101 module + U.FL]
+    REG33 --> GPS[MAX-M10S + GNSS U.FL]
     REG33 --> SD[microSD]
     REG33 --> SENS[IMU + barometer + RTC + fuel gauge]
     REG33 --> IOX[TCA9535 I/O expander]
@@ -50,9 +50,9 @@ is budgeted separately, with a combined 5 V rail limit enforced in firmware.
 
 | Bus | Devices | Notes |
 |---|---|---|
-| I2C | PN532, TCA9535, BMI270, BMP390, RV-3028, MAX17048 | 3.3 V, 400 kHz target |
-| SPI | CC1101, microSD | Shared SCK/MOSI/MISO, dedicated chip selects |
-| UART1 | MIA-M10Q | GNSS UBX/NMEA control and data |
+| I2C | PN532, TCA9535, optional BMI270/BMP390, PCF8563, MAX17048 | 3.3 V, 400 kHz target |
+| SPI | E07 CC1101 module, microSD | Shared SCK/MOSI/MISO, dedicated chip selects |
+| UART1 | MAX-M10S | GNSS UBX/NMEA control and data |
 | USB | ESP32-S3 native USB | Firmware upload, CDC and optional HID |
 
 ## RF floorplan rules
@@ -61,13 +61,13 @@ is budgeted separately, with a combined 5 V rail limit enforced in firmware.
    all-layer keep-out.
 2. Keep the GNSS module beside its U.FL connector with a very short 50 ohm
    trace; keep the 5 V switching converter away from this corner.
-3. Allocate one edge to the 868 MHz antenna and CC1101 matching network.
+3. Allocate one edge to the 868 MHz E07 module and its antenna connector.
 4. Use a smaller NFC loop around the opposite half of the card instead of a
    full-board loop, avoiding the Wi-Fi and Sub-GHz antenna zones.
-5. Provide matching-network population options and RF test points for both
-   NFC and Sub-GHz tuning on the first prototype.
-6. The first BOM is optimized for 868 MHz. A 433 MHz build requires a separate
-   matching BOM and antenna; changing only the external antenna is not enough.
+5. Provide an NFC matching-network population option and RF test point on the
+   first prototype. The E07 module contains its own CC1101 crystal and match.
+6. The default E07-900M10S covers the EU 868 MHz build. The pin-compatible
+   E07-400M10S is the 433 MHz assembly alternative; fit the correct antenna.
 
 ## Firmware power arbitration
 
