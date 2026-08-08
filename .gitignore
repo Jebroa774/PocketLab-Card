@@ -1,0 +1,13 @@
+# PlatformIO build and editor state
+firmware/.pio/
+.vscode/
+
+# KiCad generated backups and caches
+*-backups/
+*.bak
+*.kicad_prl
+*.kicad_sch-bak
+*.kicad_pcb-bak
+
+# Manufacturing outputs are generated for tagged releases
+manufacturing/*.zip

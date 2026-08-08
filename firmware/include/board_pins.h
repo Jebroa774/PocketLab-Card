@@ -1,0 +1,75 @@
+#pragma once
+
+#include <stdint.h>
+
+namespace pocketlab::pins {
+
+// Boot and shared buses
+inline constexpr uint8_t BOOT_N = 0;
+inline constexpr uint8_t I2C_SDA = 5;
+inline constexpr uint8_t I2C_SCL = 6;
+inline constexpr uint8_t SPI_MOSI = 11;
+inline constexpr uint8_t SPI_SCK = 12;
+inline constexpr uint8_t SPI_MISO = 13;
+
+// NFC
+inline constexpr uint8_t NFC_IRQ_N = 7;
+
+// LEDs and sound
+inline constexpr uint8_t RGB_DATA = 10;
+inline constexpr uint8_t BUZZER_PWM = 34;
+
+// Sub-GHz
+inline constexpr uint8_t SUBGHZ_CS_N = 14;
+inline constexpr uint8_t SUBGHZ_GDO0 = 15;
+inline constexpr uint8_t SUBGHZ_GDO2 = 16;
+
+// Storage
+inline constexpr uint8_t SD_CS_N = 17;
+
+// GNSS
+inline constexpr uint8_t GNSS_TIMEPULSE = 18;
+inline constexpr uint8_t GNSS_RX_FROM_MODULE = 21;
+inline constexpr uint8_t GNSS_TX_TO_MODULE = 26;
+
+// Native USB
+inline constexpr uint8_t USB_D_N = 19;
+inline constexpr uint8_t USB_D_P = 20;
+
+// I/O expander interrupt
+inline constexpr uint8_t IOEXP_INT_N = 33;
+
+// Infrared
+inline constexpr uint8_t IR_TX = 35;
+inline constexpr uint8_t IR_RX = 36;
+
+// Debug UART
+inline constexpr uint8_t DEBUG_TX = 43;
+inline constexpr uint8_t DEBUG_RX = 44;
+
+// Direct expansion GPIOs
+inline constexpr uint8_t DIRECT_EXPANSION[] = {
+    1, 2, 4, 8, 9, 37, 38, 39, 40, 41, 42, 47, 48,
+};
+
+// TCA9535 port numbers. P10-P17 are exposed as EX0-EX7.
+enum class IoExpanderPin : uint8_t {
+  NfcResetN = 0,
+  GnssPowerEnable = 1,
+  Boost5Enable = 2,
+  SdDetectN = 3,
+  UserButtonAN = 4,
+  UserButtonBN = 5,
+  ChargerN = 6,
+  PowerGoodN = 7,
+  Ex0 = 8,
+  Ex1 = 9,
+  Ex2 = 10,
+  Ex3 = 11,
+  Ex4 = 12,
+  Ex5 = 13,
+  Ex6 = 14,
+  Ex7 = 15,
+};
+
+}  // namespace pocketlab::pins

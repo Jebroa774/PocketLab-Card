@@ -1,0 +1,25 @@
+Ref,Manufacturer,MPN,Function,Status_or_note
+U1,Espressif,ESP32-S3-MINI-1-N8,Wi-Fi/BLE MCU,Selected
+U2,NXP,PN5321A3HN/C106,NFC controller,Selected subject to assembler stock
+U3,Texas Instruments,CC1101RGPR,Sub-GHz transceiver,Selected; 868 MHz BOM first
+U4,u-blox,MIA-M10Q-00B,GNSS receiver,Selected
+U5,Texas Instruments,BQ24074RGTR,1-cell charger and power path,Selected
+U6,Texas Instruments,TPS63070RNMR,3.3 V buck-boost,Selected
+U7,Texas Instruments,TPS61023DRLR,Switchable 5 V boost,Selected
+U8,Analog Devices,MAX17048G+T10,LiPo fuel gauge,Selected subject to stock
+U9,Texas Instruments,TCA9535RTWR,16-bit I2C I/O expander,Selected
+U10,Bosch Sensortec,BMI270,6-axis IMU,Selected
+U11,Bosch Sensortec,BMP390,Barometric pressure sensor,Selected
+U12,Micro Crystal,RV-3028-C7,Low-power RTC,Selected
+U13,Vishay,TSOP75338WTR,38 kHz IR receiver,Verify exact package and stock
+D_IR,Vishay,VSMA1294250,940 nm high-power IR emitter,Selected; validate eye safety
+LED1-LED4,Worldsemi,WS2812B-MINI-V3,Addressable RGB LEDs,Verify assembler alternate
+J_USB,GCT,USB4105-GF-A,USB-C USB 2.0 receptacle,Verify mechanical height
+J_SD,TBD,TBD,microSD push-push connector,Select from assembler stock
+J_GNSS,Hirose,U.FL-R-SMT-1(10),GNSS antenna connector,Selected or compatible alternate
+J_SUB,Hirose,U.FL-R-SMT-1(10),Sub-GHz antenna connector,Selected or compatible alternate
+J_BAT,JST,TBD,Side-entry 2-pin 1S LiPo connector,Select exact low-profile footprint
+U_BATPROT,TBD,TBD,1-cell battery protection,Select with dual MOSFET
+U_5VLIMIT,TBD,TBD,500 mA auxiliary current limiter,Select during power-sheet design
+Q_IR,TBD,TBD,Logic-level IR power MOSFET,Select after pulse-current simulation
+BZ1,TBD,TBD,Low-profile piezo buzzer,Select from assembler stock
