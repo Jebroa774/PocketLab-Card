@@ -31,6 +31,8 @@ the 1.6 mm PCB plus the ESP32 module is about 4.7 mm before solder and
 mechanical tolerances. The optional edge-facing 5 mm IR LED protrudes beyond
 the outline and is installed by hand after assembly.
 
+![Top-side placement draft](docs/placement-top.png)
+
 ## Repository layout
 
 ```text
@@ -43,10 +45,11 @@ PocketLab-Card/
 
 ## Current status
 
-KiCad 10 is installed and the project/board-outline scaffold is checked in.
-The hand-assembly policy, revised module choices, pin allocation and power
-domains are frozen for detailed schematic capture. The design is not ready to
-order until schematic ERC, PCB DRC and the checks in `docs/validation.md` pass.
+KiCad 10 is installed and the first placement draft contains 21 real
+footprints on the exact card outline. The placement is deliberately unrouted;
+the functional schematic, custom footprints, passives and copper still have to
+be completed. The design is not ready to order until schematic ERC, PCB DRC and
+the checks in `docs/validation.md` pass.
 
 All RF transmit functions are intended only for frequencies, devices and
 systems the operator is permitted to use.

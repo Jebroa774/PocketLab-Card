@@ -45,6 +45,19 @@
   that the outline closes. Functional sheets are still capture targets, so
   the results do not validate any electrical circuit yet.
 
+## 2026-08-09 physical placement draft
+
+- The main PCB contains 21 real footprints and round-trips through KiCad 10.0.5.
+- A high-quality top-side 3D render completed successfully.
+- Only one courtyard overlap remains: the conservative ESP32-S3 antenna
+  clearance intersects the nearby GNSS U.FL footprint. This is a placement risk
+  to resolve, not an accepted production waiver.
+- The current DRC output is not a production result: without a schematic
+  netlist, routing or final rules it reports expected footprint-local, edge
+  connector, silkscreen and drill-rule findings.
+- TPS63070, BMP390, the IR receiver and the tuned NFC loop remain labeled
+  envelopes until their manufacturer-verified land patterns are complete.
+
 ## Outstanding before PCB order
 
 - Capture and run KiCad ERC on all functional schematic sheets.

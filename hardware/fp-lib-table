@@ -1,0 +1,10 @@
+(fp_lib_table
+	(version 7)
+	(lib
+		(name "PocketLab_Custom")
+		(type "KiCad")
+		(uri "${KIPRJMOD}/PocketLab_Custom.pretty")
+		(options "")
+		(descr "Project-local verified and manufacturer-converted footprints")
+	)
+)

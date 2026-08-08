@@ -17,6 +17,18 @@ KiCad 10 is installed locally. `PocketLab-Card.kicad_pro` is the project entry
 point and the PCB scaffold contains the exact credit-card outline. Empty
 functional sheet files are deliberate capture targets, not completed circuits.
 
+`PocketLab-Card.kicad_pcb` now contains the first physical placement draft with
+21 real stock/custom footprints. It intentionally has no nets yet: schematic
+capture and KiCad's "Update PCB from Schematic" remain required before routing.
+The reproducible source outline is in `templates/`; regenerate the placement
+with KiCad's bundled Python using:
+
+```powershell
+& "$env:LOCALAPPDATA\Programs\KiCad\10.0\bin\python.exe" scripts/place_components.py templates/PocketLab-Card-mechanical.kicad_pcb PocketLab-Card.kicad_pcb
+```
+
+See `footprint-sources.md` for the four remaining custom land patterns.
+
 ## Required schematic checks
 
 - USB-C CC resistors and native USB differential pair protection
