@@ -48,16 +48,16 @@ inline constexpr uint8_t DIRECT_EXPANSION[] = {
     1, 2, 4, 8, 9, 40, 41, 42, 43, 44, 47, 48,
 };
 
-// TCA9535 port numbers. P10-P17 are exposed as EX0-EX7.
-enum class IoExpanderPin : uint8_t {
-  NfcResetN = 0,
-  GnssPowerEnable = 1,
-  Boost5Enable = 2,
-  SdDetectN = 3,
-  UserButtonAN = 4,
-  UserButtonBN = 5,
-  ChargerN = 6,
-  PowerGoodN = 7,
+// U9 / TCA9535 at 0x20. Both ports remain inputs; P10-P17 are EX0-EX7.
+enum class StatusExpanderPin : uint8_t {
+  SdDetectN = 0,
+  ChargerN = 1,
+  ChargerPowerGoodN = 2,
+  Aux5FaultN = 3,
+  FuelGaugeAlertN = 4,
+  BmiInt1 = 5,
+  BmiInt2 = 6,
+  BmpInt = 7,
   Ex0 = 8,
   Ex1 = 9,
   Ex2 = 10,
@@ -66,6 +66,18 @@ enum class IoExpanderPin : uint8_t {
   Ex5 = 13,
   Ex6 = 14,
   Ex7 = 15,
+};
+
+// U18 / TCA9534 at 0x21. P0-P5 are outputs and P6-P7 are inputs.
+enum class ControlExpanderPin : uint8_t {
+  ChargerUsbModeEn1 = 0,
+  ChargerDisable = 1,
+  Aux5Enable = 2,
+  NfcResetN = 3,
+  GnssPowerEnable = 4,
+  Boost5Enable = 5,
+  UserButtonAN = 6,
+  UserButtonBN = 7,
 };
 
 }  // namespace pocketlab::pins

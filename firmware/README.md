@@ -1,21 +1,121 @@
-# Firmware baseline
+# PocketLab Card firmware
 
-The target is ESP32-S3-WROOM-1-N8R2 under Arduino-ESP32 3.x/PlatformIO, with
-native USB, 8 MB flash and 2 MB quad PSRAM enabled.
-This keeps PN532, CC1101, microSD and IR library options broad while retaining
-reproducible command-line builds.
+This directory contains the buildable ESP32-S3 baseline for hardware revision
+1. It targets the ESP32-S3-WROOM-1-N8R2 (8 MB flash, 2 MB quad PSRAM) with
+Arduino-ESP32 3.x and PlatformIO.
 
-Planned services:
+## Implemented baseline
 
-- Local access point and responsive web application
-- WebSocket event/status stream
-- NFC read/write tools
-- Sub-GHz receive/transmit tools for authorized use
-- IR learning, protocol decoding and transmission
-- GNSS live status and 5 Hz trip logger
-- GPX/CSV trip export and microSD file management
-- Battery, charging, sensor and diagnostic status
-- GPIO laboratory for direct and expanded header pins
+- WPA2 Wi-Fi SoftAP with a local, mobile-friendly web interface
+- REST status/configuration endpoints and a read-only WebSocket status stream
+- microSD mount, directory listing, download, upload, deletion and remount
+- checksum-validated NMEA RMC/GGA parser on the GNSS UART
+- CSV trip logging with UTC, coordinates, speed, course, altitude, satellites
+  and HDOP; live distance and point counters are shown in the web UI
+- safe boot states for CC1101, microSD, IR, buzzer, RGB and all exposed GPIOs
+- read-only CC1101 identity probe, PN532 I2C presence probe, TCA9535 status
+  inputs and TCA9534 control/button status
+- GNSS power control through the dedicated TCA9534 control expander and
+  explicit conflict checks around an active trip
 
-`include/board_pins.h` mirrors `docs/pinout.md` and is the firmware source of
-truth once the schematic has passed ERC.
+The implementation is intentionally a bring-up baseline. It does not yet
+contain PN532 transactions, CC1101 receive/decoding, IR decoding, sensor
+drivers, battery telemetry or any transmit implementation.
+
+## Build and upload
+
+From this directory:
+
+```powershell
+pio run
+pio run -t upload
+pio device monitor
+```
+
+The validated build uses PlatformIO Core 6.1.19, Arduino-ESP32 3.3.8 and
+WebSockets 2.7.3. The current release build consumes approximately 49.7 kB RAM
+and 1.13 MB application flash. Actual values can change with the toolchain.
+
+At boot, USB CDC prints the access point credentials and URL. Credentials are
+deterministically derived from the ESP32 eFuse ID:
+
+- SSID: `PocketLab-XXXXXX`
+- password: `PL-XXXXXXXX`
+- URL: `http://192.168.4.1/`
+
+This per-device password is suitable for local prototype bring-up, but it is
+not a replacement for a user-set secret in a production device.
+
+## Safety policy
+
+`platformio.ini` compiles all transmit/output feature flags as zero:
+
+```ini
+-DPOCKETLAB_ALLOW_SUBGHZ_TX=0
+-DPOCKETLAB_ALLOW_IR_TX=0
+-DPOCKETLAB_ALLOW_GPIO_OUTPUT=0
+```
+
+There is no transmit implementation behind those flags. The corresponding
+REST routes always return HTTP 403, WebSocket input is read-only, the 5 V boost
+starts disabled, IR stays low, and the twelve direct expansion GPIOs start and
+remain inputs. Enabling a build flag alone therefore cannot activate TX.
+
+Future radio work must add an explicit physical/user authorization flow,
+regional frequency and duty-cycle limits, bounded power, and tests before a TX
+path is merged. Do not automate replay or transmission of captured traffic.
+
+## HTTP and WebSocket interface
+
+Read-only endpoints:
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/healthz` | Minimal liveness response |
+| `GET` | `/api/config` | WebSocket port and boot-session mutation token |
+| `GET` | `/api/status` | Combined Wi-Fi, hardware, storage and GNSS status |
+| `GET` | `/api/hardware` | Hardware probes and compile-time policy |
+| `GET` | `/api/gpio` | Direct GPIO and TCA9535 `EX0`-`EX7` levels, input-only |
+| `GET` | `/api/files?path=/trips` | Directory listing |
+| `GET` | `/api/file?path=/trips/example.csv` | File download |
+
+Mutating endpoints require the current `X-PocketLab-Token` header. The same
+origin web UI obtains it from `/api/config`; it changes on every boot.
+
+| Method | Path | Purpose |
+|---|---|---|
+| `POST` | `/api/trip/start` | Enable GNSS if possible and start CSV logging |
+| `POST` | `/api/trip/stop` | Flush and close the current CSV file |
+| `POST` | `/api/gnss/power?enabled=1` | Switch GNSS power through TCA9534 |
+| `POST` | `/api/sd/remount` | Remount the card while no trip is active |
+| `POST` | `/api/upload?path=/uploads/name` | Multipart file upload |
+| `DELETE` | `/api/file?path=/uploads/name` | Delete a file or empty directory |
+
+Status WebSocket clients connect to port `81`. The server sends JSON once per
+second and rejects all client commands.
+
+## Trip files
+
+Trips are stored below `/trips` as CSV. A valid RMC date/time is used in the
+filename; a boot-time fallback is used before the first fix. A random suffix
+prevents appending to an old trip with the same timestamp. Valid fixes are
+logged at most once per second and flushed every ten points or five seconds.
+
+## Hardware assumptions to verify on the first assembled board
+
+- U9 TCA9535 address `0x20`; P00-P07 are `SD_DETECT_N`, `CHARGER_CHG_N`,
+  `CHARGER_PGOOD_N`, `AUX5_FAULT_N`, `FG_ALERT_N`, `BMI_INT1`, `BMI_INT2`
+  and `BMP_INT`; P10-P17 are exposed as `EX0`-`EX7` and remain inputs
+- U18 TCA9534 address `0x21`; P0-P5 are `BQ_EN1`, `CHG_DISABLE`, `AUX5_EN`,
+  `NFC_RESET_N`, `GNSS_POWER_EN` and `BOOST5_EN`; P6/P7 are active-low user
+  buttons
+- safe U18 boot latch: `BQ_EN1=0` (USB100 with EN2 tied low),
+  `CHG_DISABLE=0`, AUX 5 V/GNSS/5 V boost off and PN532 held in reset until
+  the expander is configured
+- PN532 I2C address `0x24`
+- MAX-M10S NMEA UART at 9600 baud
+- CC1101 identity (`PARTNUM=0x00`, nonzero/non-`0xFF` `VERSION`)
+- shared SPI operation with both chip-select idle levels high
+
+`include/board_pins.h` mirrors `docs/pinout.md`. Any schematic pin change must
+be applied to both before assembling or flashing hardware.

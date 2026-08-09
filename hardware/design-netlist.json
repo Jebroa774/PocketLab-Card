@@ -1,0 +1,3522 @@
+{
+  "format": 1,
+  "parts": [
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Connector:USB_C_Receptacle_USB2.0_14P",
+      "reference": "J1",
+      "value": "USB-C DATA/POWER",
+      "footprint": "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12",
+      "x": 63.5,
+      "y": 76.2,
+      "pins": {
+        "A1": "GND",
+        "A4": "VBUS_USB",
+        "A5": "USB_CC1",
+        "A6": "USB_DP_CONN",
+        "A7": "USB_DM_CONN",
+        "A9": "VBUS_USB",
+        "A12": "GND",
+        "B1": "GND",
+        "B4": "VBUS_USB",
+        "B5": "USB_CC2",
+        "B6": "USB_DP_CONN",
+        "B7": "USB_DM_CONN",
+        "B9": "VBUS_USB",
+        "B12": "GND",
+        "SH": "USB_SHIELD"
+      },
+      "fields": {
+        "Manufacturer": "HRO",
+        "MPN": "TYPE-C-31-M-12",
+        "LCSC": "C165948"
+      }
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R101",
+      "value": "5.1k 1%",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 101.6,
+      "y": 50.8,
+      "pins": {
+        "1": "USB_CC1",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R102",
+      "value": "5.1k 1%",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 114.3,
+      "y": 50.8,
+      "pins": {
+        "1": "USB_CC2",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R103",
+      "value": "1M",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 127.0,
+      "y": 50.8,
+      "pins": {
+        "1": "USB_SHIELD",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C101",
+      "value": "4.7nF 1kV",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 139.7,
+      "y": 50.8,
+      "pins": {
+        "1": "USB_SHIELD",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:Polyfuse",
+      "reference": "F1",
+      "value": "Littelfuse 1206L075/13.2",
+      "footprint": "Fuse:Fuse_1206_3216Metric",
+      "x": 101.6,
+      "y": 76.2,
+      "pins": {
+        "1": "VBUS_USB",
+        "2": "VBUS_FUSED"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:D_TVS",
+      "reference": "D101",
+      "value": "SMF5.0A",
+      "footprint": "Diode_SMD:D_SOD-123F",
+      "x": 114.3,
+      "y": 76.2,
+      "pins": {
+        "1": "GND",
+        "2": "VBUS_FUSED"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Power_Protection:USBLC6-4SC6",
+      "reference": "U16",
+      "value": "USBLC6-4SC6Y",
+      "footprint": "Package_TO_SOT_SMD:SOT-23-6",
+      "x": 139.7,
+      "y": 76.2,
+      "pins": {
+        "1": "USB_DP_CONN",
+        "2": "GND",
+        "3": "USB_DM_CONN",
+        "4": "USB_CC1",
+        "5": "VBUS_FUSED",
+        "6": "USB_CC2"
+      },
+      "fields": {
+        "Manufacturer": "ST",
+        "MPN": "USBLC6-4SC6Y"
+      }
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Connector_Generic:Conn_01x02",
+      "reference": "J4",
+      "value": "PROTECTED 1S LiPo 3.7V",
+      "footprint": "Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal",
+      "x": 63.5,
+      "y": 127.0,
+      "pins": {
+        "1": "CELL_POS",
+        "2": "CELL_NEG"
+      },
+      "fields": {
+        "Manufacturer": "JST",
+        "MPN": "S2B-PH-SM4-TB"
+      }
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Battery_Management:BQ297xy",
+      "reference": "U14",
+      "value": "BQ29700DSE",
+      "footprint": "Package_SON:WSON-6_1.5x1.5mm_P0.5mm",
+      "x": 101.6,
+      "y": 127.0,
+      "pins": {
+        "1": null,
+        "2": "BAT_COUT",
+        "3": "BAT_DOUT",
+        "4": "CELL_NEG",
+        "5": "BAT_SENSE",
+        "6": "BAT_VMINUS"
+      },
+      "fields": {
+        "Manufacturer": "TI",
+        "MPN": "BQ29700DSER"
+      }
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R104",
+      "value": "330R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 127.0,
+      "y": 114.3,
+      "pins": {
+        "1": "CELL_POS",
+        "2": "BAT_SENSE"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C102",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 139.7,
+      "y": 114.3,
+      "pins": {
+        "1": "BAT_SENSE",
+        "2": "CELL_NEG"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R105",
+      "value": "2.2k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 152.4,
+      "y": 114.3,
+      "pins": {
+        "1": "BAT_VMINUS",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Connector_Generic:Conn_01x05",
+      "reference": "Q2",
+      "value": "CSD16406Q3 DISCHARGE",
+      "footprint": "Package_SON:VSON-8_3.3x3.3mm_P0.65mm_NexFET",
+      "x": 127.0,
+      "y": 139.7,
+      "pins": {
+        "1": "CELL_NEG",
+        "2": "CELL_NEG",
+        "3": "CELL_NEG",
+        "4": "BAT_DOUT",
+        "5": "BAT_FET_MID"
+      },
+      "fields": {
+        "Manufacturer": "TI",
+        "MPN": "CSD16406Q3"
+      }
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Connector_Generic:Conn_01x05",
+      "reference": "Q3",
+      "value": "CSD16406Q3 CHARGE",
+      "footprint": "Package_SON:VSON-8_3.3x3.3mm_P0.65mm_NexFET",
+      "x": 152.4,
+      "y": 139.7,
+      "pins": {
+        "1": "GND",
+        "2": "GND",
+        "3": "GND",
+        "4": "BAT_COUT",
+        "5": "BAT_FET_MID"
+      },
+      "fields": {
+        "Manufacturer": "TI",
+        "MPN": "CSD16406Q3"
+      }
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R106",
+      "value": "5.1M",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 127.0,
+      "y": 165.1,
+      "pins": {
+        "1": "BAT_DOUT",
+        "2": "CELL_NEG"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R107",
+      "value": "5.1M",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 152.4,
+      "y": 165.1,
+      "pins": {
+        "1": "BAT_COUT",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Connector:TestPoint",
+      "reference": "TP101",
+      "value": "BATTERY CELL_POS",
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "x": 101.6,
+      "y": 177.8,
+      "pins": {
+        "1": "CELL_POS"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Connector:TestPoint",
+      "reference": "TP102",
+      "value": "BATTERY CELL_NEG",
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "x": 119.38,
+      "y": 177.8,
+      "pins": {
+        "1": "CELL_NEG"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Connector:TestPoint",
+      "reference": "TP103",
+      "value": "BATTERY BAT_FET_MID",
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "x": 137.16,
+      "y": 177.8,
+      "pins": {
+        "1": "BAT_FET_MID"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Connector:TestPoint",
+      "reference": "TP104",
+      "value": "BATTERY GND",
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "x": 154.94,
+      "y": 177.8,
+      "pins": {
+        "1": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Battery_Management:BQ24074RGT",
+      "reference": "U5",
+      "value": "BQ24074RGTR",
+      "footprint": "Package_DFN_QFN:VQFN-16-1EP_3x3mm_P0.5mm_EP1.6x1.6mm_ThermalVias",
+      "x": 203.2,
+      "y": 101.6,
+      "pins": {
+        "1": "CHG_TS",
+        "2": "CELL_POS",
+        "3": "CELL_POS",
+        "4": "CHG_DISABLE",
+        "5": "BQ_EN2",
+        "6": "BQ_EN1",
+        "7": "CHARGER_PGOOD_N",
+        "8": "GND",
+        "9": "CHARGER_CHG_N",
+        "10": "VSYS",
+        "11": "VSYS",
+        "12": "CHG_ILIM",
+        "13": "VBUS_FUSED",
+        "14": "CHG_TMR",
+        "15": "CHG_ITERM",
+        "16": "CHG_ISET",
+        "17": "GND"
+      },
+      "fields": {
+        "Manufacturer": "TI",
+        "MPN": "BQ24074RGTR",
+        "LCSC": "C54313"
+      }
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R108",
+      "value": "10k TS fixed",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 177.8,
+      "y": 127.0,
+      "pins": {
+        "1": "CHG_TS",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R109",
+      "value": "100k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 190.5,
+      "y": 127.0,
+      "pins": {
+        "1": "CHARGER_PGOOD_N",
+        "2": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R110",
+      "value": "100k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 203.2,
+      "y": 127.0,
+      "pins": {
+        "1": "CHARGER_CHG_N",
+        "2": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R111",
+      "value": "3.48k 1%",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 215.9,
+      "y": 127.0,
+      "pins": {
+        "1": "CHG_ILIM",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R112",
+      "value": "3.01k 1%",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 228.6,
+      "y": 127.0,
+      "pins": {
+        "1": "CHG_ITERM",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R113",
+      "value": "1.78k 1%",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 241.3,
+      "y": 127.0,
+      "pins": {
+        "1": "CHG_ISET",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R114",
+      "value": "68.1k 1%",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 254.0,
+      "y": 127.0,
+      "pins": {
+        "1": "CHG_TMR",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R115",
+      "value": "100k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 266.7,
+      "y": 127.0,
+      "pins": {
+        "1": "BQ_EN1",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R126",
+      "value": "100k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 279.4,
+      "y": 127.0,
+      "pins": {
+        "1": "CHG_DISABLE",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R128",
+      "value": "100k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 292.1,
+      "y": 127.0,
+      "pins": {
+        "1": "BQ_EN2",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C103",
+      "value": "4.7uF 10V",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 177.8,
+      "y": 152.4,
+      "pins": {
+        "1": "VBUS_FUSED",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C104",
+      "value": "22uF 10V",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 190.5,
+      "y": 152.4,
+      "pins": {
+        "1": "CELL_POS",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C105",
+      "value": "4.7uF 10V",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 203.2,
+      "y": 152.4,
+      "pins": {
+        "1": "VSYS",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C106",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 215.9,
+      "y": 152.4,
+      "pins": {
+        "1": "VBUS_FUSED",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C121",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 228.6,
+      "y": 152.4,
+      "pins": {
+        "1": "CELL_POS",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C122",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 241.3,
+      "y": 152.4,
+      "pins": {
+        "1": "VSYS",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Connector_Generic:Conn_01x15",
+      "reference": "U6",
+      "value": "TPS63070RNMR 3V3",
+      "footprint": "PocketLab_Custom:TPS63070_RNM0015A",
+      "x": 63.5,
+      "y": 215.9,
+      "pins": {
+        "1": "U6_PS_SYNC",
+        "2": "PWR_3V3_PG",
+        "3": "U6_VAUX",
+        "4": "GND",
+        "5": "U6_FB",
+        "6": null,
+        "7": "+3V3",
+        "8": "+3V3",
+        "9": "U6_L2",
+        "10": "GND",
+        "11": "U6_L1",
+        "12": "VSYS",
+        "13": "VSYS",
+        "14": "VSYS",
+        "15": "GND"
+      },
+      "fields": {
+        "Manufacturer": "TI",
+        "MPN": "TPS63070RNMR",
+        "LCSC": "C109322"
+      }
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:L",
+      "reference": "L6",
+      "value": "1.5uH XFL4020-152ME",
+      "footprint": "PocketLab_Custom:Coilcraft_XFL4020",
+      "x": 101.6,
+      "y": 203.2,
+      "pins": {
+        "1": "U6_L1",
+        "2": "U6_L2"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R116",
+      "value": "10k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 114.3,
+      "y": 203.2,
+      "pins": {
+        "1": "VSYS",
+        "2": "U6_PS_SYNC"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R117",
+      "value": "470k 1%",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 127.0,
+      "y": 203.2,
+      "pins": {
+        "1": "+3V3",
+        "2": "U6_FB"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R118",
+      "value": "150k 1%",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 139.7,
+      "y": 203.2,
+      "pins": {
+        "1": "U6_FB",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R119",
+      "value": "10k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 152.4,
+      "y": 203.2,
+      "pins": {
+        "1": "PWR_3V3_PG",
+        "2": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C107",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 101.6,
+      "y": 228.6,
+      "pins": {
+        "1": "U6_VAUX",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C108",
+      "value": "10uF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 114.3,
+      "y": 228.6,
+      "pins": {
+        "1": "VSYS",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C109",
+      "value": "10uF DNP - populate only after VSYS stability test",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 127.0,
+      "y": 228.6,
+      "pins": {
+        "1": "VSYS",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C110",
+      "value": "22uF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 139.7,
+      "y": 228.6,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C111",
+      "value": "22uF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 152.39999999999998,
+      "y": 228.6,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C112",
+      "value": "22uF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 165.1,
+      "y": 228.6,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C123",
+      "value": "10uF 25V X5R HF",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 177.8,
+      "y": 228.6,
+      "pins": {
+        "1": "VSYS",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C124",
+      "value": "10uF 25V X5R HF",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 190.5,
+      "y": 228.6,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Connector_Generic:Conn_01x06",
+      "reference": "U7",
+      "value": "TPS61023DRLR 5V BOOST",
+      "footprint": "Package_TO_SOT_SMD:SOT-563",
+      "x": 215.9,
+      "y": 203.2,
+      "pins": {
+        "1": "U7_FB",
+        "2": "BOOST5_EN",
+        "3": "VSYS",
+        "4": "GND",
+        "5": "U7_SW",
+        "6": "+5V_RAW"
+      },
+      "fields": {
+        "Manufacturer": "TI",
+        "MPN": "TPS61023DRLR",
+        "LCSC": "C919459"
+      }
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:L",
+      "reference": "L7",
+      "value": "1uH HBME042A",
+      "footprint": "PocketLab_Custom:Cyntec_HBME042A-1R0MS",
+      "x": 241.3,
+      "y": 203.2,
+      "pins": {
+        "1": "VSYS",
+        "2": "U7_SW"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R120",
+      "value": "732k 1%",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 254.0,
+      "y": 203.2,
+      "pins": {
+        "1": "+5V_RAW",
+        "2": "U7_FB"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R121",
+      "value": "100k 1%",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 266.7,
+      "y": 203.2,
+      "pins": {
+        "1": "U7_FB",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R122",
+      "value": "100k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 279.4,
+      "y": 203.2,
+      "pins": {
+        "1": "BOOST5_EN",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C113",
+      "value": "220pF C0G",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 254.0,
+      "y": 228.6,
+      "pins": {
+        "1": "+5V_RAW",
+        "2": "U7_FB"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C114",
+      "value": "10uF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 266.7,
+      "y": 228.6,
+      "pins": {
+        "1": "VSYS",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C115",
+      "value": "22uF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 279.4,
+      "y": 228.6,
+      "pins": {
+        "1": "+5V_RAW",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C116",
+      "value": "22uF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 292.1,
+      "y": 228.6,
+      "pins": {
+        "1": "+5V_RAW",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Connector_Generic:Conn_01x06",
+      "reference": "U15",
+      "value": "TPS2553DBVR 500mA LIMIT",
+      "footprint": "Package_TO_SOT_SMD:SOT-23-6",
+      "x": 215.9,
+      "y": 254.0,
+      "pins": {
+        "1": "+5V_RAW",
+        "2": "GND",
+        "3": "AUX5_EN",
+        "4": "AUX5_FAULT_N",
+        "5": "U15_ILIM",
+        "6": "+5V_AUX"
+      },
+      "fields": {
+        "Manufacturer": "TI",
+        "MPN": "TPS2553DBVR"
+      }
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R123",
+      "value": "60.4k 1%",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 241.3,
+      "y": 254.0,
+      "pins": {
+        "1": "U15_ILIM",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R124",
+      "value": "100k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 254.0,
+      "y": 254.0,
+      "pins": {
+        "1": "AUX5_FAULT_N",
+        "2": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R127",
+      "value": "100k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 254.0,
+      "y": 266.7,
+      "pins": {
+        "1": "AUX5_EN",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C117",
+      "value": "10uF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 266.7,
+      "y": 254.0,
+      "pins": {
+        "1": "+5V_RAW",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C118",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 279.4,
+      "y": 254.0,
+      "pins": {
+        "1": "+5V_AUX",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C119",
+      "value": "10uF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 292.1,
+      "y": 254.0,
+      "pins": {
+        "1": "+5V_AUX",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Connector_Generic:Conn_01x09",
+      "reference": "U8",
+      "value": "MAX17048G+T10",
+      "footprint": "Package_DFN_QFN:TDFN-8-1EP_2x2mm_P0.5mm_EP0.8x1.2mm",
+      "x": 101.6,
+      "y": 266.7,
+      "pins": {
+        "1": "GND",
+        "2": null,
+        "3": "CELL_POS",
+        "4": "GND",
+        "5": "FG_ALERT_N",
+        "6": "GND",
+        "7": "I2C_SCL",
+        "8": "I2C_SDA",
+        "9": "GND"
+      },
+      "fields": {
+        "Manufacturer": "Analog Devices",
+        "MPN": "MAX17048G+T10",
+        "LCSC": "C2682616"
+      }
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R125",
+      "value": "10k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 127.0,
+      "y": 266.7,
+      "pins": {
+        "1": "FG_ALERT_N",
+        "2": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:C",
+      "reference": "C120",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 139.7,
+      "y": 266.7,
+      "pins": {
+        "1": "CELL_POS",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "power:PWR_FLAG",
+      "reference": "#FLG101",
+      "value": "PWR_FLAG",
+      "footprint": "",
+      "x": 165.1,
+      "y": 279.4,
+      "pins": {
+        "1": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "power:PWR_FLAG",
+      "reference": "#FLG102",
+      "value": "PWR_FLAG",
+      "footprint": "",
+      "x": 177.79999999999998,
+      "y": 279.4,
+      "pins": {
+        "1": "VBUS_FUSED"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "power:PWR_FLAG",
+      "reference": "#FLG103",
+      "value": "PWR_FLAG",
+      "footprint": "",
+      "x": 190.5,
+      "y": 279.4,
+      "pins": {
+        "1": "CELL_NEG"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "power:PWR_FLAG",
+      "reference": "#FLG104",
+      "value": "PWR_FLAG",
+      "footprint": "",
+      "x": 203.2,
+      "y": 279.4,
+      "pins": {
+        "1": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "power:PWR_FLAG",
+      "reference": "#FLG105",
+      "value": "PWR_FLAG",
+      "footprint": "",
+      "x": 215.89999999999998,
+      "y": 279.4,
+      "pins": {
+        "1": "+5V_RAW"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "power:PWR_FLAG",
+      "reference": "#FLG106",
+      "value": "PWR_FLAG",
+      "footprint": "",
+      "x": 228.6,
+      "y": 279.4,
+      "pins": {
+        "1": "+5V_AUX"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "power:PWR_FLAG",
+      "reference": "#FLG107",
+      "value": "PWR_FLAG",
+      "footprint": "",
+      "x": 241.29999999999998,
+      "y": 279.4,
+      "pins": {
+        "1": "NFC_AVDD"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "power:PWR_FLAG",
+      "reference": "#FLG108",
+      "value": "PWR_FLAG",
+      "footprint": "",
+      "x": 254.0,
+      "y": 279.4,
+      "pins": {
+        "1": "GNSS_3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
+      "lib_id": "power:PWR_FLAG",
+      "reference": "#FLG109",
+      "value": "PWR_FLAG",
+      "footprint": "",
+      "x": 266.7,
+      "y": 279.4,
+      "pins": {
+        "1": "GNSS_BACKUP"
+      },
+      "fields": {}
+    },
+    {
+      "block": "02 ESP32-S3 MCU / USB",
+      "lib_id": "RF_Module:ESP32-S3-WROOM-1",
+      "reference": "U1",
+      "value": "ESP32-S3-WROOM-1-N8R2",
+      "footprint": "RF_Module:ESP32-S3-WROOM-1",
+      "x": 355.6,
+      "y": 114.3,
+      "pins": {
+        "1": "GND",
+        "2": "+3V3",
+        "3": "ESP_EN",
+        "4": "GPIO4_MCU",
+        "5": "I2C_SDA",
+        "6": "I2C_SCL",
+        "7": "NFC_IRQ_N",
+        "8": "SUBGHZ_GDO0",
+        "9": "SUBGHZ_GDO2",
+        "10": "SD_CS_N",
+        "11": "GNSS_TIMEPULSE",
+        "12": "GPIO8_MCU",
+        "13": "USB_D_N",
+        "14": "USB_D_P",
+        "15": "JTAG_STRAP_TP",
+        "16": "STRAP_BOOT_TP",
+        "17": "GPIO9_MCU",
+        "18": "RGB_DATA",
+        "19": "SPI_MOSI",
+        "20": "SPI_SCK",
+        "21": "SPI_MISO",
+        "22": "SUBGHZ_CS_N",
+        "23": "GNSS_RX_FROM_MODULE",
+        "24": "GPIO47_MCU",
+        "25": "GPIO48_MCU",
+        "26": "STRAP_VDD_SPI_TP",
+        "27": "BOOT_N",
+        "28": "GNSS_TX_TO_MODULE",
+        "29": "IR_TX",
+        "30": "IR_RX",
+        "31": "BUZZER_PWM",
+        "32": "IOEXP_INT_N",
+        "33": "GPIO40_MCU",
+        "34": "GPIO41_MCU",
+        "35": "GPIO42_MCU",
+        "36": "GPIO44_MCU",
+        "37": "GPIO43_MCU",
+        "38": "GPIO2_MCU",
+        "39": "GPIO1_MCU",
+        "40": "GND",
+        "41": "GND"
+      },
+      "fields": {
+        "Manufacturer": "Espressif",
+        "MPN": "ESP32-S3-WROOM-1-N8R2",
+        "LCSC": "C2913204"
+      }
+    },
+    {
+      "block": "02 ESP32-S3 MCU / USB",
+      "lib_id": "Device:R",
+      "reference": "R201",
+      "value": "22R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 317.5,
+      "y": 177.8,
+      "pins": {
+        "1": "USB_DM_CONN",
+        "2": "USB_D_N"
+      },
+      "fields": {}
+    },
+    {
+      "block": "02 ESP32-S3 MCU / USB",
+      "lib_id": "Device:R",
+      "reference": "R202",
+      "value": "22R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 330.2,
+      "y": 177.8,
+      "pins": {
+        "1": "USB_DP_CONN",
+        "2": "USB_D_P"
+      },
+      "fields": {}
+    },
+    {
+      "block": "02 ESP32-S3 MCU / USB",
+      "lib_id": "Device:R",
+      "reference": "R203",
+      "value": "10k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 342.9,
+      "y": 177.8,
+      "pins": {
+        "1": "ESP_EN",
+        "2": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "02 ESP32-S3 MCU / USB",
+      "lib_id": "Device:R",
+      "reference": "R204",
+      "value": "10k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 355.6,
+      "y": 177.8,
+      "pins": {
+        "1": "BOOT_N",
+        "2": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "02 ESP32-S3 MCU / USB",
+      "lib_id": "Device:C",
+      "reference": "C201",
+      "value": "1uF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 368.3,
+      "y": 177.8,
+      "pins": {
+        "1": "ESP_EN",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "02 ESP32-S3 MCU / USB",
+      "lib_id": "Device:C",
+      "reference": "C202",
+      "value": "10uF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 381.0,
+      "y": 177.8,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "02 ESP32-S3 MCU / USB",
+      "lib_id": "Device:C",
+      "reference": "C203",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 393.7,
+      "y": 177.8,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "02 ESP32-S3 MCU / USB",
+      "lib_id": "Switch:SW_Push",
+      "reference": "SW1",
+      "value": "RESET",
+      "footprint": "Button_Switch_SMD:SW_SPST_TL3305A",
+      "x": 342.9,
+      "y": 203.2,
+      "pins": {
+        "1": "ESP_EN",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "02 ESP32-S3 MCU / USB",
+      "lib_id": "Switch:SW_Push",
+      "reference": "SW2",
+      "value": "BOOT",
+      "footprint": "Button_Switch_SMD:SW_SPST_TL3305A",
+      "x": 368.3,
+      "y": 203.2,
+      "pins": {
+        "1": "BOOT_N",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "02 ESP32-S3 MCU / USB",
+      "lib_id": "Connector:TestPoint",
+      "reference": "TP201",
+      "value": "JTAG_STRAP_TP",
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "x": 317.5,
+      "y": 228.6,
+      "pins": {
+        "1": "JTAG_STRAP_TP"
+      },
+      "fields": {}
+    },
+    {
+      "block": "02 ESP32-S3 MCU / USB",
+      "lib_id": "Connector:TestPoint",
+      "reference": "TP202",
+      "value": "STRAP_BOOT_TP",
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "x": 342.9,
+      "y": 228.6,
+      "pins": {
+        "1": "STRAP_BOOT_TP"
+      },
+      "fields": {}
+    },
+    {
+      "block": "02 ESP32-S3 MCU / USB",
+      "lib_id": "Connector:TestPoint",
+      "reference": "TP203",
+      "value": "STRAP_VDD_SPI_TP",
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "x": 368.3,
+      "y": 228.6,
+      "pins": {
+        "1": "STRAP_VDD_SPI_TP"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "RF_NFC:PN5321A3HN_C1xx",
+      "reference": "U2",
+      "value": "PN5321A3HN/C106",
+      "footprint": "Package_DFN_QFN:HVQFN-40-1EP_6x6mm_P0.5mm_EP4.1x4.1mm",
+      "x": 520.7,
+      "y": 114.3,
+      "pins": {
+        "1": "GND",
+        "2": "NFC_LOADMOD",
+        "3": "GND",
+        "4": "NFC_TX1",
+        "5": "+3V3",
+        "6": "NFC_TX2",
+        "7": "GND",
+        "8": "NFC_AVDD",
+        "9": "NFC_VMID",
+        "10": "NFC_RX",
+        "11": "GND",
+        "12": null,
+        "13": null,
+        "14": "NFC_OSCIN",
+        "15": "NFC_OSCOUT",
+        "16": "NFC_I0",
+        "17": "GND",
+        "18": "GND",
+        "19": null,
+        "20": null,
+        "21": null,
+        "22": null,
+        "23": "+3V3",
+        "24": null,
+        "25": "NFC_IRQ_N",
+        "26": null,
+        "27": "I2C_SCL",
+        "28": "I2C_SDA",
+        "29": null,
+        "30": null,
+        "31": null,
+        "32": null,
+        "33": null,
+        "34": null,
+        "35": null,
+        "36": null,
+        "37": "NFC_SVDD",
+        "38": "NFC_RESET_N",
+        "39": "NFC_DVDD",
+        "40": "+3V3",
+        "41": "GND"
+      },
+      "fields": {
+        "Manufacturer": "NXP",
+        "MPN": "PN5321A3HN/C106",
+        "LCSC": "C880904"
+      }
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:R",
+      "reference": "R301",
+      "value": "10k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 482.6,
+      "y": 177.8,
+      "pins": {
+        "1": "NFC_I0",
+        "2": "NFC_DVDD"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:R",
+      "reference": "R302",
+      "value": "10k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 495.3,
+      "y": 177.8,
+      "pins": {
+        "1": "NFC_RESET_N",
+        "2": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:C",
+      "reference": "C301",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 508.0,
+      "y": 177.8,
+      "pins": {
+        "1": "NFC_VMID",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:C",
+      "reference": "C302",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 520.7,
+      "y": 177.8,
+      "pins": {
+        "1": "NFC_AVDD",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:C",
+      "reference": "C303",
+      "value": "4.7uF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 533.4,
+      "y": 177.8,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:C",
+      "reference": "C304",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 546.1,
+      "y": 177.8,
+      "pins": {
+        "1": "NFC_DVDD",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:C",
+      "reference": "C305",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 558.8,
+      "y": 177.8,
+      "pins": {
+        "1": "NFC_SVDD",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:FerriteBead",
+      "reference": "FB301",
+      "value": "600R@100MHz",
+      "footprint": "Inductor_SMD:L_0805_2012Metric",
+      "x": 571.5,
+      "y": 177.8,
+      "pins": {
+        "1": "+3V3",
+        "2": "NFC_AVDD"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Connector_Generic:Conn_01x04",
+      "reference": "Y301",
+      "value": "27.12MHz crystal (pins 2/4 shield)",
+      "footprint": "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm",
+      "x": 482.6,
+      "y": 203.2,
+      "pins": {
+        "1": "NFC_OSCIN",
+        "2": "GND",
+        "3": "NFC_OSCOUT",
+        "4": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:C",
+      "reference": "C306",
+      "value": "22pF C0G",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 508.0,
+      "y": 203.2,
+      "pins": {
+        "1": "NFC_OSCIN",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:C",
+      "reference": "C307",
+      "value": "22pF C0G",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 520.7,
+      "y": 203.2,
+      "pins": {
+        "1": "NFC_OSCOUT",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:L",
+      "reference": "L301",
+      "value": "560nH C0G/Q",
+      "footprint": "Inductor_SMD:L_0805_2012Metric",
+      "x": 482.6,
+      "y": 241.3,
+      "pins": {
+        "1": "NFC_TX1",
+        "2": "NFC_TX1_F"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:L",
+      "reference": "L302",
+      "value": "560nH C0G/Q",
+      "footprint": "Inductor_SMD:L_0805_2012Metric",
+      "x": 495.3,
+      "y": 241.3,
+      "pins": {
+        "1": "NFC_TX2",
+        "2": "NFC_TX2_F"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:C",
+      "reference": "C308",
+      "value": "220pF C0G",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 508.0,
+      "y": 241.3,
+      "pins": {
+        "1": "NFC_TX1_F",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:C",
+      "reference": "C309",
+      "value": "220pF C0G",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 520.7,
+      "y": 241.3,
+      "pins": {
+        "1": "NFC_TX2_F",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:R",
+      "reference": "R303",
+      "value": "0R MATCH",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 533.4,
+      "y": 241.3,
+      "pins": {
+        "1": "NFC_TX1_F",
+        "2": "NFC_LOOP_A"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:R",
+      "reference": "R304",
+      "value": "0R MATCH",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 546.1,
+      "y": 241.3,
+      "pins": {
+        "1": "NFC_TX2_F",
+        "2": "NFC_LOOP_B"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:C",
+      "reference": "C310",
+      "value": "DNP MATCH",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 558.8,
+      "y": 241.3,
+      "pins": {
+        "1": "NFC_LOOP_A",
+        "2": "NFC_LOOP_B"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:C",
+      "reference": "C311",
+      "value": "DNP MATCH",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 571.5,
+      "y": 241.3,
+      "pins": {
+        "1": "NFC_LOOP_A",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:C",
+      "reference": "C312",
+      "value": "DNP MATCH",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 584.2,
+      "y": 241.3,
+      "pins": {
+        "1": "NFC_LOOP_B",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:R",
+      "reference": "R305",
+      "value": "1k RX TAP",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 533.4,
+      "y": 266.7,
+      "pins": {
+        "1": "NFC_LOOP_A",
+        "2": "NFC_RX"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Device:Antenna_Loop",
+      "reference": "AE1",
+      "value": "PCB NFC LOOP - TUNE ON V1",
+      "footprint": "",
+      "x": 571.5,
+      "y": 266.7,
+      "pins": {
+        "1": "NFC_LOOP_A",
+        "2": "NFC_LOOP_B"
+      },
+      "fields": {}
+    },
+    {
+      "block": "03 PN532 NFC / TUNABLE LOOP",
+      "lib_id": "Connector:TestPoint",
+      "reference": "TP301",
+      "value": "NFC_LOADMOD TEST",
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "x": 584.2,
+      "y": 203.2,
+      "pins": {
+        "1": "NFC_LOADMOD"
+      },
+      "fields": {}
+    },
+    {
+      "block": "04 E07 CC1101 SUB-GHZ",
+      "lib_id": "Connector_Generic:Conn_02x11_Odd_Even",
+      "reference": "U3",
+      "value": "E07-900M10S 868MHz",
+      "footprint": "PocketLab_Custom:E07-900M10S",
+      "x": 698.5,
+      "y": 101.6,
+      "pins": {
+        "1": "GND",
+        "2": "GND",
+        "3": "GND",
+        "4": "GND",
+        "5": "GND",
+        "11": "GND",
+        "12": "GND",
+        "20": "GND",
+        "22": "GND",
+        "6": null,
+        "7": null,
+        "8": null,
+        "9": "+3V3",
+        "10": null,
+        "13": null,
+        "14": "SUBGHZ_GDO2",
+        "15": "SUBGHZ_GDO0",
+        "16": "SUB_MISO",
+        "17": "SUB_MOSI",
+        "18": "SUB_SCK",
+        "19": "SUB_CS_N",
+        "21": "SUBGHZ_RF"
+      },
+      "fields": {
+        "Manufacturer": "Ebyte",
+        "MPN": "E07-900M10S"
+      }
+    },
+    {
+      "block": "04 E07 CC1101 SUB-GHZ",
+      "lib_id": "Device:C",
+      "reference": "C401",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 660.4,
+      "y": 165.1,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "04 E07 CC1101 SUB-GHZ",
+      "lib_id": "Device:C",
+      "reference": "C402",
+      "value": "4.7uF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 673.1,
+      "y": 165.1,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "04 E07 CC1101 SUB-GHZ",
+      "lib_id": "Device:R",
+      "reference": "R401",
+      "value": "22R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 685.8,
+      "y": 165.1,
+      "pins": {
+        "1": "SPI_SCK",
+        "2": "SUB_SCK"
+      },
+      "fields": {}
+    },
+    {
+      "block": "04 E07 CC1101 SUB-GHZ",
+      "lib_id": "Device:R",
+      "reference": "R402",
+      "value": "22R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 698.5,
+      "y": 165.1,
+      "pins": {
+        "1": "SPI_MOSI",
+        "2": "SUB_MOSI"
+      },
+      "fields": {}
+    },
+    {
+      "block": "04 E07 CC1101 SUB-GHZ",
+      "lib_id": "Device:R",
+      "reference": "R403",
+      "value": "22R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 711.2,
+      "y": 165.1,
+      "pins": {
+        "1": "SPI_MISO",
+        "2": "SUB_MISO"
+      },
+      "fields": {}
+    },
+    {
+      "block": "04 E07 CC1101 SUB-GHZ",
+      "lib_id": "Device:R",
+      "reference": "R404",
+      "value": "22R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 723.9,
+      "y": 165.1,
+      "pins": {
+        "1": "SUBGHZ_CS_N",
+        "2": "SUB_CS_N"
+      },
+      "fields": {}
+    },
+    {
+      "block": "04 E07 CC1101 SUB-GHZ",
+      "lib_id": "Device:R",
+      "reference": "R405",
+      "value": "0R ANT SELECT",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 736.6,
+      "y": 165.1,
+      "pins": {
+        "1": "SUBGHZ_RF",
+        "2": "SUBGHZ_ANT"
+      },
+      "fields": {}
+    },
+    {
+      "block": "04 E07 CC1101 SUB-GHZ",
+      "lib_id": "Connector:Conn_Coaxial",
+      "reference": "J6",
+      "value": "SUB-GHz ANT U.FL",
+      "footprint": "Connector_Coaxial:U.FL_Hirose_U.FL-R-SMT-1_Vertical",
+      "x": 698.5,
+      "y": 203.2,
+      "pins": {
+        "1": "SUBGHZ_ANT",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "RF_GPS:MAX-M10S",
+      "reference": "U4",
+      "value": "MAX-M10S-00B",
+      "footprint": "RF_GPS:ublox_MAX",
+      "x": 863.6,
+      "y": 101.6,
+      "pins": {
+        "1": "GND",
+        "2": "GNSS_RX_FROM_MODULE",
+        "3": "GNSS_TX_TO_MODULE",
+        "4": "GNSS_TIMEPULSE",
+        "5": null,
+        "6": "GNSS_BACKUP",
+        "7": "GNSS_3V3",
+        "8": "GNSS_3V3",
+        "9": "GNSS_RESET_N",
+        "10": "GND",
+        "11": "GNSS_RF",
+        "12": "GND",
+        "13": "GNSS_LNA_EN",
+        "14": "GNSS_VCC_RF",
+        "15": null,
+        "16": null,
+        "17": null,
+        "18": null
+      },
+      "fields": {
+        "Manufacturer": "u-blox",
+        "MPN": "MAX-M10S-00B",
+        "LCSC": "C4153167"
+      }
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Connector_Generic:Conn_01x06",
+      "reference": "U17",
+      "value": "TPS22919DCKR GNSS LOAD SWITCH",
+      "footprint": "Package_TO_SOT_SMD:SOT-363_SC-70-6",
+      "x": 812.8,
+      "y": 165.1,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND",
+        "3": "GNSS_POWER_EN",
+        "4": null,
+        "5": "GNSS_QOD",
+        "6": "GNSS_3V3"
+      },
+      "fields": {
+        "Manufacturer": "TI",
+        "MPN": "TPS22919DCKR"
+      }
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:R",
+      "reference": "R501",
+      "value": "100R QOD discharge",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 838.2,
+      "y": 165.1,
+      "pins": {
+        "1": "GNSS_QOD",
+        "2": "GNSS_3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:R",
+      "reference": "R502",
+      "value": "10k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 850.9,
+      "y": 165.1,
+      "pins": {
+        "1": "GNSS_RESET_N",
+        "2": "GNSS_3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:C",
+      "reference": "C501",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 863.6,
+      "y": 165.1,
+      "pins": {
+        "1": "GNSS_3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:C",
+      "reference": "C502",
+      "value": "10uF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 876.3,
+      "y": 165.1,
+      "pins": {
+        "1": "GNSS_3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:R",
+      "reference": "R503",
+      "value": "100R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 889.0,
+      "y": 165.1,
+      "pins": {
+        "1": "GNSS_3V3",
+        "2": "GNSS_BACKUP"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:C",
+      "reference": "C503",
+      "value": "100uF low-leak",
+      "footprint": "Capacitor_SMD:C_1210_3225Metric",
+      "x": 901.7,
+      "y": 165.1,
+      "pins": {
+        "1": "GNSS_BACKUP",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:R",
+      "reference": "R504",
+      "value": "0R RF",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 812.8,
+      "y": 203.2,
+      "pins": {
+        "1": "GNSS_RF",
+        "2": "GNSS_ANT_FEED"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:R",
+      "reference": "R505",
+      "value": "10R 0.25W",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 825.5,
+      "y": 203.2,
+      "pins": {
+        "1": "GNSS_VCC_RF",
+        "2": "GNSS_BIAS"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:L",
+      "reference": "L501",
+      "value": "27nH high-Q",
+      "footprint": "Inductor_SMD:L_0805_2012Metric",
+      "x": 838.2,
+      "y": 203.2,
+      "pins": {
+        "1": "GNSS_BIAS",
+        "2": "GNSS_ANT_FEED"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:C",
+      "reference": "C504",
+      "value": "10nF",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 850.9,
+      "y": 203.2,
+      "pins": {
+        "1": "GNSS_BIAS",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:D_TVS",
+      "reference": "D501",
+      "value": "Low-cap RF ESD",
+      "footprint": "Diode_SMD:D_SOD-523",
+      "x": 863.6,
+      "y": 203.2,
+      "pins": {
+        "1": "GND",
+        "2": "GNSS_ANT_FEED"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Connector:Conn_Coaxial",
+      "reference": "J3",
+      "value": "GNSS ANT U.FL",
+      "footprint": "Connector_Coaxial:U.FL_Hirose_U.FL-R-SMT-1_Vertical",
+      "x": 889.0,
+      "y": 203.2,
+      "pins": {
+        "1": "GNSS_ANT_FEED",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Connector:TestPoint",
+      "reference": "TP501",
+      "value": "GNSS RF TEST",
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "x": 914.4,
+      "y": 203.2,
+      "pins": {
+        "1": "GNSS_ANT_FEED"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Connector:TestPoint",
+      "reference": "TP502",
+      "value": "LNA ENABLE",
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "x": 939.8,
+      "y": 203.2,
+      "pins": {
+        "1": "GNSS_LNA_EN"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Connector:Micro_SD_Card_Det2",
+      "reference": "J2",
+      "value": "microSD",
+      "footprint": "Connector_Card:microSD_HC_Molex_104031-0811",
+      "x": 838.2,
+      "y": 266.7,
+      "pins": {
+        "1": "SD_DAT2",
+        "2": "SD_CS_DEV",
+        "3": "SD_MOSI",
+        "4": "+3V3",
+        "5": "SD_SCK",
+        "6": "GND",
+        "7": "SD_MISO",
+        "8": "SD_DAT1",
+        "9": "GND",
+        "10": "SD_DETECT_N",
+        "SH": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:R",
+      "reference": "R510",
+      "value": "22R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 876.3,
+      "y": 254.0,
+      "pins": {
+        "1": "SD_CS_N",
+        "2": "SD_CS_DEV"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:R",
+      "reference": "R511",
+      "value": "22R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 889.0,
+      "y": 254.0,
+      "pins": {
+        "1": "SPI_MOSI",
+        "2": "SD_MOSI"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:R",
+      "reference": "R512",
+      "value": "22R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 901.7,
+      "y": 254.0,
+      "pins": {
+        "1": "SPI_SCK",
+        "2": "SD_SCK"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:R",
+      "reference": "R513",
+      "value": "22R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 914.4,
+      "y": 254.0,
+      "pins": {
+        "1": "SPI_MISO",
+        "2": "SD_MISO"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:R",
+      "reference": "R514",
+      "value": "47k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 876.3,
+      "y": 279.4,
+      "pins": {
+        "1": "SD_DAT2",
+        "2": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:R",
+      "reference": "R515",
+      "value": "47k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 889.0,
+      "y": 279.4,
+      "pins": {
+        "1": "SD_CS_DEV",
+        "2": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:R",
+      "reference": "R516",
+      "value": "47k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 901.6999999999999,
+      "y": 279.4,
+      "pins": {
+        "1": "SD_MOSI",
+        "2": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:R",
+      "reference": "R517",
+      "value": "47k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 914.4,
+      "y": 279.4,
+      "pins": {
+        "1": "SD_MISO",
+        "2": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:R",
+      "reference": "R518",
+      "value": "47k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 927.0999999999999,
+      "y": 279.4,
+      "pins": {
+        "1": "SD_DAT1",
+        "2": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:R",
+      "reference": "R519",
+      "value": "10k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 939.8,
+      "y": 279.4,
+      "pins": {
+        "1": "SD_DETECT_N",
+        "2": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:C",
+      "reference": "C510",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 876.3,
+      "y": 304.8,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "05 GNSS / ANTENNA / MICROSD",
+      "lib_id": "Device:C",
+      "reference": "C511",
+      "value": "10uF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 889.0,
+      "y": 304.8,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Device:R",
+      "reference": "R601",
+      "value": "39R 1W pulse-rated",
+      "footprint": "Resistor_SMD:R_2512_6332Metric",
+      "x": 76.2,
+      "y": 393.7,
+      "pins": {
+        "1": "+5V_RAW",
+        "2": "IR_LED_A"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Device:LED",
+      "reference": "D1",
+      "value": "TSAL6200 940nm",
+      "footprint": "LED_THT:LED_D5.0mm",
+      "x": 101.6,
+      "y": 393.7,
+      "pins": {
+        "1": "IR_LED_K",
+        "2": "IR_LED_A"
+      },
+      "fields": {
+        "Manufacturer": "Vishay",
+        "MPN": "TSAL6200"
+      }
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Transistor_FET:AO3400A",
+      "reference": "Q1",
+      "value": "AO3400A IR DRIVER",
+      "footprint": "Package_TO_SOT_SMD:SOT-23",
+      "x": 127.0,
+      "y": 393.7,
+      "pins": {
+        "1": "IR_GATE",
+        "2": "GND",
+        "3": "IR_LED_K"
+      },
+      "fields": {
+        "Manufacturer": "AOS",
+        "MPN": "AO3400A",
+        "LCSC": "C20917"
+      }
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Device:R",
+      "reference": "R602",
+      "value": "100R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 152.4,
+      "y": 381.0,
+      "pins": {
+        "1": "IR_TX",
+        "2": "IR_GATE"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Device:R",
+      "reference": "R603",
+      "value": "100k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 152.4,
+      "y": 406.4,
+      "pins": {
+        "1": "IR_GATE",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Connector_Generic:Conn_01x04",
+      "reference": "U13",
+      "value": "TSOP75338WTR 38kHz",
+      "footprint": "PocketLab_Custom:TSOP75338WTR_HeimdallW_SideView",
+      "x": 203.2,
+      "y": 393.7,
+      "pins": {
+        "1": "GND",
+        "2": "IR_RX_VS",
+        "3": "IR_RX",
+        "4": "GND"
+      },
+      "fields": {
+        "Manufacturer": "Vishay",
+        "MPN": "TSOP75338WTR"
+      }
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Device:R",
+      "reference": "R604",
+      "value": "100R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 228.6,
+      "y": 381.0,
+      "pins": {
+        "1": "+3V3",
+        "2": "IR_RX_VS"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Device:C",
+      "reference": "C601",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 228.6,
+      "y": 393.7,
+      "pins": {
+        "1": "IR_RX_VS",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Device:C",
+      "reference": "C602",
+      "value": "4.7uF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 228.6,
+      "y": 406.4,
+      "pins": {
+        "1": "IR_RX_VS",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "LED:WS2812B",
+      "reference": "LED1",
+      "value": "WS2812B-MINI-V3",
+      "footprint": "LED_SMD:LED_WS2812B-Mini_PLCC4_3.5x3.5mm",
+      "x": 76.2,
+      "y": 457.2,
+      "pins": {
+        "1": "+3V3",
+        "2": "RGB_D1_2",
+        "3": "GND",
+        "4": "RGB_DIN1"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Device:C",
+      "reference": "C603",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 76.2,
+      "y": 482.6,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "LED:WS2812B",
+      "reference": "LED2",
+      "value": "WS2812B-MINI-V3",
+      "footprint": "LED_SMD:LED_WS2812B-Mini_PLCC4_3.5x3.5mm",
+      "x": 114.3,
+      "y": 457.2,
+      "pins": {
+        "1": "+3V3",
+        "2": "RGB_D2_3",
+        "3": "GND",
+        "4": "RGB_D1_2"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Device:C",
+      "reference": "C604",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 114.3,
+      "y": 482.6,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "LED:WS2812B",
+      "reference": "LED3",
+      "value": "WS2812B-MINI-V3",
+      "footprint": "LED_SMD:LED_WS2812B-Mini_PLCC4_3.5x3.5mm",
+      "x": 152.4,
+      "y": 457.2,
+      "pins": {
+        "1": "+3V3",
+        "2": "RGB_D3_4",
+        "3": "GND",
+        "4": "RGB_D2_3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Device:C",
+      "reference": "C605",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 152.4,
+      "y": 482.6,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "LED:WS2812B",
+      "reference": "LED4",
+      "value": "WS2812B-MINI-V3",
+      "footprint": "LED_SMD:LED_WS2812B-Mini_PLCC4_3.5x3.5mm",
+      "x": 190.5,
+      "y": 457.2,
+      "pins": {
+        "1": "+3V3",
+        "2": "RGB_DOUT4",
+        "3": "GND",
+        "4": "RGB_D3_4"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Device:C",
+      "reference": "C606",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 190.5,
+      "y": 482.6,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Device:R",
+      "reference": "R605",
+      "value": "330R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 63.5,
+      "y": 457.2,
+      "pins": {
+        "1": "RGB_DATA",
+        "2": "RGB_DIN1"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Connector:TestPoint",
+      "reference": "TP601",
+      "value": "RGB DOUT",
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "x": 215.9,
+      "y": 457.2,
+      "pins": {
+        "1": "RGB_DOUT4"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Device:Buzzer",
+      "reference": "BZ1",
+      "value": "PKMCS0909E",
+      "footprint": "Buzzer_Beeper:Buzzer_Murata_PKMCS0909E",
+      "x": 76.2,
+      "y": 533.4,
+      "pins": {
+        "1": "+3V3",
+        "2": "BUZZER_NEG"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Transistor_FET:AO3400A",
+      "reference": "Q4",
+      "value": "AO3400A BUZZER",
+      "footprint": "Package_TO_SOT_SMD:SOT-23",
+      "x": 101.6,
+      "y": 533.4,
+      "pins": {
+        "1": "BUZZER_GATE",
+        "2": "GND",
+        "3": "BUZZER_NEG"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Device:R",
+      "reference": "R606",
+      "value": "100R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 127.0,
+      "y": 520.7,
+      "pins": {
+        "1": "BUZZER_PWM",
+        "2": "BUZZER_GATE"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Device:R",
+      "reference": "R607",
+      "value": "100k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 127.0,
+      "y": 546.1,
+      "pins": {
+        "1": "BUZZER_GATE",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Switch:SW_Push",
+      "reference": "SW3",
+      "value": "USER A",
+      "footprint": "Button_Switch_SMD:SW_SPST_TL3305A",
+      "x": 177.8,
+      "y": 533.4,
+      "pins": {
+        "1": "USER_BUTTON_A_N",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Switch:SW_Push",
+      "reference": "SW4",
+      "value": "USER B",
+      "footprint": "Button_Switch_SMD:SW_SPST_TL3305A",
+      "x": 203.2,
+      "y": 533.4,
+      "pins": {
+        "1": "USER_BUTTON_B_N",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Device:R",
+      "reference": "R608",
+      "value": "10k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 177.8,
+      "y": 558.8,
+      "pins": {
+        "1": "USER_BUTTON_A_N",
+        "2": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS / BUZZER",
+      "lib_id": "Device:R",
+      "reference": "R609",
+      "value": "10k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 203.2,
+      "y": 558.8,
+      "pins": {
+        "1": "USER_BUTTON_B_N",
+        "2": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Interface_Expansion:TCA9535DBR",
+      "reference": "U9",
+      "value": "TCA9535PWR",
+      "footprint": "Package_SO:TSSOP-24_4.4x7.8mm_P0.65mm",
+      "x": 355.6,
+      "y": 431.8,
+      "pins": {
+        "1": "IOEXP_INT_N",
+        "2": "GND",
+        "3": "GND",
+        "4": "SD_DETECT_N",
+        "5": "CHARGER_CHG_N",
+        "6": "CHARGER_PGOOD_N",
+        "7": "AUX5_FAULT_N",
+        "8": "FG_ALERT_N",
+        "9": "BMI_INT1",
+        "10": "BMI_INT2",
+        "11": "BMP_INT",
+        "12": "GND",
+        "13": "EX0",
+        "14": "EX1",
+        "15": "EX2",
+        "16": "EX3",
+        "17": "EX4",
+        "18": "EX5",
+        "19": "EX6",
+        "20": "EX7",
+        "21": "GND",
+        "22": "I2C_SCL",
+        "23": "I2C_SDA",
+        "24": "+3V3"
+      },
+      "fields": {
+        "Manufacturer": "TI",
+        "MPN": "TCA9535PWR",
+        "LCSC": "C130204"
+      }
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:R",
+      "reference": "R701",
+      "value": "4.7k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 317.5,
+      "y": 495.3,
+      "pins": {
+        "1": "I2C_SDA",
+        "2": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:R",
+      "reference": "R702",
+      "value": "4.7k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 330.2,
+      "y": 495.3,
+      "pins": {
+        "1": "I2C_SCL",
+        "2": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:R",
+      "reference": "R703",
+      "value": "10k",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 342.9,
+      "y": 495.3,
+      "pins": {
+        "1": "IOEXP_INT_N",
+        "2": "+3V3"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:C",
+      "reference": "C701",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 355.6,
+      "y": 495.3,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Interface_Expansion:TCA9534",
+      "reference": "U18",
+      "value": "TCA9534PWR INTERNAL CONTROL",
+      "footprint": "Package_SO:TSSOP-16_4.4x5mm_P0.65mm",
+      "x": 647.7,
+      "y": 431.8,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND",
+        "3": "GND",
+        "4": "BQ_EN1",
+        "5": "CHG_DISABLE",
+        "6": "AUX5_EN",
+        "7": "NFC_RESET_N",
+        "8": "GND",
+        "9": "GNSS_POWER_EN",
+        "10": "BOOST5_EN",
+        "11": "USER_BUTTON_A_N",
+        "12": "USER_BUTTON_B_N",
+        "13": "IOEXP_INT_N",
+        "14": "I2C_SCL",
+        "15": "I2C_SDA",
+        "16": "+3V3"
+      },
+      "fields": {
+        "Manufacturer": "TI",
+        "MPN": "TCA9534PWR"
+      }
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:C",
+      "reference": "C707",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 647.7,
+      "y": 482.6,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Connector_Generic:Conn_02x07_Odd_Even",
+      "reference": "U10",
+      "value": "BMI270 (FULL OPTION)",
+      "footprint": "Package_LGA:Bosch_LGA-14_3x2.5mm_P0.5mm",
+      "x": 431.8,
+      "y": 431.8,
+      "pins": {
+        "1": "GND",
+        "2": null,
+        "3": null,
+        "4": "BMI_INT1",
+        "5": "+3V3",
+        "6": "GND",
+        "7": "GND",
+        "8": "+3V3",
+        "9": "BMI_INT2",
+        "10": null,
+        "11": null,
+        "12": "+3V3",
+        "13": "I2C_SCL",
+        "14": "I2C_SDA"
+      },
+      "fields": {
+        "Manufacturer": "Bosch",
+        "MPN": "BMI270",
+        "LCSC": "C2836813"
+      }
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:C",
+      "reference": "C702",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 419.1,
+      "y": 482.6,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:C",
+      "reference": "C703",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 431.8,
+      "y": 482.6,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Connector:TestPoint",
+      "reference": "TP701",
+      "value": "BMI INT1",
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "x": 444.5,
+      "y": 482.6,
+      "pins": {
+        "1": "BMI_INT1"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Connector:TestPoint",
+      "reference": "TP703",
+      "value": "BMI INT2",
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "x": 457.2,
+      "y": 482.6,
+      "pins": {
+        "1": "BMI_INT2"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Connector_Generic:Conn_02x05_Odd_Even",
+      "reference": "U11",
+      "value": "BMP390 (FULL OPTION)",
+      "footprint": "PocketLab_Custom:BMP390_LGA-10_2x2mm",
+      "x": 495.3,
+      "y": 431.8,
+      "pins": {
+        "1": "+3V3",
+        "2": "I2C_SCL",
+        "3": "GND",
+        "4": "I2C_SDA",
+        "5": "GND",
+        "6": "+3V3",
+        "7": "BMP_INT",
+        "8": "GND",
+        "9": "GND",
+        "10": "+3V3"
+      },
+      "fields": {
+        "Manufacturer": "Bosch",
+        "MPN": "BMP390",
+        "LCSC": "C5124834"
+      }
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:C",
+      "reference": "C704",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 482.6,
+      "y": 482.6,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:C",
+      "reference": "C705",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "x": 495.3,
+      "y": 482.6,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Connector:TestPoint",
+      "reference": "TP702",
+      "value": "BMP INT",
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "x": 508.0,
+      "y": 482.6,
+      "pins": {
+        "1": "BMP_INT"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Timer_RTC:PCF8563T",
+      "reference": "U12",
+      "value": "PCF8563T",
+      "footprint": "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
+      "x": 571.5,
+      "y": 431.8,
+      "pins": {
+        "1": "RTC_OSCI",
+        "2": "RTC_OSCO",
+        "3": null,
+        "4": "GND",
+        "5": "I2C_SDA",
+        "6": "I2C_SCL",
+        "7": null,
+        "8": "+3V3"
+      },
+      "fields": {
+        "Manufacturer": "NXP",
+        "MPN": "PCF8563T/5,518",
+        "LCSC": "C7440"
+      }
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:Crystal",
+      "reference": "Y701",
+      "value": "32.768kHz 12.5pF",
+      "footprint": "Crystal:Crystal_SMD_3215-2Pin_3.2x1.5mm",
+      "x": 609.6,
+      "y": 431.8,
+      "pins": {
+        "1": "RTC_OSCI",
+        "2": "RTC_OSCO"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:C",
+      "reference": "C706",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "x": 571.5,
+      "y": 482.6,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:R",
+      "reference": "R710",
+      "value": "100R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 317.5,
+      "y": 546.1,
+      "pins": {
+        "1": "GPIO1_MCU",
+        "2": "GPIO1"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:R",
+      "reference": "R711",
+      "value": "100R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 342.9,
+      "y": 546.1,
+      "pins": {
+        "1": "GPIO2_MCU",
+        "2": "GPIO2"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:R",
+      "reference": "R712",
+      "value": "100R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 368.3,
+      "y": 546.1,
+      "pins": {
+        "1": "GPIO4_MCU",
+        "2": "GPIO4"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:R",
+      "reference": "R713",
+      "value": "100R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 393.7,
+      "y": 546.1,
+      "pins": {
+        "1": "GPIO8_MCU",
+        "2": "GPIO8"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:R",
+      "reference": "R714",
+      "value": "100R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 419.1,
+      "y": 546.1,
+      "pins": {
+        "1": "GPIO9_MCU",
+        "2": "GPIO9"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:R",
+      "reference": "R715",
+      "value": "100R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 444.5,
+      "y": 546.1,
+      "pins": {
+        "1": "GPIO40_MCU",
+        "2": "GPIO40"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:R",
+      "reference": "R716",
+      "value": "100R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 317.5,
+      "y": 571.5,
+      "pins": {
+        "1": "GPIO41_MCU",
+        "2": "GPIO41"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:R",
+      "reference": "R717",
+      "value": "100R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 342.9,
+      "y": 571.5,
+      "pins": {
+        "1": "GPIO42_MCU",
+        "2": "GPIO42"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:R",
+      "reference": "R718",
+      "value": "100R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 368.3,
+      "y": 571.5,
+      "pins": {
+        "1": "GPIO43_MCU",
+        "2": "GPIO43"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:R",
+      "reference": "R719",
+      "value": "100R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 393.7,
+      "y": 571.5,
+      "pins": {
+        "1": "GPIO44_MCU",
+        "2": "GPIO44"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:R",
+      "reference": "R720",
+      "value": "100R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 419.1,
+      "y": 571.5,
+      "pins": {
+        "1": "GPIO47_MCU",
+        "2": "GPIO47"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Device:R",
+      "reference": "R721",
+      "value": "100R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 444.5,
+      "y": 571.5,
+      "pins": {
+        "1": "GPIO48_MCU",
+        "2": "GPIO48"
+      },
+      "fields": {}
+    },
+    {
+      "block": "07 SENSORS / RTC / IO EXPANSION",
+      "lib_id": "Connector_Generic:Conn_02x15_Odd_Even",
+      "reference": "J5",
+      "value": "2x15 2.54mm DUPONT EXPANSION",
+      "footprint": "Connector_PinHeader_2.54mm:PinHeader_2x15_P2.54mm_Vertical",
+      "x": 736.6,
+      "y": 457.2,
+      "pins": {
+        "1": "+3V3",
+        "2": "GND",
+        "3": "GPIO1",
+        "4": "GPIO2",
+        "5": "GPIO4",
+        "6": "GPIO8",
+        "7": "GPIO9",
+        "8": "GPIO40",
+        "9": "GPIO41",
+        "10": "GPIO42",
+        "11": "GPIO43",
+        "12": "GPIO44",
+        "13": "GPIO47",
+        "14": "GPIO48",
+        "15": "EX0",
+        "16": "EX1",
+        "17": "EX2",
+        "18": "EX3",
+        "19": "EX4",
+        "20": "EX5",
+        "21": "EX6",
+        "22": "EX7",
+        "23": "I2C_SDA",
+        "24": "I2C_SCL",
+        "25": "SPI_SCK",
+        "26": "SPI_MOSI",
+        "27": "SPI_MISO",
+        "28": "GND",
+        "29": "+5V_AUX",
+        "30": "GND"
+      },
+      "fields": {}
+    }
+  ],
+  "net_usage": {
+    "GND": 160,
+    "VBUS_USB": 5,
+    "USB_CC1": 3,
+    "USB_DP_CONN": 4,
+    "USB_DM_CONN": 4,
+    "USB_CC2": 3,
+    "USB_SHIELD": 3,
+    "VBUS_FUSED": 7,
+    "CELL_POS": 9,
+    "CELL_NEG": 9,
+    "BAT_COUT": 3,
+    "BAT_DOUT": 3,
+    "BAT_SENSE": 3,
+    "BAT_VMINUS": 2,
+    "BAT_FET_MID": 3,
+    "CHG_TS": 2,
+    "CHG_DISABLE": 3,
+    "BQ_EN2": 2,
+    "BQ_EN1": 3,
+    "CHARGER_PGOOD_N": 3,
+    "CHARGER_CHG_N": 3,
+    "VSYS": 14,
+    "CHG_ILIM": 2,
+    "CHG_TMR": 2,
+    "CHG_ITERM": 2,
+    "CHG_ISET": 2,
+    "+3V3": 70,
+    "U6_PS_SYNC": 2,
+    "PWR_3V3_PG": 2,
+    "U6_VAUX": 2,
+    "U6_FB": 3,
+    "U6_L2": 2,
+    "U6_L1": 2,
+    "U7_FB": 4,
+    "BOOST5_EN": 3,
+    "U7_SW": 2,
+    "+5V_RAW": 9,
+    "AUX5_EN": 3,
+    "AUX5_FAULT_N": 3,
+    "U15_ILIM": 2,
+    "+5V_AUX": 5,
+    "FG_ALERT_N": 3,
+    "I2C_SCL": 10,
+    "I2C_SDA": 10,
+    "NFC_AVDD": 4,
+    "GNSS_3V3": 9,
+    "GNSS_BACKUP": 4,
+    "ESP_EN": 4,
+    "GPIO4_MCU": 2,
+    "NFC_IRQ_N": 2,
+    "SUBGHZ_GDO0": 2,
+    "SUBGHZ_GDO2": 2,
+    "SD_CS_N": 2,
+    "GNSS_TIMEPULSE": 2,
+    "GPIO8_MCU": 2,
+    "USB_D_N": 2,
+    "USB_D_P": 2,
+    "JTAG_STRAP_TP": 2,
+    "STRAP_BOOT_TP": 2,
+    "GPIO9_MCU": 2,
+    "RGB_DATA": 2,
+    "SPI_MOSI": 4,
+    "SPI_SCK": 4,
+    "SPI_MISO": 4,
+    "SUBGHZ_CS_N": 2,
+    "GNSS_RX_FROM_MODULE": 2,
+    "GPIO47_MCU": 2,
+    "GPIO48_MCU": 2,
+    "STRAP_VDD_SPI_TP": 2,
+    "BOOT_N": 3,
+    "GNSS_TX_TO_MODULE": 2,
+    "IR_TX": 2,
+    "IR_RX": 2,
+    "BUZZER_PWM": 2,
+    "IOEXP_INT_N": 4,
+    "GPIO40_MCU": 2,
+    "GPIO41_MCU": 2,
+    "GPIO42_MCU": 2,
+    "GPIO44_MCU": 2,
+    "GPIO43_MCU": 2,
+    "GPIO2_MCU": 2,
+    "GPIO1_MCU": 2,
+    "NFC_LOADMOD": 2,
+    "NFC_TX1": 2,
+    "NFC_TX2": 2,
+    "NFC_VMID": 2,
+    "NFC_RX": 2,
+    "NFC_OSCIN": 3,
+    "NFC_OSCOUT": 3,
+    "NFC_I0": 2,
+    "NFC_SVDD": 2,
+    "NFC_RESET_N": 3,
+    "NFC_DVDD": 3,
+    "NFC_TX1_F": 3,
+    "NFC_TX2_F": 3,
+    "NFC_LOOP_A": 5,
+    "NFC_LOOP_B": 4,
+    "SUB_MISO": 2,
+    "SUB_MOSI": 2,
+    "SUB_SCK": 2,
+    "SUB_CS_N": 2,
+    "SUBGHZ_RF": 2,
+    "SUBGHZ_ANT": 2,
+    "GNSS_RESET_N": 2,
+    "GNSS_RF": 2,
+    "GNSS_LNA_EN": 2,
+    "GNSS_VCC_RF": 2,
+    "GNSS_POWER_EN": 2,
+    "GNSS_QOD": 2,
+    "GNSS_ANT_FEED": 5,
+    "GNSS_BIAS": 3,
+    "SD_DAT2": 2,
+    "SD_CS_DEV": 3,
+    "SD_MOSI": 3,
+    "SD_SCK": 2,
+    "SD_MISO": 3,
+    "SD_DAT1": 2,
+    "SD_DETECT_N": 3,
+    "IR_LED_A": 2,
+    "IR_LED_K": 2,
+    "IR_GATE": 3,
+    "IR_RX_VS": 4,
+    "RGB_D1_2": 2,
+    "RGB_DIN1": 2,
+    "RGB_D2_3": 2,
+    "RGB_D3_4": 2,
+    "RGB_DOUT4": 2,
+    "BUZZER_NEG": 2,
+    "BUZZER_GATE": 3,
+    "USER_BUTTON_A_N": 3,
+    "USER_BUTTON_B_N": 3,
+    "BMI_INT1": 3,
+    "BMI_INT2": 3,
+    "BMP_INT": 3,
+    "EX0": 2,
+    "EX1": 2,
+    "EX2": 2,
+    "EX3": 2,
+    "EX4": 2,
+    "EX5": 2,
+    "EX6": 2,
+    "EX7": 2,
+    "RTC_OSCI": 2,
+    "RTC_OSCO": 2,
+    "GPIO1": 2,
+    "GPIO2": 2,
+    "GPIO4": 2,
+    "GPIO8": 2,
+    "GPIO9": 2,
+    "GPIO40": 2,
+    "GPIO41": 2,
+    "GPIO42": 2,
+    "GPIO43": 2,
+    "GPIO44": 2,
+    "GPIO47": 2,
+    "GPIO48": 2
+  }
+}

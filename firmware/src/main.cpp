@@ -1,40 +1,51 @@
 #include <Arduino.h>
 
-#include "board_pins.h"
-
-using namespace pocketlab;
+#include "firmware_config.h"
+#include "gnss_trip_logger.h"
+#include "hardware_manager.h"
+#include "storage_manager.h"
+#include "web_portal.h"
 
 namespace {
 
-void setSafeOutput(uint8_t pin, uint8_t level) {
-  digitalWrite(pin, level);
-  pinMode(pin, OUTPUT);
-}
+pocketlab::HardwareManager hardware;
+pocketlab::StorageManager storage;
+pocketlab::GnssTripLogger gnss(storage);
+pocketlab::WebPortal web(hardware, storage, gnss);
 
 }  // namespace
 
 void setup() {
   Serial.begin(115200);
+  const uint32_t serialWaitStarted = millis();
+  while (!Serial && millis() - serialWaitStarted < 1500) delay(10);
 
-  // Keep radios and high-current outputs inactive during early bring-up.
-  setSafeOutput(pins::SUBGHZ_CS_N, HIGH);
-  setSafeOutput(pins::SD_CS_N, HIGH);
-  setSafeOutput(pins::IR_TX, LOW);
-  setSafeOutput(pins::BUZZER_PWM, LOW);
-  setSafeOutput(pins::RGB_DATA, LOW);
+  Serial.println();
+  Serial.printf("%s firmware %s (HW rev %d)\n", pocketlab::config::FIRMWARE_NAME,
+                pocketlab::config::FIRMWARE_VERSION, POCKETLAB_CARD_HW_REV);
+  Serial.println(F("Initializing outputs in safe state..."));
 
-  pinMode(pins::NFC_IRQ_N, INPUT_PULLUP);
-  pinMode(pins::SUBGHZ_GDO0, INPUT);
-  pinMode(pins::SUBGHZ_GDO2, INPUT);
-  pinMode(pins::GNSS_TIMEPULSE, INPUT);
-  pinMode(pins::IR_RX, INPUT_PULLUP);
-  pinMode(pins::IOEXP_INT_N, INPUT_PULLUP);
+  hardware.begin();
+  const bool sdMounted = storage.begin();
+  gnss.begin();
+  const bool webStarted = web.begin();
 
-  Serial.println("PocketLab Card V1 firmware scaffold");
-  Serial.printf("Direct expansion GPIO count: %u\n",
-                static_cast<unsigned>(sizeof(pins::DIRECT_EXPANSION)));
+  Serial.printf("microSD: %s\n", sdMounted ? "mounted" : "not detected");
+  Serial.printf("Web portal: %s\n", webStarted ? "ready" : "failed");
+  if (webStarted) {
+    Serial.printf("Wi-Fi SSID: %s\n", web.ssid().c_str());
+    Serial.printf("Wi-Fi password: %s\n", web.password().c_str());
+    Serial.println(F("Open http://192.168.4.1/ after connecting."));
+  }
+  Serial.printf("TX policy: Sub-GHz=%s IR=%s GPIO-output=%s\n",
+                pocketlab::config::SUBGHZ_TX_COMPILED ? "compiled" : "locked",
+                pocketlab::config::IR_TX_COMPILED ? "compiled" : "locked",
+                pocketlab::config::GPIO_OUTPUT_COMPILED ? "compiled" : "locked");
 }
 
 void loop() {
-  delay(1000);
+  hardware.poll();
+  gnss.poll();
+  web.poll();
+  delay(1);
 }
