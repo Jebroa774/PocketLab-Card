@@ -335,6 +335,7 @@ void WebPortal::handleTripStart() {
     sendError(503, F("gnss_power_enable_failed"));
     return;
   }
+  gnss_.setPowered(true);
   String error;
   if (!gnss_.startTrip(error)) {
     String payload = F("{\"ok\":false,\"error\":\"");
@@ -360,10 +361,14 @@ void WebPortal::handleGnssPower() {
     sendError(409, F("stop_trip_before_gnss_power_off"));
     return;
   }
+  // On shutdown the ESP32 UART is made high-impedance before GNSS_3V3 is
+  // removed.  On startup the load switch is enabled before UART TX begins.
+  if (!enabled) gnss_.setPowered(false);
   if (!hardware_.setGnssPower(enabled)) {
     sendError(503, F("control_expander_unavailable"));
     return;
   }
+  if (enabled) gnss_.setPowered(true);
   sendJson(200, F("{\"ok\":true,\"message\":\"gnss_power_changed\"}"));
 }
 

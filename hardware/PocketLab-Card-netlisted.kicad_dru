@@ -1,0 +1,70 @@
+(version 1)
+
+# L2 is the continuous ground plane and L3 is the power plane.  Signal tracks
+# on either inner layer would break the intended return-current geometry.
+(rule "Inner layers are planes only"
+    (layer inner)
+    (constraint disallow track))
+
+# These values are minimum escape widths, not proof of current capacity.  The
+# battery, VSYS and converter paths still require short pours, several vias
+# where a layer transition is unavoidable, and prototype thermal validation.
+(rule "Power rails use wide outer-layer copper"
+    (layer outer)
+    (constraint track_width (min 0.50mm) (opt 0.80mm))
+    (condition "A.NetName == 'VBUS_USB' || A.NetName == 'VBUS_FUSED' || A.NetName == 'CELL_POS' || A.NetName == 'CELL_NEG' || A.NetName == 'BAT_FET_MID' || A.NetName == 'VSYS' || A.NetName == '+3V3' || A.NetName == '+5V_RAW' || A.NetName == '+5V_AUX'"))
+
+(rule "Converter switch nodes stay wide"
+    (layer outer)
+    (constraint track_width (min 0.60mm) (opt 0.80mm))
+    (condition "A.NetName == 'U6_L1' || A.NetName == 'U6_L2' || A.NetName == 'U7_SW'"))
+
+# Preliminary geometry for JLC04161H-7628.  Recalculate against the exact
+# ordered stack-up before fabrication; changing the stack-up requires changing
+# this rule and re-running DRC.
+(rule "GNSS 50 ohm feed width"
+    (layer outer)
+    (constraint track_width (min 0.36mm) (max 0.36mm) (opt 0.36mm))
+    (condition "A.NetName == 'GNSS_ANT_FEED'"))
+
+(rule "GNSS feed has no vias"
+    (constraint disallow via)
+    (condition "A.NetName == 'GNSS_ANT_FEED'"))
+
+# Both resistor-separated USB sections use KiCad's _P/_N naming convention so
+# the pair rules apply on the connector and MCU sides.
+(rule "USB full-speed differential geometry"
+    (layer outer)
+    (constraint track_width (min 0.20mm) (max 0.20mm) (opt 0.20mm))
+    (constraint diff_pair_gap (min 0.18mm) (max 0.25mm) (opt 0.20mm))
+    (constraint diff_pair_uncoupled (max 2.5mm))
+    (condition "A.inDiffPair('USB*')"))
+
+(rule "USB pair has no vias"
+    (constraint disallow via)
+    (condition "A.NetName == 'USB_CONN_P' || A.NetName == 'USB_CONN_N' || A.NetName == 'USB_D_P' || A.NetName == 'USB_D_N'"))
+
+# Keep every external PN532 matching connection on the component/loop side.
+# The only NFC layer transition is the crossover embedded inside AE1 itself.
+(rule "NFC matching route width"
+    (layer outer)
+    (constraint track_width (min 0.30mm) (max 0.50mm) (opt 0.40mm))
+    (condition "A.NetName == 'NFC_TX1' || A.NetName == 'NFC_TX2' || A.NetName == 'NFC_TX1_F' || A.NetName == 'NFC_TX2_F' || A.NetName == 'NFC_LOOP_A' || A.NetName == 'NFC_LOOP_B'"))
+
+(rule "NFC matching has no routing vias"
+    (constraint disallow via)
+    (condition "A.NetName == 'NFC_TX1' || A.NetName == 'NFC_TX2' || A.NetName == 'NFC_TX1_F' || A.NetName == 'NFC_TX2_F' || A.NetName == 'NFC_LOOP_A' || A.NetName == 'NFC_LOOP_B'"))
+
+(rule "PN532 crystal nets stay short"
+    (constraint length (max 15mm))
+    (condition "A.NetName == 'NFC_OSCIN' || A.NetName == 'NFC_OSCOUT'"))
+
+(rule "RTC crystal nets stay short"
+    (constraint length (max 10mm))
+    (condition "A.NetName == 'RTC_OSCI' || A.NetName == 'RTC_OSCO'"))
+
+# A schematic DNP must never regain paste just because a footprint flag was
+# missed during synchronization.
+(rule "No paste on board-marked DNP footprints"
+    (constraint solder_paste_abs_margin (opt -50mm))
+    (condition "A.Do_not_Populate"))

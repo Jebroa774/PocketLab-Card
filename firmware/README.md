@@ -15,8 +15,9 @@ Arduino-ESP32 3.x and PlatformIO.
 - safe boot states for CC1101, microSD, IR, buzzer, RGB and all exposed GPIOs
 - read-only CC1101 identity probe, PN532 I2C presence probe, TCA9535 status
   inputs and TCA9534 control/button status
-- GNSS power control through the dedicated TCA9534 control expander and
-  explicit conflict checks around an active trip
+- GNSS power control through the dedicated TCA9534 control expander, explicit
+  conflict checks around an active trip, and UART high-impedance sequencing so
+  an unpowered MAX-M10S is not driven through GPIO35
 
 The implementation is intentionally a bring-up baseline. It does not yet
 contain PN532 transactions, CC1101 receive/decoding, IR decoding, sensor
@@ -112,8 +113,11 @@ logged at most once per second and flushed every ten points or five seconds.
 - safe U18 boot latch: `BQ_EN1=0` (USB100 with EN2 tied low),
   `CHG_DISABLE=0`, AUX 5 V/GNSS/5 V boost off and PN532 held in reset until
   the expander is configured
+- the current firmware deliberately leaves `BQ_EN1=0`; it does not claim
+  USB500 without a separately audited source-current/USB-enumeration policy
 - PN532 I2C address `0x24`
-- MAX-M10S NMEA UART at 9600 baud
+- MAX-M10S NMEA UART at 9600 baud; UART starts only after `GNSS_POWER_EN` and
+  is ended/high-impedance before that rail is switched off
 - CC1101 identity (`PARTNUM=0x00`, nonzero/non-`0xFF` `VERSION`)
 - shared SPI operation with both chip-select idle levels high
 

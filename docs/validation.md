@@ -6,10 +6,11 @@
   8 MB flash and 2 MB PSRAM.
 - 12 direct free GPIOs remain: 1, 2, 4, 8, 9, 40, 41, 42, 43, 44, 47, 48.
 - No duplicate ESP32 pin allocations were found.
-- TCA9535 P10-P17 provide eight additional low-speed digital I/Os.
-- J_EXT contains 30 positions at 2.54 mm pitch and its documented pin count balances.
-- E07-900M10S and E07-400M10S share the selected footprint but are different
-  populated radio variants and require the matching external antenna.
+- U9/TCA9535 P10-P17 provide eight additional low-speed digital I/Os through
+  220-ohm series resistors; U18/TCA9534 handles the internal control outputs.
+- J5 contains 30 positions at 2.54 mm pitch and its documented pin count balances.
+- U3 is the E07-900M10S IPEX 868 MHz variant. Its integrated IPEX connector is
+  the only Sub-GHz antenna path, module pin 21 is NC, and no board J6 is fitted.
 - 5 V auxiliary output is switchable and requires a 500 mA hardware current limit.
 
 ## 2026-08-09 assembly-oriented revision
@@ -23,49 +24,65 @@
 - TCA9535 QFN was replaced with TCA9535PWR in TSSOP-24.
 - RV-3028-C7 was replaced with PCF8563T in SOIC-8.
 - BMI270 and BMP390 are optional because JLCPCB lists them as Standard-only.
-- All initial production SMT is constrained to the top side. Headers, 5 mm IR
-  LED and optional radio module are hand-installed after PCBA.
+- Top-only SMT was an early economy target. The current dense placement builder
+  deliberately uses both PCB sides; final side allocation, assembler class and
+  cost remain subject to DFM review. Headers and the 5 mm IR LED remain
+  post-assembly hand-fit parts.
 
-## Firmware scaffold
+## Firmware checkpoint
 
 - Tool: PlatformIO Core 6.1.19
 - Platform: Espressif 32
 - Framework: Arduino-ESP32 3.3.8
 - Target: ESP32-S3-DevKitC-1-N8R2, 8 MB flash, 2 MB quad PSRAM
 - Result after N8R2 pin remap: successful clean build
-- Current scaffold size: 22,172 bytes RAM and 321,570 bytes flash
+- Current full firmware image: 1,127,376-byte `firmware.bin` (2026-08-09 build)
 
-## KiCad scaffold checks
+## 2026-08-09 complete schematic checkpoint
 
 - Tool: KiCad CLI 10.0.5
-- Root schematic loads all seven linked hierarchical sheet files.
-- Scaffold ERC: 0 errors and 0 warnings.
-- Credit-card Edge.Cuts outline DRC: 0 errors, 0 warnings and 0 open items.
-- These results prove that the hierarchy and mechanical files are valid and
-  that the outline closes. Functional sheets are still capture targets, so
-  the results do not validate any electrical circuit yet.
+- Generated schematic: 239 symbols, 232 assigned footprints and 168 named nets.
+- Current schematic ERC: 0 errors and 0 warnings.
+- PN532 pin 39 DVDD is the internal-LDO output and directly feeds AVDD/TVDD;
+  each supply has local decoupling. RX uses the implemented 2.7-kohm loop tap,
+  1-nF AC coupling and 1-kohm VMID bias branch.
+- AE1 is the project-local 35 x 27 mm, four-turn, 0.50/0.50 mm prototype loop.
+  Its footprint reserves a 36 x 29 mm keep-out on all copper layers.
+- GNSS V_BCKP is NC. The passive U.FL path is the default; R505/L501/C504 are
+  DNP active-antenna bias options, and R507/R508 are fixed 1-kohm UART limits.
+- microSD has C512 47-uF local bulk capacitance and U19/SRV05-4 signal ESD.
+- J7 and SJ1 implement the optional external 10-kohm battery NTC connection.
+- Direct GPIOs, expander GPIOs and exposed I2C/SPI buses all have populated
+  series-resistor stages. The one shared I2C pull-up pair is 3.3 kohm.
+- TP105-TP110 expose VBUS_USB, VBUS_FUSED, VSYS, +3V3, +5V_RAW and +5V_AUX;
+  TP101-TP104 expose the protected battery-chain nodes and GND.
+- A clean ERC validates connectivity rules, not component suitability, RF
+  behavior, layout, thermal performance or manufacturability.
 
-## 2026-08-09 physical placement draft
+## PCB status
 
-- The main PCB contains 21 real footprints and round-trips through KiCad 10.0.5.
-- A high-quality top-side 3D render completed successfully.
-- Only one courtyard overlap remains: the conservative ESP32-S3 antenna
-  clearance intersects the nearby GNSS U.FL footprint. This is a placement risk
-  to resolve, not an accepted production waiver.
-- The current DRC output is not a production result: without a schematic
-  netlist, routing or final rules it reports expected footprint-local, edge
-  connector, silkscreen and drill-rule findings.
-- TPS63070, BMP390, the IR receiver and the tuned NFC loop remain labeled
-  envelopes until their manufacturer-verified land patterns are complete.
+- The earlier 21-footprint render was a mechanical placement study and is now
+  superseded by the complete schematic/netlist.
+- A fully netlisted placement/routing board is being generated and reviewed.
+  Placement, critical-route design, plane strategy and DRC are not yet closed.
+- No current PCB file is an order-ready fabrication release.
 
 ## Outstanding before PCB order
 
-- Capture and run KiCad ERC on all functional schematic sheets.
-- Select exact battery connector, protection and 5 V current limiter.
 - Reconfirm every supplier part number, stock and PCBA class immediately before
   ordering; stock status is not a design-time guarantee.
+- Reconfirm PN532 availability: NXP marks it NRND. A future controller migration
+  may be required even though V1 retains PN532 for prototype compatibility.
 - Simulate/verify the IR pulse current and perform an optical safety review.
 - Review regulator thermal behavior and switching-noise placement.
 - Calculate USB and RF trace geometries from the fabricator's exact stack-up.
-- Tune NFC, 868 MHz and GNSS antenna interfaces on assembled prototypes.
-- Run KiCad DRC and independent schematic/layout review.
+- Finish placement and routing, then run KiCad DRC with zero unexplained items.
+- Measure and tune the NFC loop/matching network on assembled prototypes with a
+  VNA or NFC fixture; guessed values are not a production release.
+- Verify GNSS insertion loss and Sub-GHz radiated behavior with the actual
+  antennas and enclosure.
+- Perform an independent schematic/layout, polarity, footprint and assembly
+  review before generating an order archive.
+- Verify RF frequency, power, duty cycle, antenna and emissions against the
+  rules of every region in which the card will be operated. Prototype RF
+  operation is not evidence of regulatory compliance.

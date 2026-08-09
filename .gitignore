@@ -1,6 +1,8 @@
 # PlatformIO build and editor state
 firmware/.pio/
 .vscode/
+__pycache__/
+*.py[cod]
 
 # KiCad generated backups and caches
 *-backups/
@@ -12,3 +14,5 @@ hardware/*.rpt
 
 # Manufacturing outputs are generated for tagged releases
 manufacturing/*.zip
+manufacturing/*.zip.sha256
+manufacturing/build/

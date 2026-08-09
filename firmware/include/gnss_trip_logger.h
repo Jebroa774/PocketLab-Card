@@ -25,11 +25,13 @@ class GnssTripLogger {
   explicit GnssTripLogger(StorageManager &storage);
 
   void begin();
+  void setPowered(bool powered);
   void poll();
   bool startTrip(String &error);
   void stopTrip();
 
   bool tripActive() const { return tripActive_; }
+  bool powered() const { return powered_; }
   bool hasFreshFix() const;
   const GnssFix &fix() const { return fix_; }
   String statusJson() const;
@@ -51,6 +53,7 @@ class GnssTripLogger {
   size_t lineLength_ = 0;
   uint32_t validSentenceCount_ = 0;
   uint32_t checksumErrorCount_ = 0;
+  bool powered_ = false;
 
   File tripFile_;
   bool tripActive_ = false;

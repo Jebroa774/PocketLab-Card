@@ -10,7 +10,7 @@ This is the schematic-capture baseline. Changes must be reflected here and in
 | 0 | BOOT_N | Input | Boot strap and physical boot button; not on expansion header |
 | 3 | JTAG_STRAP_TP | Reserved | Test pad only; boot/JTAG strap |
 | 5 | I2C_SDA | Bidirectional | Shared system I2C and expansion header |
-| 6 | I2C_SCL | Output | Shared system I2C and expansion header |
+| 6 | I2C_SCL | Bidirectional | Shared system I2C and expansion header |
 | 7 | NFC_IRQ_N | Input | PN532 interrupt |
 | 10 | RGB_DATA | Output | Four chained addressable LEDs |
 | 11 | SPI_MOSI | Output | CC1101, microSD and expansion header |
@@ -28,14 +28,15 @@ This is the schematic-capture baseline. Changes must be reflected here and in
 | 36 | IR_TX | Output | RMT carrier to IR MOSFET driver |
 | 37 | IR_RX | Input | Demodulated IR receiver output |
 | 38 | BUZZER_PWM | Output | Buzzer MOSFET/PWM |
-| 39 | IOEXP_INT_N | Input | TCA9535 shared interrupt |
+| 39 | IOEXP_INT_N | Input | Shared U9/U18 open-drain interrupt |
 | 45 | STRAP_VDD_SPI | Reserved | Test pad only; boot strap |
 | 46 | STRAP_BOOT | Reserved | Test pad only; boot strap |
 
 ## Direct free GPIOs
 
-These twelve pins go directly to the 2.54 mm expansion header. GPIO43/44 can
-be used as a normal UART pair; native USB CDC is the default debug console.
+These twelve pins reach the 2.54 mm expansion header through fixed 100-ohm
+series resistors R710-R721. GPIO43/44 can be used as a normal UART pair; native
+USB CDC is the default debug console.
 
 | GPIO | Useful hardware capability |
 |---:|---|
@@ -52,28 +53,51 @@ be used as a normal UART pair; native USB CDC is the default debug console.
 | 47 | Digital, PWM, interrupt |
 | 48 | Digital, PWM, interrupt |
 
-All direct GPIOs are 3.3 V only and are not 5 V tolerant. Place optional
-series-resistor footprints between the ESP32 and exposed header nets.
+All direct GPIOs are 3.3 V only and are not 5 V tolerant. The series resistors
+limit edge rate and fault current but do not add level shifting or full ESD/
+overvoltage protection.
 
-## TCA9535 internal allocation
+## U9 TCA9535 status and expansion allocation
+
+U9 uses address `0x20` (A0/A1/A2 low). Its first eight ports monitor on-board
+status/interrupt signals. Its second eight ports feed EX0-EX7 through 220-ohm
+resistors R722-R729. All ports power up as inputs and U9 has no internal GPIO
+pull resistors.
 
 | Expander pin | Function |
 |---|---|
-| P00 | NFC_RESET_N |
-| P01 | GNSS_POWER_EN |
-| P02 | BOOST5_EN |
-| P03 | SD_DETECT_N |
-| P04 | USER_BUTTON_A_N |
-| P05 | USER_BUTTON_B_N |
-| P06 | CHARGER_CHG_N |
-| P07 | CHARGER_PGOOD_N |
-| P10-P17 | EX0-EX7 on expansion header |
+| P00 | `SD_DETECT_N` |
+| P01 | `CHARGER_CHG_N` |
+| P02 | `CHARGER_PGOOD_N` |
+| P03 | `AUX5_FAULT_N` |
+| P04 | `FG_ALERT_N` |
+| P05 | `BMI_INT1` |
+| P06 | `BMI_INT2` |
+| P07 | `BMP_INT` |
+| P10-P17 | `EX0_INT`-`EX7_INT`, then 220 ohm to EX0-EX7 on J5 |
+
+## U18 TCA9534 internal control allocation
+
+U18 uses address `0x21` (A0 high, A1/A2 low). Its interrupt output shares
+`IOEXP_INT_N` with U9. Hardware pull resistors define safe states before the
+firmware configures the ports.
+
+| Expander pin | Function |
+|---|---|
+| P0 | `BQ_EN1` |
+| P1 | `CHG_DISABLE` |
+| P2 | `AUX5_EN` |
+| P3 | `NFC_RESET_N` |
+| P4 | `GNSS_POWER_EN` |
+| P5 | `BOOST5_EN` |
+| P6 | `USER_BUTTON_A_N` |
+| P7 | `USER_BUTTON_B_N` |
 
 EX0-EX7 are 3.3 V digital I/O intended for switches, enables and other
 low-speed signals. They do not provide ADC, accurate PWM, RMT or high-speed
 protocol timing.
 
-## J_EXT: 2 x 15, 2.54 mm expansion header
+## J5: 2 x 15, 2.54 mm expansion header
 
 Use 1.0 mm finished plated holes. The header ships unpopulated and accepts
 straight or right-angle male/female breakaway headers for Dupont cables.
@@ -97,13 +121,16 @@ straight or right-angle male/female breakaway headers for Dupont cables.
 | 29 | +5V_AUX (protected) | 30 | GND |
 
 Any direct free GPIO may be used as chip select for an external SPI device.
-External I2C and SPI wiring shares the buses with onboard devices.
+External I2C and SPI wiring shares the buses with onboard devices. R730/R731
+add 100 ohm in series to the exposed I2C header pair, and R732-R734 do the same
+for SPI SCK/MOSI/MISO. The single board-wide I2C pull-up pair is 3.3 kohm.
 
 ## Connector labeling
 
 Silkscreen must clearly distinguish:
 
-- `GNSS ANT` and `SUB-GHz ANT` U.FL connectors
+- `GNSS ANT` beside the board-level U.FL and `SUB-GHz IPEX` beside the
+  connector integrated on U3; there is no separate Sub-GHz J6
 - `BAT +` and `BAT -` with explicit battery polarity
 - `3V3 ONLY` beside direct GPIOs
-- `5V AUX 500mA MAX` beside J_EXT pin 29
+- `5V AUX 500mA MAX` beside J5 pin 29

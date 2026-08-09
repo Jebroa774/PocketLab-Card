@@ -33,11 +33,37 @@ GnssTripLogger::GnssTripLogger(StorageManager &storage)
     : storage_(storage), serial_(1) {}
 
 void GnssTripLogger::begin() {
-  serial_.begin(config::GNSS_BAUD, SERIAL_8N1, pins::GNSS_RX_FROM_MODULE,
-                pins::GNSS_TX_TO_MODULE);
+  // GNSS_3V3 is off at boot.  Keep both UART pads high-impedance so the
+  // unpowered MAX-M10S cannot be back-powered through its I/O protection.
+  serial_.end();
+  pinMode(pins::GNSS_RX_FROM_MODULE, INPUT);
+  pinMode(pins::GNSS_TX_TO_MODULE, INPUT);
+  powered_ = false;
+}
+
+void GnssTripLogger::setPowered(bool powered) {
+  if (powered == powered_) return;
+  lineLength_ = 0;
+  if (powered) {
+    // The load switch has already been enabled by HardwareManager.  Allow its
+    // output to settle before connecting the ESP32 UART output to MAX-M10S RX.
+    delay(10);
+    serial_.begin(config::GNSS_BAUD, SERIAL_8N1, pins::GNSS_RX_FROM_MODULE,
+                  pins::GNSS_TX_TO_MODULE);
+    powered_ = true;
+    return;
+  }
+
+  // Disconnect TX before the load switch removes GNSS_3V3.
+  serial_.end();
+  pinMode(pins::GNSS_RX_FROM_MODULE, INPUT);
+  pinMode(pins::GNSS_TX_TO_MODULE, INPUT);
+  fix_.valid = false;
+  powered_ = false;
 }
 
 void GnssTripLogger::poll() {
+  if (!powered_) return;
   while (serial_.available() > 0) {
     const char c = static_cast<char>(serial_.read());
     if (c == '\r') continue;
@@ -180,6 +206,10 @@ bool GnssTripLogger::hasFreshFix() const {
 bool GnssTripLogger::startTrip(String &error) {
   error = String();
   if (tripActive_) return true;
+  if (!powered_) {
+    error = F("gnss_power_off");
+    return false;
+  }
   if (!storage_.available()) {
     error = F("sd_not_mounted");
     return false;
@@ -285,7 +315,9 @@ void GnssTripLogger::maybeLogFix() {
 String GnssTripLogger::statusJson() const {
   String result;
   result.reserve(512);
-  result += F("{\"freshFix\":");
+  result += F("{\"powered\":");
+  result += json::boolean(powered_);
+  result += F(",\"freshFix\":");
   result += json::boolean(hasFreshFix());
   result += F(",\"valid\":");
   result += json::boolean(fix_.valid);

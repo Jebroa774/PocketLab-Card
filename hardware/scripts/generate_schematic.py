@@ -65,23 +65,33 @@ def add(
     PARTS.append(Part(block, lib_id, reference, value, footprint, x, y, pins, fields))
 
 
-def passive(block: str, reference: str, value: str, footprint: str, x: float, y: float, a: str, b: str) -> None:
+def passive(
+    block: str,
+    reference: str,
+    value: str,
+    footprint: str,
+    x: float,
+    y: float,
+    a: str,
+    b: str,
+    **fields: str,
+) -> None:
     symbol = "Device:C" if reference.startswith("C") else "Device:R"
     if reference.startswith("L"):
         symbol = "Device:L"
     elif reference.startswith("FB"):
         symbol = "Device:FerriteBead"
-    add(block, symbol, reference, value, footprint, x, y, {"1": a, "2": b})
+    add(block, symbol, reference, value, footprint, x, y, {"1": a, "2": b}, **fields)
 
 
 def build_power() -> None:
     b = "01 USB / BATTERY / POWER"
     add(b, "Connector:USB_C_Receptacle_USB2.0_14P", "J1", "USB-C DATA/POWER",
         "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12", 63.5, 76.2,
-        {"A1": "GND", "A4": "VBUS_USB", "A5": "USB_CC1", "A6": "USB_DP_CONN",
-         "A7": "USB_DM_CONN", "A9": "VBUS_USB", "A12": "GND", "B1": "GND",
-         "B4": "VBUS_USB", "B5": "USB_CC2", "B6": "USB_DP_CONN",
-         "B7": "USB_DM_CONN", "B9": "VBUS_USB", "B12": "GND", "SH": "USB_SHIELD"},
+        {"A1": "GND", "A4": "VBUS_USB", "A5": "USB_CC1", "A6": "USB_CONN_P",
+         "A7": "USB_CONN_N", "A9": "VBUS_USB", "A12": "GND", "B1": "GND",
+         "B4": "VBUS_USB", "B5": "USB_CC2", "B6": "USB_CONN_P",
+         "B7": "USB_CONN_N", "B9": "VBUS_USB", "B12": "GND", "SH": "USB_SHIELD"},
         Manufacturer="HRO", MPN="TYPE-C-31-M-12", LCSC="C165948")
     passive(b, "R101", "5.1k 1%", R0805, 101.6, 50.8, "USB_CC1", "GND")
     passive(b, "R102", "5.1k 1%", R0805, 114.3, 50.8, "USB_CC2", "GND")
@@ -89,10 +99,10 @@ def build_power() -> None:
     passive(b, "C101", "4.7nF 1kV", C0805, 139.7, 50.8, "USB_SHIELD", "GND")
     add(b, "Device:Polyfuse", "F1", "Littelfuse 1206L075/13.2", "Fuse:Fuse_1206_3216Metric", 101.6, 76.2,
         {"1": "VBUS_USB", "2": "VBUS_FUSED"})
-    add(b, "Device:D_TVS", "D101", "SMF5.0A", "Diode_SMD:D_SOD-123F", 114.3, 76.2,
-        {"1": "GND", "2": "VBUS_FUSED"})
+    add(b, "Device:D_Zener", "D101", "SMF5.0A", "Diode_SMD:D_SOD-123F", 114.3, 76.2,
+        {"1": "VBUS_FUSED", "2": "GND"}, Manufacturer="Littelfuse", MPN="SMF5.0A")
     add(b, "Power_Protection:USBLC6-4SC6", "U16", "USBLC6-4SC6Y", SOT23_6, 139.7, 76.2,
-        {"1": "USB_DP_CONN", "2": "GND", "3": "USB_DM_CONN", "4": "USB_CC1",
+        {"1": "USB_CONN_P", "2": "GND", "3": "USB_CONN_N", "4": "USB_CC1",
          "5": "VBUS_FUSED", "6": "USB_CC2"}, Manufacturer="ST", MPN="USBLC6-4SC6Y")
 
     add(b, "Connector_Generic:Conn_01x02", "J4", "PROTECTED 1S LiPo 3.7V",
@@ -125,7 +135,13 @@ def build_power() -> None:
          "10": "VSYS", "11": "VSYS", "12": "CHG_ILIM", "13": "VBUS_FUSED",
          "14": "CHG_TMR", "15": "CHG_ITERM", "16": "CHG_ISET", "17": "GND"},
         Manufacturer="TI", MPN="BQ24074RGTR", LCSC="C54313")
-    passive(b, "R108", "10k TS fixed", R0805, 177.8, 127.0, "CHG_TS", "GND")
+    add(b, "Jumper:SolderJumper_2_Bridged", "SJ1", "TS FIXED / CUT FOR EXT NTC",
+        "Jumper:SolderJumper-2_P1.3mm_Bridged_RoundedPad1.0x1.5mm", 165.1, 127.0,
+        {"1": "CHG_TS", "2": "CHG_TS_FIXED"})
+    passive(b, "R108", "10k TS fixed", R0805, 177.8, 127.0, "CHG_TS_FIXED", "GND")
+    add(b, "Connector_Generic:Conn_01x02", "J7", "OPTIONAL 10k NTC - CUT SJ1",
+        "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical", 177.8, 139.7,
+        {"1": "CHG_TS", "2": "GND"})
     passive(b, "R109", "100k", R0805, 190.5, 127.0, "CHARGER_PGOOD_N", "+3V3")
     passive(b, "R110", "100k", R0805, 203.2, 127.0, "CHARGER_CHG_N", "+3V3")
     passive(b, "R111", "3.48k 1%", R0805, 215.9, 127.0, "CHG_ILIM", "GND")
@@ -155,7 +171,8 @@ def build_power() -> None:
     passive(b, "R119", "10k", R0805, 152.4, 203.2, "PWR_3V3_PG", "+3V3")
     passive(b, "C107", "100nF", C0805, 101.6, 228.6, "U6_VAUX", "GND")
     passive(b, "C108", "10uF", C0805, 114.3, 228.6, "VSYS", "GND")
-    passive(b, "C109", "10uF DNP - populate only after VSYS stability test", C0805, 127.0, 228.6, "VSYS", "GND")
+    passive(b, "C109", "10uF DNP - populate only after VSYS stability test", C0805, 127.0, 228.6,
+            "VSYS", "GND", DNP="true")
     for i in range(110, 113):
         passive(b, f"C{i}", "22uF", C0805, 114.3 + (i - 108) * 12.7, 228.6, "+3V3", "GND")
     passive(b, "C123", "10uF 25V X5R HF", C0603, 177.8, 228.6, "VSYS", "GND")
@@ -193,8 +210,12 @@ def build_power() -> None:
     passive(b, "R125", "10k", R0805, 127.0, 266.7, "FG_ALERT_N", "+3V3")
     passive(b, "C120", "100nF", C0805, 139.7, 266.7, "CELL_POS", "GND")
 
-    for index, net in enumerate(("GND", "VBUS_FUSED", "CELL_NEG", "+3V3", "+5V_RAW", "+5V_AUX", "NFC_AVDD", "GNSS_3V3", "GNSS_BACKUP"), start=101):
+    for index, net in enumerate(("GND", "VBUS_FUSED", "CELL_NEG", "+3V3", "+5V_RAW", "+5V_AUX", "GNSS_3V3"), start=101):
         add(b, "power:PWR_FLAG", f"#FLG{index}", "PWR_FLAG", "", 165.1 + (index - 101) * 12.7, 279.4, {"1": net})
+
+    for index, net in enumerate(("VBUS_USB", "VBUS_FUSED", "VSYS", "+3V3", "+5V_RAW", "+5V_AUX"), start=105):
+        add(b, "Connector:TestPoint", f"TP{index}", f"POWER {net}",
+            "TestPoint:TestPoint_Pad_D1.0mm", 177.8 + (index - 105) * 17.78, 292.1, {"1": net})
 
 
 def build_mcu() -> None:
@@ -212,8 +233,8 @@ def build_mcu() -> None:
          "32": "IOEXP_INT_N", "33": "GPIO40_MCU", "34": "GPIO41_MCU", "35": "GPIO42_MCU",
          "36": "GPIO44_MCU", "37": "GPIO43_MCU", "38": "GPIO2_MCU", "39": "GPIO1_MCU",
          "40": "GND", "41": "GND"}, Manufacturer="Espressif", MPN="ESP32-S3-WROOM-1-N8R2", LCSC="C2913204")
-    passive(b, "R201", "22R", R0805, 317.5, 177.8, "USB_DM_CONN", "USB_D_N")
-    passive(b, "R202", "22R", R0805, 330.2, 177.8, "USB_DP_CONN", "USB_D_P")
+    passive(b, "R201", "22R", R0805, 317.5, 177.8, "USB_CONN_N", "USB_D_N")
+    passive(b, "R202", "22R", R0805, 330.2, 177.8, "USB_CONN_P", "USB_D_P")
     passive(b, "R203", "10k", R0805, 342.9, 177.8, "ESP_EN", "+3V3")
     passive(b, "R204", "10k", R0805, 355.6, 177.8, "BOOT_N", "+3V3")
     passive(b, "C201", "1uF", C0805, 368.3, 177.8, "ESP_EN", "GND")
@@ -232,8 +253,8 @@ def build_nfc() -> None:
     b = "03 PN532 NFC / TUNABLE LOOP"
     add(b, "RF_NFC:PN5321A3HN_C1xx", "U2", "PN5321A3HN/C106",
         "Package_DFN_QFN:HVQFN-40-1EP_6x6mm_P0.5mm_EP4.1x4.1mm", 520.7, 114.3,
-        {"1": "GND", "2": "NFC_LOADMOD", "3": "GND", "4": "NFC_TX1", "5": "+3V3",
-         "6": "NFC_TX2", "7": "GND", "8": "NFC_AVDD", "9": "NFC_VMID", "10": "NFC_RX",
+        {"1": "GND", "2": "NFC_LOADMOD", "3": "GND", "4": "NFC_TX1", "5": "NFC_DVDD",
+         "6": "NFC_TX2", "7": "GND", "8": "NFC_DVDD", "9": "NFC_VMID", "10": "NFC_RX",
          "11": "GND", "12": NC, "13": NC, "14": "NFC_OSCIN", "15": "NFC_OSCOUT",
          "16": "NFC_I0", "17": "GND", "18": "GND", "19": NC, "20": NC, "21": NC,
          "22": NC, "23": "+3V3", "24": NC, "25": "NFC_IRQ_N", "26": NC,
@@ -241,14 +262,17 @@ def build_nfc() -> None:
          "33": NC, "34": NC, "35": NC, "36": NC, "37": "NFC_SVDD", "38": "NFC_RESET_N",
          "39": "NFC_DVDD", "40": "+3V3", "41": "GND"}, Manufacturer="NXP", MPN="PN5321A3HN/C106", LCSC="C880904")
     passive(b, "R301", "10k", R0805, 482.6, 177.8, "NFC_I0", "NFC_DVDD")
-    passive(b, "R302", "10k", R0805, 495.3, 177.8, "NFC_RESET_N", "+3V3")
+    passive(b, "R302", "10k RESET default asserted", R0805, 495.3, 177.8, "NFC_RESET_N", "GND")
     passive(b, "C301", "100nF", C0805, 508.0, 177.8, "NFC_VMID", "GND")
-    passive(b, "C302", "100nF", C0805, 520.7, 177.8, "NFC_AVDD", "GND")
-    passive(b, "C303", "4.7uF", C0805, 533.4, 177.8, "+3V3", "GND")
+    passive(b, "C302", "100nF AVDD", C0805, 520.7, 177.8, "NFC_DVDD", "GND")
+    passive(b, "C303", "4.7uF VBAT bulk", C0805, 533.4, 177.8, "+3V3", "GND")
     passive(b, "C304", "100nF", C0805, 546.1, 177.8, "NFC_DVDD", "GND")
     passive(b, "C305", "100nF", C0805, 558.8, 177.8, "NFC_SVDD", "GND")
-    add(b, "Device:FerriteBead", "FB301", "600R@100MHz", FB0805, 571.5, 177.8,
-        {"1": "+3V3", "2": "NFC_AVDD"})
+    passive(b, "C313", "10uF DVDD bulk", C0805, 596.9, 177.8, "NFC_DVDD", "GND")
+    passive(b, "C314", "100nF TVDD", C0805, 609.6, 177.8, "NFC_DVDD", "GND")
+    passive(b, "C315", "4.7uF TVDD bulk", C0805, 622.3, 177.8, "NFC_DVDD", "GND")
+    passive(b, "C316", "100nF PVDD", C0805, 635.0, 177.8, "+3V3", "GND")
+    passive(b, "C317", "100nF VBAT", C0805, 647.7, 177.8, "+3V3", "GND")
     # kicad-sch-api 0.5.x serializes Device:Crystal_GND24 incorrectly.  The
     # four-pad connector symbol preserves the exact electrical pin mapping;
     # the PCB still receives the real shielded-crystal footprint.
@@ -262,11 +286,14 @@ def build_nfc() -> None:
     passive(b, "C309", "220pF C0G", C0603, 520.7, 241.3, "NFC_TX2_F", "GND")
     passive(b, "R303", "0R MATCH", R0805, 533.4, 241.3, "NFC_TX1_F", "NFC_LOOP_A")
     passive(b, "R304", "0R MATCH", R0805, 546.1, 241.3, "NFC_TX2_F", "NFC_LOOP_B")
-    passive(b, "C310", "DNP MATCH", C0603, 558.8, 241.3, "NFC_LOOP_A", "NFC_LOOP_B")
-    passive(b, "C311", "DNP MATCH", C0603, 571.5, 241.3, "NFC_LOOP_A", "GND")
-    passive(b, "C312", "DNP MATCH", C0603, 584.2, 241.3, "NFC_LOOP_B", "GND")
-    passive(b, "R305", "1k RX TAP", R0805, 533.4, 266.7, "NFC_LOOP_A", "NFC_RX")
-    add(b, "Device:Antenna_Loop", "AE1", "PCB NFC LOOP - TUNE ON V1", "", 571.5, 266.7,
+    passive(b, "C310", "DNP MATCH", C0603, 558.8, 241.3, "NFC_LOOP_A", "NFC_LOOP_B", DNP="true")
+    passive(b, "C311", "DNP MATCH", C0603, 571.5, 241.3, "NFC_LOOP_A", "GND", DNP="true")
+    passive(b, "C312", "DNP MATCH", C0603, 584.2, 241.3, "NFC_LOOP_B", "GND", DNP="true")
+    passive(b, "R305", "2.7k RX TAP", R0805, 533.4, 266.7, "NFC_LOOP_A", "NFC_RX_AC")
+    passive(b, "C318", "1nF C0G RX COUPLING", C0603, 546.1, 266.7, "NFC_RX_AC", "NFC_RX")
+    passive(b, "R306", "1k VMID BIAS", R0805, 558.8, 266.7, "NFC_VMID", "NFC_RX")
+    add(b, "Device:Antenna_Loop", "AE1", "PCB NFC LOOP - TUNE ON V1",
+        "PocketLab_Custom:NFC_Loop_35x27mm_4T_TUNE", 571.5, 266.7,
         {"1": "NFC_LOOP_A", "2": "NFC_LOOP_B"})
     add(b, "Connector:TestPoint", "TP301", "NFC_LOADMOD TEST", "TestPoint:TestPoint_Pad_D1.0mm", 584.2, 203.2,
         {"1": "NFC_LOADMOD"})
@@ -277,8 +304,8 @@ def build_subghz() -> None:
     pinmap = {str(i): "GND" for i in (1, 2, 3, 4, 5, 11, 12, 20, 22)}
     pinmap.update({"6": NC, "7": NC, "8": NC, "9": "+3V3", "10": NC, "13": NC,
                    "14": "SUBGHZ_GDO2", "15": "SUBGHZ_GDO0", "16": "SUB_MISO",
-                   "17": "SUB_MOSI", "18": "SUB_SCK", "19": "SUB_CS_N", "21": "SUBGHZ_RF"})
-    add(b, "Connector_Generic:Conn_02x11_Odd_Even", "U3", "E07-900M10S 868MHz",
+                   "17": "SUB_MOSI", "18": "SUB_SCK", "19": "SUB_CS_N", "21": NC})
+    add(b, "Connector_Generic:Conn_02x11_Odd_Even", "U3", "E07-900M10S IPEX 868MHz",
         "PocketLab_Custom:E07-900M10S", 698.5, 101.6, pinmap,
         Manufacturer="Ebyte", MPN="E07-900M10S")
     passive(b, "C401", "100nF", C0805, 660.4, 165.1, "+3V3", "GND")
@@ -287,18 +314,15 @@ def build_subghz() -> None:
     passive(b, "R402", "22R", R0805, 698.5, 165.1, "SPI_MOSI", "SUB_MOSI")
     passive(b, "R403", "22R", R0805, 711.2, 165.1, "SPI_MISO", "SUB_MISO")
     passive(b, "R404", "22R", R0805, 723.9, 165.1, "SUBGHZ_CS_N", "SUB_CS_N")
-    passive(b, "R405", "0R ANT SELECT", R0805, 736.6, 165.1, "SUBGHZ_RF", "SUBGHZ_ANT")
-    add(b, "Connector:Conn_Coaxial", "J6", "SUB-GHz ANT U.FL",
-        "Connector_Coaxial:U.FL_Hirose_U.FL-R-SMT-1_Vertical", 698.5, 203.2,
-        {"1": "SUBGHZ_ANT", "2": "GND"})
+    passive(b, "R406", "100k CS SAFE-HIGH", R0805, 736.6, 165.1, "SUB_CS_N", "+3V3")
 
 
 def build_gnss_sd() -> None:
     b = "05 GNSS / ANTENNA / MICROSD"
     add(b, "RF_GPS:MAX-M10S", "U4", "MAX-M10S-00B", "RF_GPS:ublox_MAX", 863.6, 101.6,
-        {"1": "GND", "2": "GNSS_RX_FROM_MODULE", "3": "GNSS_TX_TO_MODULE",
-         "4": "GNSS_TIMEPULSE", "5": NC, "6": "GNSS_BACKUP", "7": "GNSS_3V3",
-         "8": "GNSS_3V3", "9": "GNSS_RESET_N", "10": "GND", "11": "GNSS_RF",
+        {"1": "GND", "2": "GNSS_UART_TX_MOD", "3": "GNSS_UART_RX_MOD",
+         "4": "GNSS_TIMEPULSE", "5": NC, "6": NC, "7": "GNSS_3V3",
+         "8": "GNSS_3V3", "9": "GNSS_RESET_N", "10": "GND", "11": "GNSS_ANT_FEED",
          "12": "GND", "13": "GNSS_LNA_EN", "14": "GNSS_VCC_RF", "15": NC,
          "16": NC, "17": NC, "18": NC}, Manufacturer="u-blox", MPN="MAX-M10S-00B", LCSC="C4153167")
     add(b, "Connector_Generic:Conn_01x06", "U17", "TPS22919DCKR GNSS LOAD SWITCH",
@@ -308,21 +332,25 @@ def build_gnss_sd() -> None:
         Manufacturer="TI", MPN="TPS22919DCKR")
     passive(b, "R501", "100R QOD discharge", R0805, 838.2, 165.1, "GNSS_QOD", "GNSS_3V3")
     passive(b, "R502", "10k", R0805, 850.9, 165.1, "GNSS_RESET_N", "GNSS_3V3")
+    passive(b, "R506", "100k SAFE-OFF", R0805, 838.2, 177.8, "GNSS_POWER_EN", "GND")
+    passive(b, "R507", "1k UART BACKPOWER LIMIT", R0805, 850.9, 177.8,
+            "GNSS_RX_FROM_MODULE", "GNSS_UART_TX_MOD")
+    passive(b, "R508", "1k UART BACKPOWER LIMIT", R0805, 863.6, 177.8,
+            "GNSS_TX_TO_MODULE", "GNSS_UART_RX_MOD")
     passive(b, "C501", "100nF", C0805, 863.6, 165.1, "GNSS_3V3", "GND")
     passive(b, "C502", "10uF", C0805, 876.3, 165.1, "GNSS_3V3", "GND")
-    passive(b, "R503", "100R", R0805, 889.0, 165.1, "GNSS_3V3", "GNSS_BACKUP")
-    passive(b, "C503", "100uF low-leak", "Capacitor_SMD:C_1210_3225Metric", 901.7, 165.1, "GNSS_BACKUP", "GND")
-    passive(b, "R504", "0R RF", R0805, 812.8, 203.2, "GNSS_RF", "GNSS_ANT_FEED")
-    passive(b, "R505", "10R 0.25W", R0805, 825.5, 203.2, "GNSS_VCC_RF", "GNSS_BIAS")
-    passive(b, "L501", "27nH high-Q", L0805, 838.2, 203.2, "GNSS_BIAS", "GNSS_ANT_FEED")
-    passive(b, "C504", "10nF", C0603, 850.9, 203.2, "GNSS_BIAS", "GND")
-    add(b, "Device:D_TVS", "D501", "Low-cap RF ESD", "Diode_SMD:D_SOD-523", 863.6, 203.2,
-        {"1": "GND", "2": "GNSS_ANT_FEED"})
+    passive(b, "R505", "10R 0.25W DNP ACTIVE-ANT BIAS", R0805, 825.5, 203.2,
+            "GNSS_VCC_RF", "GNSS_BIAS", DNP="true")
+    passive(b, "L501", "27nH high-Q DNP ACTIVE-ANT BIAS", L0805, 838.2, 203.2,
+            "GNSS_BIAS", "GNSS_ANT_FEED", DNP="true")
+    passive(b, "C504", "10nF DNP ACTIVE-ANT BIAS", C0603, 850.9, 203.2,
+            "GNSS_BIAS", "GND", DNP="true")
+    add(b, "Device:D_TVS", "D501", "TPD1E0B04 0.13pF RF ESD",
+        "Package_SON:Texas_DPY0002A_0.6x1mm_P0.65mm", 863.6, 203.2,
+        {"1": "GND", "2": "GNSS_ANT_FEED"}, Manufacturer="TI", MPN="TPD1E0B04DPYR")
     add(b, "Connector:Conn_Coaxial", "J3", "GNSS ANT U.FL",
         "Connector_Coaxial:U.FL_Hirose_U.FL-R-SMT-1_Vertical", 889.0, 203.2,
         {"1": "GNSS_ANT_FEED", "2": "GND"})
-    add(b, "Connector:TestPoint", "TP501", "GNSS RF TEST", "TestPoint:TestPoint_Pad_D1.0mm", 914.4, 203.2,
-        {"1": "GNSS_ANT_FEED"})
     add(b, "Connector:TestPoint", "TP502", "LNA ENABLE", "TestPoint:TestPoint_Pad_D1.0mm", 939.8, 203.2,
         {"1": "GNSS_LNA_EN"})
 
@@ -340,6 +368,13 @@ def build_gnss_sd() -> None:
                 876.3 + (index - 514) * 12.7, 279.4, net, "+3V3")
     passive(b, "C510", "100nF", C0805, 876.3, 304.8, "+3V3", "GND")
     passive(b, "C511", "10uF", C0805, 889.0, 304.8, "+3V3", "GND")
+    add(b, "Device:C", "C512", "47uF 6.3V LOW-ESR", "Capacitor_SMD:C_1210_3225Metric",
+        901.7, 304.8, {"1": "+3V3", "2": "GND"}, Manufacturer="Murata",
+        MPN="GRM32ER60J476ME20L")
+    add(b, "Power_Protection:SRV05-4", "U19", "SRV05-4MR6T1G SD ESD",
+        "Package_TO_SOT_SMD:SOT-23-6", 914.4, 304.8,
+        {"1": "SD_CS_DEV", "2": "GND", "3": "SD_MOSI", "4": "SD_SCK",
+         "5": "+3V3", "6": "SD_MISO"}, Manufacturer="onsemi", MPN="SRV05-4MR6T1G")
 
 
 def build_ir_ui() -> None:
@@ -390,11 +425,12 @@ def build_sensors_io() -> None:
         {"1": "IOEXP_INT_N", "2": "GND", "3": "GND", "4": "SD_DETECT_N",
          "5": "CHARGER_CHG_N", "6": "CHARGER_PGOOD_N", "7": "AUX5_FAULT_N", "8": "FG_ALERT_N",
          "9": "BMI_INT1", "10": "BMI_INT2", "11": "BMP_INT", "12": "GND",
-         "13": "EX0", "14": "EX1", "15": "EX2", "16": "EX3", "17": "EX4", "18": "EX5",
-         "19": "EX6", "20": "EX7", "21": "GND", "22": "I2C_SCL", "23": "I2C_SDA", "24": "+3V3"},
+         "13": "EX0_INT", "14": "EX1_INT", "15": "EX2_INT", "16": "EX3_INT",
+         "17": "EX4_INT", "18": "EX5_INT", "19": "EX6_INT", "20": "EX7_INT",
+         "21": "GND", "22": "I2C_SCL", "23": "I2C_SDA", "24": "+3V3"},
         Manufacturer="TI", MPN="TCA9535PWR", LCSC="C130204")
-    passive(b, "R701", "4.7k", R0805, 317.5, 495.3, "I2C_SDA", "+3V3")
-    passive(b, "R702", "4.7k", R0805, 330.2, 495.3, "I2C_SCL", "+3V3")
+    passive(b, "R701", "3.3k", R0805, 317.5, 495.3, "I2C_SDA", "+3V3")
+    passive(b, "R702", "3.3k", R0805, 330.2, 495.3, "I2C_SCL", "+3V3")
     passive(b, "R703", "10k", R0805, 342.9, 495.3, "IOEXP_INT_N", "+3V3")
     passive(b, "C701", "100nF", C0805, 355.6, 495.3, "+3V3", "GND")
 
@@ -432,8 +468,8 @@ def build_sensors_io() -> None:
     add(b, "Timer_RTC:PCF8563T", "U12", "PCF8563T", "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm", 571.5, 431.8,
         {"1": "RTC_OSCI", "2": "RTC_OSCO", "3": NC, "4": "GND", "5": "I2C_SDA",
          "6": "I2C_SCL", "7": NC, "8": "+3V3"}, Manufacturer="NXP", MPN="PCF8563T/5,518", LCSC="C7440")
-    add(b, "Device:Crystal", "Y701", "32.768kHz 12.5pF", "Crystal:Crystal_SMD_3215-2Pin_3.2x1.5mm", 609.6, 431.8,
-        {"1": "RTC_OSCI", "2": "RTC_OSCO"})
+    add(b, "Device:Crystal", "Y701", "32.768kHz CL=7pF", "Crystal:Crystal_SMD_3215-2Pin_3.2x1.5mm", 609.6, 431.8,
+        {"1": "RTC_OSCI", "2": "RTC_OSCO"}, Manufacturer="Abracon", MPN="ABS07-32.768KHZ-7-T")
     passive(b, "C706", "100nF", C0805, 571.5, 482.6, "+3V3", "GND")
 
     direct = [1, 2, 4, 8, 9, 40, 41, 42, 43, 44, 47, 48]
@@ -441,13 +477,29 @@ def build_sensors_io() -> None:
         passive(b, f"R{710 + offset}", "100R", R0805, 317.5 + (offset % 6) * 25.4,
                 546.1 + (offset // 6) * 25.4, f"GPIO{gpio}_MCU", f"GPIO{gpio}")
 
+    for offset in range(8):
+        passive(b, f"R{722 + offset}", "220R EXPANSION PROTECTION", R0805,
+                317.5 + (offset % 4) * 25.4, 596.9 + (offset // 4) * 25.4,
+                f"EX{offset}_INT", f"EX{offset}")
+
+    header_bus = (
+        (730, "I2C_SDA", "I2C_SDA_HDR", "100R"),
+        (731, "I2C_SCL", "I2C_SCL_HDR", "100R"),
+        (732, "SPI_SCK", "SPI_SCK_HDR", "100R"),
+        (733, "SPI_MOSI", "SPI_MOSI_HDR", "100R"),
+        (734, "SPI_MISO", "SPI_MISO_HDR", "100R"),
+    )
+    for offset, (number, internal_net, header_net, value) in enumerate(header_bus):
+        passive(b, f"R{number}", value, R0805, 431.8 + offset * 25.4, 622.3,
+                internal_net, header_net)
+
     header = {
         "1": "+3V3", "2": "GND", "3": "GPIO1", "4": "GPIO2", "5": "GPIO4", "6": "GPIO8",
         "7": "GPIO9", "8": "GPIO40", "9": "GPIO41", "10": "GPIO42", "11": "GPIO43",
         "12": "GPIO44", "13": "GPIO47", "14": "GPIO48", "15": "EX0", "16": "EX1",
         "17": "EX2", "18": "EX3", "19": "EX4", "20": "EX5", "21": "EX6", "22": "EX7",
-        "23": "I2C_SDA", "24": "I2C_SCL", "25": "SPI_SCK", "26": "SPI_MOSI",
-        "27": "SPI_MISO", "28": "GND", "29": "+5V_AUX", "30": "GND",
+        "23": "I2C_SDA_HDR", "24": "I2C_SCL_HDR", "25": "SPI_SCK_HDR", "26": "SPI_MOSI_HDR",
+        "27": "SPI_MISO_HDR", "28": "GND", "29": "+5V_AUX", "30": "GND",
     }
     add(b, "Connector_Generic:Conn_02x15_Odd_Even", "J5", "2x15 2.54mm DUPONT EXPANSION",
         "Connector_PinHeader_2.54mm:PinHeader_2x15_P2.54mm_Vertical", 736.6, 457.2, header)

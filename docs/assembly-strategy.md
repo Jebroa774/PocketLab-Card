@@ -10,9 +10,12 @@ LiPo safety.
 - Default resistors and capacitors: 0805, non-polar where possible.
 - RF/NFC matching only: 0603. No 0402 or 0201 parts in V1.
 - No BGA or WLCSP packages.
-- QFN, DFN, LGA, SOT-563, microSD and U.FL are always factory assembled.
+- QFN, DFN, LGA, SOT-563, microSD and the board-level GNSS U.FL are always
+  factory assembled.
 - Prefer SOIC, TSSOP, SOT-23 and castellated modules for all replaceable parts.
-- Put every production SMT part on the top side for the first prototype.
+- The current dense placement is deliberately two-sided. Keep hand-reworkable
+  parts accessible and verify bottom-side height, reflow and PCBA cost during
+  DFM; do not infer side assignment from this document before placement lock.
 - Keep ordinary component bodies at least 2.5 mm from the final board edge.
   Edge connectors need process rails and explicit assembler DFM approval.
 - Provide 1.0 mm finished holes for the 2.54 mm Dupont-compatible header.
@@ -23,17 +26,17 @@ LiPo safety.
 
 | Class | Parts | Who installs them |
 |---|---|---|
-| `JLC_ONLY` | PN532, charger, DC/DCs, fuel gauge, microSD, U.FL | JLCPCB |
-| `JLC_TOP` | GNSS, IR receiver/driver, USB-C, battery connector | JLCPCB preferred |
-| `JLC_TOP_OR_HAND` | ESP32 module, TSSOP expander, SOIC RTC | JLCPCB or careful hand rework |
+| `JLC_ONLY` | PN532, charger, DC/DCs, fuel gauge, microSD, GNSS U.FL | JLCPCB |
+| `JLC_SMT` | GNSS, IR receiver/driver, USB-C, battery connector | JLCPCB preferred, side set by final placement |
+| `JLC_OR_HAND` | ESP32 module, TSSOP expanders, SOIC RTC | JLCPCB or careful hand rework |
 | `HAND_OR_JLC_SOURCE` | Ebyte Sub-GHz module | Hand install by default |
 | `HAND_THT` | 2.54 mm headers and 5 mm IR LED | Owner after delivery |
 | `JLC_STANDARD_OPTION` | BMI270 and BMP390 | JLCPCB FULL variant only |
 
-`CORE-ECO` omits U10/U11 and is designed for Economic top-side PCBA.
-`FULL` populates them and uses Standard PCBA. Their empty footprints do not make
-the core board unusable: GNSS speed/trip logging, NFC, Sub-GHz, IR and microSD
-remain available.
+`CORE-ECO` omits U10/U11; `FULL` populates them. Because current placement uses
+both PCB sides, neither variant is assumed to qualify for a top-only Economic
+PCBA service. Their empty footprints do not make the core board unusable: GNSS
+speed/trip logging, NFC, Sub-GHz, IR and microSD remain available.
 
 ## Orientation safeguards
 
@@ -41,8 +44,8 @@ remain available.
 - Diodes, LEDs, polarized capacitors and battery pins receive `+`, `-`, `A` and
   `K` labels as appropriate; never rely on a footprint outline alone.
 - Module outlines include the antenna/keep-out end and the readable part name.
-- U.FL connectors are labeled `GNSS ANT` and `SUB-GHz ANT` on both silkscreen
-  and fabrication layers.
+- The board-level U.FL is labeled `GNSS ANT`. U3 uses its own integrated IPEX
+  connector labeled `SUB-GHz IPEX`; pin 21 is NC and no separate J6 is fitted.
 - The battery connector is labeled from the wire side as well as the PCB side.
 - JLCPCB CPL rotations must be checked visually in its 2D assembly viewer.
 
@@ -52,7 +55,8 @@ remain available.
 2. Generate Gerber/drill, BOM and CPL from the tagged KiCad release.
 3. Add break-off process rails so tooling holes/fiducials are not drilled into
    the finished card outline.
-4. Order five boards with top-side SMT; leave all `HAND_*` parts DNP.
+4. Review both-side BOM/CPL placement in the assembler viewer, then order five
+   boards with all `HAND_*` parts DNP.
 5. Inspect USB power, 3.3 V, charger and shorts before connecting a LiPo.
 6. Install headers and IR LED only after the assembled board passes bring-up.
 

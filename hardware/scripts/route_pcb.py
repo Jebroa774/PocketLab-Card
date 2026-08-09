@@ -1,0 +1,1061 @@
+"""Safely stage a PocketLab Card placement board through FreeRouting.
+
+This script deliberately never writes the project's main PCB.  It applies a
+small, deterministic set of KiCad netclasses in memory, exports Specctra DSN,
+optionally runs FreeRouting 2.3 headlessly, imports the resulting SES into the
+same in-memory board, validates the round trip, and only then publishes a
+separate routed board.
+
+Typical uses with KiCad's bundled Python::
+
+    python route_pcb.py --export-only
+    python route_pcb.py --jar /path/to/freerouting-2.3.0.jar
+    python route_pcb.py --import-existing-ses
+
+The first command produces a DSN for routing in the FreeRouting GUI.  After
+the GUI has written the requested SES, the third command imports it.  Supplying
+``--jar`` performs both operations in one headless run.
+
+Important engineering limit: autorouting is only a staging aid.  USB routing,
+the provisional 50-ohm RF width, NFC matching/loop routing, switch nodes and
+all power paths are excluded from the headless autorouter and remain for
+manual routing.  Plane zones, return paths, impedance, antenna tuning and final
+KiCad DRC are not made correct merely by a successful run of this script.
+"""
+
+from __future__ import annotations
+
+import argparse
+from collections import Counter
+from dataclasses import dataclass
+import json
+import os
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+from typing import Iterable, Sequence
+
+
+# pcbnew is loaded only after argument parsing so ``--help`` also works with a
+# normal Python interpreter.  All real board work still requires KiCad 10's
+# bundled Python, whose pcbnew bindings are not generally pip-installable.
+pcbnew = None
+
+
+@dataclass(frozen=True)
+class NetClassSpec:
+    name: str
+    track_mm: float
+    clearance_mm: float = 0.20
+    via_mm: float = 0.60
+    via_drill_mm: float = 0.30
+    diff_width_mm: float = 0.20
+    diff_gap_mm: float = 0.20
+    diff_via_gap_mm: float = 0.20
+    description: str = ""
+    priority: int | None = None
+
+
+DEFAULT_SPEC = NetClassSpec(
+    "Default",
+    0.20,
+    diff_gap_mm=0.25,
+    diff_via_gap_mm=0.25,
+    description="PocketLab default; review every safety- or timing-critical route",
+)
+MANAGED_SPECS: tuple[NetClassSpec, ...] = (
+    NetClassSpec(
+        "POWER",
+        0.60,
+        clearance_mm=0.25,
+        via_mm=0.80,
+        via_drill_mm=0.40,
+        description="Ordinary power fanout; planes and return paths still require review",
+        priority=0,
+    ),
+    NetClassSpec(
+        "USB_DIFF",
+        0.20,
+        diff_width_mm=0.20,
+        diff_gap_mm=0.20,
+        diff_via_gap_mm=0.25,
+        description="Provisional USB differential geometry; route/review as a coupled pair",
+        priority=1,
+    ),
+    NetClassSpec(
+        "GNSS_RF",
+        0.36,
+        description="Provisional 50-ohm width only; recalculate for the ordered stackup",
+        priority=2,
+    ),
+    NetClassSpec(
+        "NFC_RF",
+        0.40,
+        clearance_mm=0.25,
+        description="PN532 matching path; keep on one outer layer and tune the physical loop",
+        priority=3,
+    ),
+)
+
+
+# Assignments are intentionally exact net names, not broad wildcards.  Missing
+# names are harmless and make the workflow tolerate small schematic revisions.
+# A net may occur in only one group; validate_assignment_groups enforces that.
+POWER_NETS = frozenset(
+    {
+        "+3V3",
+        "+5V_AUX",
+        "+5V_RAW",
+        "BAT_FET_MID",
+        "CELL_NEG",
+        "CELL_POS",
+        "GND",
+        "U6_L1",
+        "U6_L2",
+        "U7_SW",
+        "VBUS_FUSED",
+        "VBUS_USB",
+        "VSYS",
+    }
+)
+USB_NETS = frozenset(
+    {
+        "USB_CONN_N",
+        "USB_CONN_P",
+        "USB_D_N",
+        "USB_D_P",
+    }
+)
+RF50_NETS = frozenset({"GNSS_ANT_FEED"})
+NFC_MATCH_NETS = frozenset(
+    {"NFC_LOOP_A", "NFC_LOOP_B", "NFC_TX1", "NFC_TX1_F", "NFC_TX2", "NFC_TX2_F"}
+)
+ASSIGNMENT_GROUPS: tuple[tuple[str, frozenset[str]], ...] = (
+    ("POWER", POWER_NETS),
+    ("USB_DIFF", USB_NETS),
+    ("GNSS_RF", RF50_NETS),
+    ("NFC_RF", NFC_MATCH_NETS),
+)
+# These classes are intentionally left for manual routing.  FreeRouting's
+# documented -inc option means "ignore net classes", despite the potentially
+# confusing flag name.  This prevents an autorouter from deciding USB, RF,
+# NFC, plane and switch-current topology before the human review.
+MANUAL_NETCLASSES = ("POWER", "USB_DIFF", "GNSS_RF", "NFC_RF")
+REQUIRED_FINAL_NETS = USB_NETS | {
+    "GNSS_ANT_FEED",
+    "NFC_DVDD",
+    "NFC_LOOP_A",
+    "NFC_LOOP_B",
+}
+OBSOLETE_NETS = frozenset({"NFC_AVDD", "NFC_TVDD", "USB_DM_CONN", "USB_DP_CONN"})
+
+
+def positive_int(value: str) -> int:
+    result = int(value)
+    if result < 1:
+        raise argparse.ArgumentTypeError("must be at least 1")
+    return result
+
+
+def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    hardware_dir = Path(__file__).resolve().parent.parent
+    parser = argparse.ArgumentParser(
+        description=(
+            "Export a four-layer placement PCB to DSN and optionally route/import "
+            "it without ever overwriting PocketLab-Card.kicad_pcb."
+        ),
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "--input",
+        type=Path,
+        default=hardware_dir / "PocketLab-Card-planed.kicad_pcb",
+        help="netlisted placement board with filled GND/+3V3 inner planes",
+    )
+    parser.add_argument(
+        "--design",
+        type=Path,
+        default=hardware_dir / "design-netlist.json",
+        help="generator JSON used to reject a stale placement-board netlist",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=hardware_dir / "PocketLab-Card-routed.kicad_pcb",
+        help="separate routed KiCad board output",
+    )
+    parser.add_argument(
+        "--dsn",
+        type=Path,
+        default=hardware_dir / "PocketLab-Card-routing.dsn",
+        help="published Specctra design file",
+    )
+    parser.add_argument(
+        "--ses",
+        type=Path,
+        default=hardware_dir / "PocketLab-Card-routing.ses",
+        help="published or externally generated Specctra session file",
+    )
+    parser.add_argument(
+        "--java",
+        default="java",
+        help="Java executable used for a headless FreeRouting run",
+    )
+    parser.add_argument(
+        "--jar",
+        type=Path,
+        help="FreeRouting 2.3.x executable JAR; omit for DSN-only export",
+    )
+    parser.add_argument(
+        "--passes",
+        type=positive_int,
+        default=20,
+        help="maximum FreeRouting autorouter passes (-mp)",
+    )
+    parser.add_argument(
+        "--threads",
+        type=positive_int,
+        default=max(1, min(8, (os.cpu_count() or 2) - 1)),
+        help="FreeRouting optimizer threads (-mt)",
+    )
+    parser.add_argument(
+        "--export-only",
+        action="store_true",
+        help="only publish a fresh DSN, even when --jar is supplied",
+    )
+    parser.add_argument(
+        "--import-existing-ses",
+        action="store_true",
+        help="import an SES produced after the already-published DSN (no router run)",
+    )
+    parser.add_argument(
+        "--allow-existing-tracks",
+        action="store_true",
+        help=(
+            "explicitly accept pre-existing tracks; every original track must survive "
+            "the SES import byte-for-geometry"
+        ),
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="explicitly replace existing DSN/SES/output staging artifacts",
+    )
+    args = parser.parse_args(argv)
+    if args.export_only and args.import_existing_ses:
+        parser.error("--export-only and --import-existing-ses are mutually exclusive")
+    if args.import_existing_ses and args.jar is not None:
+        parser.error("--import-existing-ses cannot be combined with --jar")
+    return args
+
+
+def load_pcbnew() -> None:
+    global pcbnew
+    try:
+        import pcbnew as pcbnew_module
+    except ModuleNotFoundError as exc:
+        raise RuntimeError(
+            "pcbnew is unavailable. Run this script with KiCad 10's bundled Python."
+        ) from exc
+    if not str(pcbnew_module.GetBuildVersion()).startswith("10."):
+        raise RuntimeError(
+            f"KiCad 10 is required; loaded pcbnew {pcbnew_module.GetBuildVersion()}"
+        )
+    pcbnew = pcbnew_module
+
+
+def canonical_key(path: Path) -> str:
+    return os.path.normcase(str(path.expanduser().resolve(strict=False)))
+
+
+def same_path(left: Path, right: Path) -> bool:
+    if canonical_key(left) == canonical_key(right):
+        return True
+    if left.exists() and right.exists():
+        try:
+            return os.path.samefile(left, right)
+        except OSError:
+            pass
+    return False
+
+
+def validate_paths(args: argparse.Namespace, hardware_dir: Path) -> None:
+    input_path = args.input.expanduser().resolve(strict=False)
+    design_path = args.design.expanduser().resolve(strict=False)
+    output_path = args.output.expanduser().resolve(strict=False)
+    dsn_path = args.dsn.expanduser().resolve(strict=False)
+    ses_path = args.ses.expanduser().resolve(strict=False)
+    main_path = (hardware_dir / "PocketLab-Card.kicad_pcb").resolve(strict=False)
+
+    if not input_path.is_file():
+        raise RuntimeError(f"Input board does not exist: {input_path}")
+    if not design_path.is_file():
+        raise RuntimeError(f"Design netlist does not exist: {design_path}")
+    if design_path.suffix.lower() != ".json":
+        raise RuntimeError("--design must name a .json file")
+    if input_path.suffix.lower() != ".kicad_pcb":
+        raise RuntimeError("--input must name a .kicad_pcb file")
+    if output_path.suffix.lower() != ".kicad_pcb":
+        raise RuntimeError("--output must name a .kicad_pcb file")
+    if dsn_path.suffix.lower() != ".dsn":
+        raise RuntimeError("--dsn must name a .dsn file")
+    if ses_path.suffix.lower() != ".ses":
+        raise RuntimeError("--ses must name a .ses file")
+    if same_path(output_path, main_path):
+        raise RuntimeError("Refusing to overwrite hardware/PocketLab-Card.kicad_pcb")
+    if same_path(input_path, output_path):
+        raise RuntimeError("--output must be separate from --input")
+
+    named_paths = {
+        "input": input_path,
+        "design": design_path,
+        "output": output_path,
+        "dsn": dsn_path,
+        "ses": ses_path,
+    }
+    names = list(named_paths)
+    for index, left_name in enumerate(names):
+        for right_name in names[index + 1 :]:
+            if same_path(named_paths[left_name], named_paths[right_name]):
+                raise RuntimeError(f"--{left_name} and --{right_name} must be different files")
+
+
+def require_destination_available(path: Path, force: bool) -> None:
+    if path.exists() and not force:
+        raise RuntimeError(f"Refusing to replace existing artifact without --force: {path}")
+    if path.exists() and not path.is_file():
+        raise RuntimeError(f"Destination exists but is not a regular file: {path}")
+
+
+def publish_file(source: Path, destination: Path, force: bool) -> None:
+    """Publish a validated temporary file without an implicit overwrite."""
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if force:
+        temporary = destination.with_name(f".{destination.name}.{os.getpid()}.tmp")
+        try:
+            shutil.copy2(source, temporary)
+            os.replace(temporary, destination)
+        finally:
+            if temporary.exists():
+                temporary.unlink()
+        return
+
+    created = False
+    try:
+        with source.open("rb") as source_file, destination.open("xb") as destination_file:
+            created = True
+            shutil.copyfileobj(source_file, destination_file)
+    except Exception:
+        # Remove only the exact partial artifact this invocation just created.
+        if created and destination.exists() and destination.is_file():
+            destination.unlink()
+        raise
+
+
+def board_net_names(board) -> frozenset[str]:
+    return frozenset(str(name) for name in board.GetNetsByName().keys() if str(name))
+
+
+def load_design_parts(path: Path) -> list[dict[str, object]]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"Cannot read design netlist {path}: {exc}") from exc
+    if payload.get("format") != 1 or not isinstance(payload.get("parts"), list):
+        raise RuntimeError(f"Unsupported design-netlist format: {path}")
+    parts = payload["parts"]
+    references = [str(part.get("reference", "")) for part in parts]
+    duplicates = sorted({reference for reference in references if references.count(reference) > 1})
+    if "" in references or duplicates:
+        raise RuntimeError(
+            "Invalid design references; blanks="
+            + str("" in references)
+            + ", duplicates="
+            + repr(duplicates)
+        )
+    return parts
+
+
+def field_is_true(value: object) -> bool:
+    return str(value).strip().lower() in {"1", "true", "yes"}
+
+
+def validate_design_parity(board, design_path: Path) -> None:
+    """Reject an old placement board even when its gross counts look plausible."""
+    parts = load_design_parts(design_path)
+    populated = [part for part in parts if str(part.get("footprint", ""))]
+    expected_by_ref = {str(part["reference"]): part for part in populated}
+    actual_by_ref = {footprint.GetReference(): footprint for footprint in board.GetFootprints()}
+    if expected_by_ref.keys() != actual_by_ref.keys():
+        raise RuntimeError(
+            "Placement board is stale relative to design-netlist.json; footprint refs differ. "
+            "Re-run build_pcb.py."
+        )
+
+    expected_nets = frozenset(
+        str(net_name)
+        for part in populated
+        for net_name in dict(part.get("pins", {})).values()
+        if net_name is not None and str(net_name)
+    )
+    missing_final = REQUIRED_FINAL_NETS - expected_nets
+    obsolete = OBSOLETE_NETS & expected_nets
+    if missing_final or obsolete:
+        raise RuntimeError(
+            "design-netlist.json is not the final routing revision; missing="
+            + repr(sorted(missing_final))
+            + ", obsolete="
+            + repr(sorted(obsolete))
+        )
+    actual_nets = board_net_names(board)
+    if actual_nets != expected_nets:
+        raise RuntimeError(
+            "Placement board netlist is stale; re-run build_pcb.py. Missing="
+            + repr(sorted(expected_nets - actual_nets))
+            + ", obsolete/extra="
+            + repr(sorted(actual_nets - expected_nets))
+        )
+
+    mismatches: list[str] = []
+    for reference, part in expected_by_ref.items():
+        footprint = actual_by_ref[reference]
+        actual_id = footprint.GetFPID().GetUniStringLibId()
+        expected_id = str(part["footprint"])
+        expected_dnp = field_is_true(dict(part.get("fields", {})).get("DNP", ""))
+        if actual_id != expected_id:
+            mismatches.append(f"{reference}:footprint {actual_id!r}!={expected_id!r}")
+        if footprint.GetValue() != str(part.get("value", "")):
+            mismatches.append(f"{reference}:value")
+        if bool(footprint.IsDNP()) != expected_dnp:
+            mismatches.append(f"{reference}:DNP")
+
+        actual_pad_nets: dict[str, set[str]] = {}
+        for pad in footprint.Pads():
+            if pad.GetNumber():
+                actual_pad_nets.setdefault(pad.GetNumber(), set()).add(pad.GetNetname())
+        for pin, net_name_value in dict(part.get("pins", {})).items():
+            net_name = str(net_name_value) if net_name_value else ""
+            if net_name and net_name not in actual_pad_nets.get(str(pin), set()):
+                mismatches.append(f"{reference}.{pin}:{net_name}")
+    if mismatches:
+        raise RuntimeError(
+            "Placement board differs from the generated values/footprints/pad nets; "
+            "re-run build_pcb.py. First mismatches: "
+            + ", ".join(mismatches[:12])
+        )
+
+
+def pad_signature(footprint) -> tuple[tuple[str, str], ...]:
+    return tuple(
+        sorted((pad.GetNumber(), pad.GetNetname()) for pad in footprint.Pads())
+    )
+
+
+def footprint_signature(footprint) -> tuple[object, ...]:
+    position = footprint.GetPosition()
+    footprint_id = footprint.GetFPID().GetUniStringLibId()
+    return (
+        footprint_id,
+        int(footprint.GetLayer()),
+        int(position.x),
+        int(position.y),
+        round(float(footprint.GetOrientationDegrees()), 6),
+        bool(footprint.IsDNP()),
+        pad_signature(footprint),
+    )
+
+
+def footprint_snapshot(board) -> dict[str, tuple[object, ...]]:
+    result: dict[str, tuple[object, ...]] = {}
+    for footprint in board.GetFootprints():
+        reference = footprint.GetReference()
+        if not reference:
+            raise RuntimeError("Every footprint must have a reference")
+        if reference in result:
+            raise RuntimeError(f"Duplicate footprint reference: {reference}")
+        result[reference] = footprint_signature(footprint)
+    return result
+
+
+def point_tuple(point) -> tuple[int, int]:
+    return int(point.x), int(point.y)
+
+
+def layer_tuple(item) -> tuple[int, ...]:
+    return tuple(int(layer) for layer in item.GetLayerSet().Seq())
+
+
+def track_signature(item) -> tuple[object, ...]:
+    if isinstance(item, pcbnew.PCB_VIA):
+        return (
+            "via",
+            item.GetNetname(),
+            point_tuple(item.GetPosition()),
+            int(item.GetWidth()),
+            int(item.GetDrillValue()),
+            int(item.GetViaType()),
+            layer_tuple(item),
+        )
+    if isinstance(item, pcbnew.PCB_ARC):
+        return (
+            "arc",
+            item.GetNetname(),
+            point_tuple(item.GetStart()),
+            point_tuple(item.GetMid()),
+            point_tuple(item.GetEnd()),
+            int(item.GetWidth()),
+            int(item.GetLayer()),
+        )
+    return (
+        "segment",
+        item.GetNetname(),
+        point_tuple(item.GetStart()),
+        point_tuple(item.GetEnd()),
+        int(item.GetWidth()),
+        int(item.GetLayer()),
+    )
+
+
+def track_snapshot(board) -> Counter[tuple[object, ...]]:
+    return Counter(track_signature(track) for track in board.GetTracks())
+
+
+def zone_snapshot(board) -> Counter[tuple[object, ...]]:
+    result: Counter[tuple[object, ...]] = Counter()
+    for zone in board.Zones():
+        result[(zone.GetNetname(), layer_tuple(zone), zone.GetZoneName())] += 1
+    return result
+
+
+def unconnected_edge_count(board) -> int:
+    board.BuildConnectivity()
+    connectivity = board.GetConnectivity()
+    connectivity.RecalculateRatsnest()
+    return int(connectivity.GetUnconnectedCount(False))
+
+
+def validate_four_layer_plane_stack(board) -> tuple[str, str, str, str]:
+    if board.GetCopperLayerCount() != 4:
+        raise RuntimeError(
+            f"Exactly four copper layers are required; board has {board.GetCopperLayerCount()}"
+        )
+    layers = (pcbnew.F_Cu, pcbnew.In1_Cu, pcbnew.In2_Cu, pcbnew.B_Cu)
+    if not all(board.IsLayerEnabled(layer) for layer in layers):
+        raise RuntimeError("F.Cu, In1.Cu, In2.Cu and B.Cu must all be enabled")
+    if board.GetLayerType(pcbnew.F_Cu) != pcbnew.LT_SIGNAL:
+        raise RuntimeError("F.Cu must be a signal layer")
+    if board.GetLayerType(pcbnew.B_Cu) != pcbnew.LT_SIGNAL:
+        raise RuntimeError("B.Cu must be a signal layer")
+    for layer in (pcbnew.In1_Cu, pcbnew.In2_Cu):
+        if board.GetLayerType(layer) != pcbnew.LT_POWER:
+            raise RuntimeError(
+                f"Inner layer {board.GetLayerName(layer)} must be type 'power', not routable signal"
+            )
+    return tuple(board.GetLayerName(layer) for layer in layers)
+
+
+def validate_required_planes(board) -> None:
+    required = {
+        (pcbnew.In1_Cu, "GND"),
+        (pcbnew.In2_Cu, "+3V3"),
+    }
+    found: set[tuple[int, str]] = set()
+    for zone in board.Zones():
+        for layer, net_name in required:
+            if (
+                zone.GetNetname() == net_name
+                and zone.IsOnLayer(layer)
+                and zone.IsFilled()
+                and zone.HasFilledPolysForLayer(layer)
+            ):
+                found.add((layer, net_name))
+    missing = required - found
+    if missing:
+        descriptions = [
+            f"{board.GetLayerName(layer)}={net_name}" for layer, net_name in sorted(missing)
+        ]
+        raise RuntimeError(
+            "Routing input must come from add_planes.py and contain filled inner planes; "
+            "missing "
+            + ", ".join(descriptions)
+        )
+
+
+def validate_no_inner_tracks(board) -> None:
+    inner_layers = {pcbnew.In1_Cu, pcbnew.In2_Cu}
+    offenders: list[str] = []
+    for item in board.GetTracks():
+        if isinstance(item, pcbnew.PCB_VIA):
+            # Through vias may cross plane layers; only planar copper segments
+            # are prohibited on the two inner layers.
+            continue
+        if item.GetLayer() in inner_layers:
+            offenders.append(f"{item.GetNetname()}:{board.GetLayerName(item.GetLayer())}")
+    if offenders:
+        raise RuntimeError(
+            "Inner layers are reserved for planes, but tracks were found there: "
+            + ", ".join(offenders[:12])
+        )
+
+
+def validate_no_critical_vias(board) -> None:
+    # Mirrors the project's .kicad_dru safety rules.  FreeRouting's DSN input
+    # does not reliably express a per-net no-via constraint, so reject a route
+    # that violates it instead of silently accepting the autorouter result.
+    no_via_nets = USB_NETS | NFC_MATCH_NETS | {"GNSS_ANT_FEED"}
+    offenders = sorted(
+        {
+            item.GetNetname()
+            for item in board.GetTracks()
+            if isinstance(item, pcbnew.PCB_VIA) and item.GetNetname() in no_via_nets
+        }
+    )
+    if offenders:
+        raise RuntimeError(
+            "Critical nets must remain via-free according to PocketLab-Card.kicad_dru: "
+            + ", ".join(offenders)
+        )
+
+
+def validate_assignment_groups() -> None:
+    seen: dict[str, str] = {}
+    for class_name, names in ASSIGNMENT_GROUPS:
+        for name in names:
+            previous = seen.setdefault(name, class_name)
+            if previous != class_name:
+                raise RuntimeError(
+                    f"Internal error: net {name} occurs in {previous} and {class_name}"
+                )
+
+
+def set_class_dimensions(netclass, spec: NetClassSpec) -> None:
+    netclass.SetClearance(pcbnew.FromMM(spec.clearance_mm))
+    netclass.SetTrackWidth(pcbnew.FromMM(spec.track_mm))
+    netclass.SetViaDiameter(pcbnew.FromMM(spec.via_mm))
+    netclass.SetViaDrill(pcbnew.FromMM(spec.via_drill_mm))
+    netclass.SetDiffPairWidth(pcbnew.FromMM(spec.diff_width_mm))
+    netclass.SetDiffPairGap(pcbnew.FromMM(spec.diff_gap_mm))
+    netclass.SetDiffPairViaGap(pcbnew.FromMM(spec.diff_via_gap_mm))
+    netclass.SetDescription(spec.description)
+    if spec.priority is not None:
+        netclass.SetPriority(spec.priority)
+
+
+def configure_netclasses(board) -> dict[str, NetClassSpec]:
+    validate_assignment_groups()
+    settings = board.GetDesignSettings().m_NetSettings
+    default_class = settings.GetDefaultNetclass()
+    set_class_dimensions(default_class, DEFAULT_SPEC)
+    settings.SetDefaultNetclass(default_class)
+
+    spec_by_name = {spec.name: spec for spec in MANAGED_SPECS}
+    for spec in MANAGED_SPECS:
+        netclass = pcbnew.NETCLASS(spec.name)
+        set_class_dimensions(netclass, spec)
+        settings.SetNetclass(spec.name, netclass)
+
+    assignments: dict[str, NetClassSpec] = {}
+    actual_nets = board_net_names(board)
+    for class_name, names in ASSIGNMENT_GROUPS:
+        for net_name in sorted(names & actual_nets):
+            class_set = pcbnew.STRINGSET()
+            class_set.insert(class_name)
+            # This is an exact net-name assignment.  Unlike a wildcard pattern,
+            # it does not unexpectedly capture future schematic labels.
+            settings.SetNetclassLabelAssignment(net_name, class_set)
+            assignments[net_name] = spec_by_name[class_name]
+
+    settings.ClearAllCaches()
+    settings.RecomputeEffectiveNetclasses()
+    board.SynchronizeNetsAndNetClasses(False)
+    validate_netclasses(board, assignments)
+    return assignments
+
+
+def validate_netclasses(board, assignments: dict[str, NetClassSpec]) -> None:
+    settings = board.GetDesignSettings().m_NetSettings
+    default_class = settings.GetDefaultNetclass()
+    if default_class.GetTrackWidth() != pcbnew.FromMM(DEFAULT_SPEC.track_mm):
+        raise RuntimeError("Default netclass did not retain its 0.20 mm width")
+    if default_class.GetClearance() != pcbnew.FromMM(DEFAULT_SPEC.clearance_mm):
+        raise RuntimeError("Default netclass did not retain its 0.20 mm clearance")
+
+    for net_name, spec in assignments.items():
+        effective = settings.GetEffectiveNetClass(net_name)
+        expected = (
+            pcbnew.FromMM(spec.track_mm),
+            pcbnew.FromMM(spec.clearance_mm),
+            pcbnew.FromMM(spec.diff_width_mm),
+            pcbnew.FromMM(spec.diff_gap_mm),
+        )
+        actual = (
+            effective.GetTrackWidth(),
+            effective.GetClearance(),
+            effective.GetDiffPairWidth(),
+            effective.GetDiffPairGap(),
+        )
+        if actual != expected:
+            raise RuntimeError(
+                f"Netclass conflict for {net_name}: expected {expected}, got {actual} "
+                f"from {effective.GetHumanReadableName()}"
+            )
+
+
+DSN_LAYER_RE = re.compile(
+    r"\(layer\s+(?:\"([^\"]+)\"|([^\s()]+))\s+\(type\s+([^\s()]+)\)",
+    re.MULTILINE,
+)
+DSN_IDENTITY_RE = re.compile(r'\A\(pcb\s+"[^"]*"')
+
+
+def normalize_dsn_identity(path: Path, published_name: str) -> None:
+    """Remove the random temporary export path from the DSN design identity."""
+    if '"' in published_name or "\n" in published_name or "\r" in published_name:
+        raise RuntimeError(f"Unsafe DSN filename: {published_name!r}")
+    text = path.read_text(encoding="utf-8", errors="strict")
+    normalized, replacements = DSN_IDENTITY_RE.subn(
+        f'(pcb "{published_name}"', text, count=1
+    )
+    if replacements != 1:
+        raise RuntimeError("Could not normalize the KiCad DSN design identity")
+    path.write_text(normalized, encoding="utf-8", newline="\n")
+
+
+def validate_exported_dsn(path: Path, layer_names: tuple[str, str, str, str]) -> None:
+    if not path.is_file() or path.stat().st_size < 100:
+        raise RuntimeError(f"KiCad did not create a usable DSN: {path}")
+    text = path.read_text(encoding="utf-8", errors="strict")
+    discovered: dict[str, str] = {}
+    for quoted_name, bare_name, layer_type in DSN_LAYER_RE.findall(text):
+        discovered[quoted_name or bare_name] = layer_type
+    expected = {
+        layer_names[0]: "signal",
+        layer_names[1]: "power",
+        layer_names[2]: "power",
+        layer_names[3]: "signal",
+    }
+    if discovered != expected:
+        raise RuntimeError(
+            f"Unexpected DSN layer declarations: expected {expected}, got {discovered}"
+        )
+
+
+def resolve_java(java_argument: str) -> str:
+    candidate = Path(java_argument).expanduser()
+    if candidate.is_file():
+        return str(candidate.resolve())
+    discovered = shutil.which(java_argument)
+    if discovered:
+        return discovered
+    raise RuntimeError(f"Java executable not found: {java_argument}")
+
+
+def validate_freerouting_jar(java: str, jar: Path) -> None:
+    if not jar.is_file() or jar.suffix.lower() != ".jar":
+        raise RuntimeError(f"FreeRouting JAR does not exist or is not a .jar: {jar}")
+    probe = subprocess.run(
+        [java, "-jar", str(jar), "-h"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        errors="replace",
+        timeout=30,
+        check=False,
+    )
+    match = re.search(r"Freerouting\s+v(\d+)\.(\d+)\.(\d+)", probe.stdout, re.I)
+    if probe.returncode != 0 or not match:
+        raise RuntimeError(
+            "Could not verify the FreeRouting version from `java -jar ... -h`:\n"
+            + probe.stdout[-2000:]
+        )
+    if (int(match.group(1)), int(match.group(2))) != (2, 3):
+        raise RuntimeError(
+            f"FreeRouting 2.3.x is required; JAR reports {match.group(0)}"
+        )
+
+
+def run_freerouting(
+    java: str,
+    jar: Path,
+    dsn: Path,
+    ses: Path,
+    passes: int,
+    threads: int,
+) -> None:
+    command = [
+        java,
+        "-Djava.awt.headless=true",
+        "-jar",
+        str(jar),
+        "--gui.enabled=false",
+        "--api_server.enabled=false",
+        # FreeRouting 2.3's fanout stage otherwise touches every SMD pin,
+        # including classes ignored with -inc, and can add forbidden critical
+        # vias before normal autorouting begins.
+        "--router.fanout.enabled=false",
+        "--router.layers.routable=true,false,false,true",
+        "-de",
+        str(dsn),
+        "-do",
+        str(ses),
+        "-mp",
+        str(passes),
+        "-mt",
+        str(threads),
+        "-inc",
+        ",".join(MANUAL_NETCLASSES),
+        "-l",
+        "en",
+    ]
+    print("Running FreeRouting:", subprocess.list2cmdline(command))
+    print(
+        "Manual netclasses excluded from autorouting (-inc): "
+        + ", ".join(MANUAL_NETCLASSES)
+    )
+    result = subprocess.run(command, check=False)
+    if result.returncode != 0:
+        raise RuntimeError(f"FreeRouting failed with exit code {result.returncode}")
+    if not ses.is_file() or ses.stat().st_size < 100:
+        raise RuntimeError("FreeRouting exited without creating a usable SES")
+
+
+def validate_round_trip(
+    board,
+    original_footprints: dict[str, tuple[object, ...]],
+    original_nets: frozenset[str],
+    original_tracks: Counter[tuple[object, ...]],
+    original_zones: Counter[tuple[object, ...]],
+    assignments: dict[str, NetClassSpec],
+) -> None:
+    actual_footprints = footprint_snapshot(board)
+    if actual_footprints.keys() != original_footprints.keys():
+        raise RuntimeError(
+            "Footprint round-trip mismatch; missing="
+            + repr(sorted(original_footprints.keys() - actual_footprints.keys()))
+            + ", extra="
+            + repr(sorted(actual_footprints.keys() - original_footprints.keys()))
+        )
+    changed_footprints = [
+        reference
+        for reference in original_footprints
+        if original_footprints[reference] != actual_footprints[reference]
+    ]
+    if changed_footprints:
+        raise RuntimeError(
+            "SES import changed footprint identity/placement/DNP/pads: "
+            + ", ".join(changed_footprints[:12])
+        )
+    if "AE1" not in actual_footprints:
+        raise RuntimeError("AE1 NFC loop footprint was lost")
+    if len(actual_footprints["AE1"][-1]) < 2:
+        raise RuntimeError("AE1 no longer has its two antenna net pads")
+
+    actual_nets = board_net_names(board)
+    if actual_nets != original_nets:
+        raise RuntimeError(
+            "Net round-trip mismatch; missing="
+            + repr(sorted(original_nets - actual_nets))
+            + ", extra="
+            + repr(sorted(actual_nets - original_nets))
+        )
+    if zone_snapshot(board) != original_zones:
+        raise RuntimeError("SES import changed plane-zone net/layer assignments")
+
+    actual_tracks = track_snapshot(board)
+    lost_tracks = original_tracks - actual_tracks
+    if lost_tracks:
+        raise RuntimeError(
+            f"SES import replaced or changed {sum(lost_tracks.values())} existing tracks"
+        )
+    validate_no_inner_tracks(board)
+    validate_no_critical_vias(board)
+    validate_four_layer_plane_stack(board)
+    validate_required_planes(board)
+    validate_netclasses(board, assignments)
+
+
+def save_and_reload_validated(
+    board,
+    candidate_path: Path,
+    original_footprints: dict[str, tuple[object, ...]],
+    original_nets: frozenset[str],
+    original_tracks: Counter[tuple[object, ...]],
+    original_zones: Counter[tuple[object, ...]],
+    assignments: dict[str, NetClassSpec],
+) -> tuple[int, int, int]:
+    pcbnew.SaveBoard(str(candidate_path), board)
+    if not candidate_path.is_file() or candidate_path.stat().st_size < 100:
+        raise RuntimeError("KiCad did not save a usable routed board candidate")
+    reloaded = pcbnew.LoadBoard(str(candidate_path))
+    validate_round_trip(
+        reloaded,
+        original_footprints,
+        original_nets,
+        original_tracks,
+        original_zones,
+        assignments,
+    )
+    return (
+        len(list(reloaded.GetFootprints())),
+        len(list(reloaded.GetTracks())),
+        unconnected_edge_count(reloaded),
+    )
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = parse_args(argv)
+    load_pcbnew()
+    hardware_dir = Path(__file__).resolve().parent.parent
+    validate_paths(args, hardware_dir)
+
+    input_path = args.input.expanduser().resolve()
+    design_path = args.design.expanduser().resolve()
+    output_path = args.output.expanduser().resolve(strict=False)
+    dsn_path = args.dsn.expanduser().resolve(strict=False)
+    ses_path = args.ses.expanduser().resolve(strict=False)
+    export_only = args.export_only or (args.jar is None and not args.import_existing_ses)
+
+    if export_only:
+        require_destination_available(dsn_path, args.force)
+    elif args.import_existing_ses:
+        if not dsn_path.is_file():
+            raise RuntimeError(f"The DSN used for external routing is missing: {dsn_path}")
+        if not ses_path.is_file():
+            raise RuntimeError(f"External SES does not exist: {ses_path}")
+        if ses_path.stat().st_mtime_ns < dsn_path.stat().st_mtime_ns:
+            raise RuntimeError(
+                "External SES is older than the DSN; refusing a potentially stale import"
+            )
+        require_destination_available(output_path, args.force)
+    else:
+        require_destination_available(dsn_path, args.force)
+        require_destination_available(ses_path, args.force)
+        require_destination_available(output_path, args.force)
+
+    board = pcbnew.LoadBoard(str(input_path))
+    layer_names = validate_four_layer_plane_stack(board)
+    validate_required_planes(board)
+    validate_no_inner_tracks(board)
+    validate_no_critical_vias(board)
+    validate_design_parity(board, design_path)
+    original_footprints = footprint_snapshot(board)
+    original_nets = board_net_names(board)
+    original_tracks = track_snapshot(board)
+    original_zones = zone_snapshot(board)
+    if "AE1" not in original_footprints:
+        raise RuntimeError("Input board must contain the AE1 PCB NFC-loop footprint")
+    if original_tracks and not args.allow_existing_tracks:
+        raise RuntimeError(
+            f"Input contains {sum(original_tracks.values())} existing tracks. Refusing to "
+            "let an autorouter touch them without --allow-existing-tracks."
+        )
+
+    assignments = configure_netclasses(board)
+    print(
+        f"Input validated: 4 layers ({', '.join(layer_names)}), "
+        f"{len(original_footprints)} footprints, {len(original_nets)} nets, "
+        f"{sum(original_tracks.values())} existing tracks"
+    )
+
+    with tempfile.TemporaryDirectory(prefix="PocketLabCard-routing-") as temporary_dir:
+        scratch = Path(temporary_dir)
+
+        if args.import_existing_ses:
+            validate_exported_dsn(dsn_path, layer_names)
+            current_dsn = scratch / "PocketLab-Card-current.dsn"
+            if not pcbnew.ExportSpecctraDSN(board, str(current_dsn)):
+                raise RuntimeError("KiCad Specctra DSN comparison export failed")
+            normalize_dsn_identity(current_dsn, dsn_path.name)
+            validate_exported_dsn(current_dsn, layer_names)
+            if current_dsn.read_bytes() != dsn_path.read_bytes():
+                raise RuntimeError(
+                    "Published DSN does not exactly match the current placement board/netclasses; "
+                    "export it again before importing this SES"
+                )
+            import_ses = ses_path
+        else:
+            scratch_dsn = scratch / "PocketLab-Card-routing.dsn"
+            if not pcbnew.ExportSpecctraDSN(board, str(scratch_dsn)):
+                raise RuntimeError("KiCad Specctra DSN export failed")
+            normalize_dsn_identity(scratch_dsn, dsn_path.name)
+            validate_exported_dsn(scratch_dsn, layer_names)
+
+            if export_only:
+                publish_file(scratch_dsn, dsn_path, args.force)
+                print(f"DSN exported: {dsn_path}")
+                print(
+                    "No SES was imported. Route this DSN in FreeRouting and then run "
+                    "with --import-existing-ses, or supply --jar for a headless run."
+                )
+                print(
+                    "L2/L3 are exported as type 'power'; no explicit cross-router "
+                    "routable=false field exists, so the later import is checked again."
+                )
+                return 0
+
+            java = resolve_java(args.java)
+            jar = args.jar.expanduser().resolve()
+            validate_freerouting_jar(java, jar)
+            scratch_ses = scratch / "PocketLab-Card-routing.ses"
+            run_freerouting(
+                java,
+                jar,
+                scratch_dsn,
+                scratch_ses,
+                args.passes,
+                args.threads,
+            )
+            import_ses = scratch_ses
+
+        if not pcbnew.ImportSpecctraSES(board, str(import_ses)):
+            raise RuntimeError(f"KiCad failed to import Specctra SES: {import_ses}")
+        validate_round_trip(
+            board,
+            original_footprints,
+            original_nets,
+            original_tracks,
+            original_zones,
+            assignments,
+        )
+
+        candidate_board = scratch / "PocketLab-Card-routed.kicad_pcb"
+        footprint_count, track_count, unconnected_count = save_and_reload_validated(
+            board,
+            candidate_board,
+            original_footprints,
+            original_nets,
+            original_tracks,
+            original_zones,
+            assignments,
+        )
+
+        # Publish only after the imported board has also survived a KiCad
+        # save/reload round trip.  The main project PCB is protected above.
+        if not args.import_existing_ses:
+            publish_file(scratch_dsn, dsn_path, args.force)
+            publish_file(import_ses, ses_path, args.force)
+        publish_file(candidate_board, output_path, args.force)
+
+    print(f"Routed staging board: {output_path}")
+    print(
+        f"Round trip retained {footprint_count} footprints (including AE1 and DNP state), "
+        f"{len(original_nets)} nets and produced {track_count} tracks/vias."
+    )
+    print(f"Remaining KiCad ratsnest edges (unconnected): {unconnected_count}")
+    print("Validated: no planar tracks on L2/L3 and no pre-existing track was lost.")
+    print(
+        "REVIEW REQUIRED: manually inspect USB pair geometry, RF impedance/antenna, NFC "
+        "matching, power/switch-node routing, plane fills and return paths; then run KiCad DRC."
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except RuntimeError as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        raise SystemExit(2)
