@@ -41,7 +41,7 @@
 ## 2026-08-09 complete schematic checkpoint
 
 - Tool: KiCad CLI 10.0.5
-- Generated schematic: 239 symbols, 232 assigned footprints and 168 named nets.
+- Generated schematic: 241 symbols, 234 assigned footprints and 168 named nets.
 - Current schematic ERC: 0 errors and 0 warnings.
 - PN532 pin 39 DVDD is the internal-LDO output and directly feeds AVDD/TVDD;
   each supply has local decoupling. RX uses the implemented 2.7-kohm loop tap,

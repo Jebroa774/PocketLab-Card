@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -33,6 +34,10 @@ C0603 = "Capacitor_SMD:C_0603_1608Metric"
 L0805 = "Inductor_SMD:L_0805_2012Metric"
 FB0805 = "Inductor_SMD:L_0805_2012Metric"
 SOT23_6 = "Package_TO_SOT_SMD:SOT-23-6"
+NFC_LOOP_DESCRIPTION = (
+    "Prototype PN532 PCB antenna; 4T, 35x27 mm, 0.5/0.5 mm; "
+    "tune assembled board with VNA"
+)
 
 
 @dataclass(frozen=True)
@@ -46,6 +51,8 @@ class Part:
     y: float
     pins: Dict[str, Optional[str]]
     fields: Dict[str, str] = field(default_factory=dict)
+    dnp: bool = False
+    in_bom: bool = True
 
 
 PARTS: list[Part] = []
@@ -62,7 +69,14 @@ def add(
     pins: Dict[str, Optional[str]],
     **fields: str,
 ) -> None:
-    PARTS.append(Part(block, lib_id, reference, value, footprint, x, y, pins, fields))
+    dnp = str(fields.get("DNP", "")).strip().lower() in {"1", "true", "yes"}
+    # Test pads, the solder bridge and the etched PCB antenna are board
+    # structures, not purchasable line items.  Their stock footprints already
+    # carry the matching exclude-from-BOM attribute.
+    in_bom = not (reference.startswith("TP") or reference in {"AE1", "SJ1"})
+    PARTS.append(
+        Part(block, lib_id, reference, value, footprint, x, y, pins, fields, dnp, in_bom)
+    )
 
 
 def passive(
@@ -115,11 +129,11 @@ def build_power() -> None:
     passive(b, "C102", "100nF", C0805, 139.7, 114.3, "BAT_SENSE", "CELL_NEG")
     passive(b, "R105", "2.2k", R0805, 152.4, 114.3, "BAT_VMINUS", "GND")
     add(b, "Connector_Generic:Conn_01x05", "Q2", "CSD16406Q3 DISCHARGE",
-        "Package_SON:VSON-8_3.3x3.3mm_P0.65mm_NexFET", 127.0, 139.7,
+        "PocketLab_Custom:CSD16406Q3_VSON-8_3.3x3.3mm_P0.65mm_JLC", 127.0, 139.7,
         {"1": "CELL_NEG", "2": "CELL_NEG", "3": "CELL_NEG", "4": "BAT_DOUT", "5": "BAT_FET_MID"},
         Manufacturer="TI", MPN="CSD16406Q3")
     add(b, "Connector_Generic:Conn_01x05", "Q3", "CSD16406Q3 CHARGE",
-        "Package_SON:VSON-8_3.3x3.3mm_P0.65mm_NexFET", 152.4, 139.7,
+        "PocketLab_Custom:CSD16406Q3_VSON-8_3.3x3.3mm_P0.65mm_JLC", 152.4, 139.7,
         {"1": "GND", "2": "GND", "3": "GND", "4": "BAT_COUT", "5": "BAT_FET_MID"},
         Manufacturer="TI", MPN="CSD16406Q3")
     passive(b, "R106", "5.1M", R0805, 127.0, 165.1, "BAT_DOUT", "CELL_NEG")
@@ -162,7 +176,7 @@ def build_power() -> None:
         63.5, 215.9, {"1": "U6_PS_SYNC", "2": "PWR_3V3_PG", "3": "U6_VAUX", "4": "GND",
                         "5": "U6_FB", "6": NC, "7": "+3V3", "8": "+3V3", "9": "U6_L2",
                         "10": "GND", "11": "U6_L1", "12": "VSYS", "13": "VSYS",
-                        "14": "VSYS", "15": "GND"}, Manufacturer="TI", MPN="TPS63070RNMR", LCSC="C109322")
+                        "14": "U6_PS_SYNC", "15": "GND"}, Manufacturer="TI", MPN="TPS63070RNMR", LCSC="C109322")
     add(b, "Device:L", "L6", "1.5uH XFL4020-152ME", "PocketLab_Custom:Coilcraft_XFL4020", 101.6, 203.2,
         {"1": "U6_L1", "2": "U6_L2"})
     passive(b, "R116", "10k", R0805, 114.3, 203.2, "VSYS", "U6_PS_SYNC")
@@ -221,7 +235,7 @@ def build_power() -> None:
 def build_mcu() -> None:
     b = "02 ESP32-S3 MCU / USB"
     add(b, "RF_Module:ESP32-S3-WROOM-1", "U1", "ESP32-S3-WROOM-1-N8R2",
-        "RF_Module:ESP32-S3-WROOM-1", 355.6, 114.3,
+        "PocketLab_Card:ESP32-S3-WROOM-1_PhysicalCourtyard", 355.6, 114.3,
         {"1": "GND", "2": "+3V3", "3": "ESP_EN", "4": "GPIO4_MCU", "5": "I2C_SDA",
          "6": "I2C_SCL", "7": "NFC_IRQ_N", "8": "SUBGHZ_GDO0", "9": "SUBGHZ_GDO2",
          "10": "SD_CS_N", "11": "GNSS_TIMEPULSE", "12": "GPIO8_MCU", "13": "USB_D_N",
@@ -294,7 +308,7 @@ def build_nfc() -> None:
     passive(b, "R306", "1k VMID BIAS", R0805, 558.8, 266.7, "NFC_VMID", "NFC_RX")
     add(b, "Device:Antenna_Loop", "AE1", "PCB NFC LOOP - TUNE ON V1",
         "PocketLab_Custom:NFC_Loop_35x27mm_4T_TUNE", 571.5, 266.7,
-        {"1": "NFC_LOOP_A", "2": "NFC_LOOP_B"})
+        {"1": "NFC_LOOP_A", "2": "NFC_LOOP_B"}, Description=NFC_LOOP_DESCRIPTION)
     add(b, "Connector:TestPoint", "TP301", "NFC_LOADMOD TEST", "TestPoint:TestPoint_Pad_D1.0mm", 584.2, 203.2,
         {"1": "NFC_LOADMOD"})
 
@@ -379,6 +393,9 @@ def build_gnss_sd() -> None:
 
 def build_ir_ui() -> None:
     b = "06 IR / RGB / BUTTONS / BUZZER"
+    passive(b, "C607", "22uF 10V X5R IR BUFFER", "Capacitor_SMD:C_1206_3216Metric",
+            63.5, 381.0, "+5V_RAW", "GND")
+    passive(b, "C608", "100nF IR HF", C0805, 63.5, 406.4, "+5V_RAW", "GND")
     passive(b, "R601", "39R 1W pulse-rated", "Resistor_SMD:R_2512_6332Metric", 76.2, 393.7, "+5V_RAW", "IR_LED_A")
     add(b, "Device:LED", "D1", "TSAL6200 940nm", "LED_THT:LED_D5.0mm", 101.6, 393.7,
         {"1": "IR_LED_K", "2": "IR_LED_A"}, Manufacturer="Vishay", MPN="TSAL6200")
@@ -505,6 +522,69 @@ def build_sensors_io() -> None:
         "Connector_PinHeader_2.54mm:PinHeader_2x15_P2.54mm_Vertical", 736.6, 457.2, header)
 
 
+def apply_serialized_dnp_flags(output: Path, dnp_references: set[str]) -> None:
+    """Work around kicad-sch-api 0.5.x always serializing ``(dnp no)``.
+
+    The API exposes ``in_bom`` but not the symbol DNP flag.  Limit the repair
+    to top-level placed-symbol blocks and verify that every requested reference
+    was changed exactly once.  This keeps schematic and PCB assembly state in
+    lockstep without editing generated symbols by hand.
+    """
+    lines = output.read_text(encoding="utf-8").splitlines(keepends=True)
+    rewritten: list[str] = []
+    patched: set[str] = set()
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        if not (line.startswith("\t(symbol") and line.strip() == "(symbol"):
+            rewritten.append(line)
+            index += 1
+            continue
+
+        end = index + 1
+        while end < len(lines) and not (
+            lines[end].startswith("\t)") and lines[end].strip() == ")"
+        ):
+            end += 1
+        if end >= len(lines):
+            raise RuntimeError("Unterminated top-level symbol in generated schematic")
+        block = lines[index : end + 1]
+        match = re.search(
+            r'^\s*\(property "Reference" "([^"]+)"', "".join(block), re.MULTILINE
+        )
+        if match is None:
+            raise RuntimeError("Generated top-level symbol has no Reference property")
+        reference = match.group(1)
+        if reference in dnp_references:
+            serialized = "".join(block)
+            serialized, replacements = re.subn(
+                r"\(dnp no\)", "(dnp yes)", serialized, count=1
+            )
+            if replacements != 1:
+                raise RuntimeError(f"Could not set generated DNP flag for {reference}")
+            block = serialized.splitlines(keepends=True)
+            patched.add(reference)
+        rewritten.extend(block)
+        index = end + 1
+
+    if patched != dnp_references:
+        raise RuntimeError(
+            "Generated DNP symbol set mismatch; missing="
+            + repr(sorted(dnp_references - patched))
+            + ", extra="
+            + repr(sorted(patched - dnp_references))
+        )
+    output.write_text("".join(rewritten), encoding="utf-8")
+
+
+def unconnected_net_name(reference: str, pin_number: str, pin_name: str) -> str:
+    """Mirror KiCad's stable PCB net name for a schematic no-connect pin."""
+    if not pin_name:
+        raise RuntimeError(f"No-connect pin {reference}.{pin_number} has no pin name")
+    escaped_name = pin_name.replace("/", "{slash}")
+    return f"unconnected-({reference}-{escaped_name}-Pad{pin_number})"
+
+
 def emit_schematic(output: Path, design_json: Path, allow_isolated: bool = False) -> None:
     schematic = ksa.create_schematic("PocketLab Card V1")
     schematic.set_paper_size("A0")
@@ -538,9 +618,11 @@ def emit_schematic(output: Path, design_json: Path, allow_isolated: bool = False
             footprint=part.footprint or None,
             **kwargs,
         )
+        component.in_bom = part.in_bom
         created[part.reference] = component
 
     net_usage: dict[str, int] = {}
+    no_connect_nets: dict[str, dict[str, str]] = {}
     for part in PARTS:
         component = created[part.reference]
         actual_pins = {pin.number for pin in component.pins}
@@ -554,11 +636,14 @@ def emit_schematic(output: Path, design_json: Path, allow_isolated: bool = False
             point = schematic.get_component_pin_position(part.reference, pin_number)
             if point is None:
                 raise RuntimeError(f"Cannot locate {part.reference}.{pin_number}")
+            pin = next(pin for pin in component.pins if pin.number == pin_number)
             if net is None:
                 schematic.no_connects.add((point.x, point.y))
+                no_connect_nets.setdefault(part.reference, {})[pin_number] = (
+                    unconnected_net_name(part.reference, pin_number, pin.name)
+                )
                 continue
 
-            pin = next(pin for pin in component.pins if pin.number == pin_number)
             rotation = round(pin.rotation) % 360
             # A 1.27 mm stub keeps labels snapped to the KiCad grid without
             # making two neighbouring vertical passives (12.7 mm centres)
@@ -584,8 +669,17 @@ def emit_schematic(output: Path, design_json: Path, allow_isolated: bool = False
 
     output.parent.mkdir(parents=True, exist_ok=True)
     schematic.save(output)
+    apply_serialized_dnp_flags(output, {part.reference for part in PARTS if part.dnp})
+    serialized_parts = []
+    for part in PARTS:
+        serialized = asdict(part)
+        serialized["no_connect_nets"] = no_connect_nets.get(part.reference, {})
+        serialized_parts.append(serialized)
     design_json.write_text(
-        json.dumps({"format": 1, "parts": [asdict(part) for part in PARTS], "net_usage": net_usage}, indent=2) + "\n",
+        json.dumps(
+            {"format": 1, "parts": serialized_parts, "net_usage": net_usage}, indent=2
+        )
+        + "\n",
         encoding="utf-8",
     )
     print(f"Generated {len(PARTS)} symbols and {len(net_usage)} named nets in {output}")

@@ -1,5 +1,40 @@
 (version 1)
 
+# Package-native land patterns are allowed to use tighter pad-to-pad spacing
+# only inside the named footprint.  Inter-component copper and routed copper
+# keep the board/netclass clearance.  The 0.15 mm group is JLCPCB's stated
+# different-net SMD-pad minimum; Q2/Q3 use a project-local land pattern whose
+# 0.49 mm signal pads restore that gap without reducing the large power lands.
+(rule "0.20 mm native fine-pitch pads"
+    (constraint clearance (min 0.20mm))
+    (condition "A.Type == 'Pad' && B.Type == 'Pad' && A.Parent == B.Parent && (A.Reference == 'J1' || A.Reference == 'U2' || A.Reference == 'U5' || A.Reference == 'U6' || A.Reference == 'U8' || A.Reference == 'U14')"))
+
+(rule "0.15 mm native fine-pitch pads"
+    (constraint clearance (min 0.15mm))
+    (condition "A.Type == 'Pad' && B.Type == 'Pad' && A.Parent == B.Parent && (A.Reference == 'Q2' || A.Reference == 'Q3' || A.Reference == 'U7')"))
+
+# These are plated thermal holes embedded by the official KiCad land patterns,
+# not general routing vias.  Their 0.20/0.50-0.60 mm drill/pad geometry meets
+# JLCPCB's preferred 0.20 mm via drill and annular-ring guidance.
+(rule "0.20 mm embedded thermal holes"
+    (constraint hole_size (min 0.20mm))
+    (condition "A.Type == 'Pad' && ((A.Reference == 'U1' && A.Pad_Number == '41') || (A.Reference == 'U5' && A.Pad_Number == '17'))"))
+
+# The stock ESP32-S3-WROOM courtyard includes more margin than its physical
+# module body at the lower edge.  These two exact pairs overlap that courtyard
+# by 0.245 mm while retaining at least 0.35 mm physical body clearance.  No
+# other U1 courtyard overlap is waived.
+(rule "Reviewed U1 lower-edge courtyard pairs"
+    (constraint courtyard_clearance (min -0.25mm))
+    (condition "(A.Reference == 'U1' && (B.Reference == 'R203' || B.Reference == 'R406')) || (B.Reference == 'U1' && (A.Reference == 'R203' || A.Reference == 'R406'))"))
+
+# J4 is a side-entry JST-PH connector.  Only its two unnumbered mechanical
+# shell tabs intentionally project 0.15 mm across the routed right edge; the
+# electrical pads retain the normal 0.50 mm copper-to-edge requirement.
+(rule "J4 mechanical shell tabs at card edge"
+    (constraint edge_clearance (min -0.20mm))
+    (condition "(A.Type == 'Pad' && A.Reference == 'J4' && A.Pad_Number == 'MP') || (B.Type == 'Pad' && B.Reference == 'J4' && B.Pad_Number == 'MP')"))
+
 # L2 is the continuous ground plane and L3 is the power plane.  Signal tracks
 # on either inner layer would break the intended return-current geometry.
 (rule "Inner layers are planes only"
@@ -12,12 +47,12 @@
 (rule "Power rails use wide outer-layer copper"
     (layer outer)
     (constraint track_width (min 0.50mm) (opt 0.80mm))
-    (condition "A.NetName == 'VBUS_USB' || A.NetName == 'VBUS_FUSED' || A.NetName == 'CELL_POS' || A.NetName == 'CELL_NEG' || A.NetName == 'BAT_FET_MID' || A.NetName == 'VSYS' || A.NetName == '+3V3' || A.NetName == '+5V_RAW' || A.NetName == '+5V_AUX'"))
+    (condition "A.NetName == '/VBUS_USB' || A.NetName == '/VBUS_FUSED' || A.NetName == '/CELL_POS' || A.NetName == '/CELL_NEG' || A.NetName == '/BAT_FET_MID' || A.NetName == '/VSYS' || A.NetName == '/+3V3' || A.NetName == '/+5V_RAW' || A.NetName == '/+5V_AUX'"))
 
 (rule "Converter switch nodes stay wide"
     (layer outer)
     (constraint track_width (min 0.60mm) (opt 0.80mm))
-    (condition "A.NetName == 'U6_L1' || A.NetName == 'U6_L2' || A.NetName == 'U7_SW'"))
+    (condition "A.NetName == '/U6_L1' || A.NetName == '/U6_L2' || A.NetName == '/U7_SW'"))
 
 # Preliminary geometry for JLC04161H-7628.  Recalculate against the exact
 # ordered stack-up before fabrication; changing the stack-up requires changing
@@ -25,11 +60,11 @@
 (rule "GNSS 50 ohm feed width"
     (layer outer)
     (constraint track_width (min 0.36mm) (max 0.36mm) (opt 0.36mm))
-    (condition "A.NetName == 'GNSS_ANT_FEED'"))
+    (condition "A.NetName == '/GNSS_ANT_FEED'"))
 
 (rule "GNSS feed has no vias"
     (constraint disallow via)
-    (condition "A.NetName == 'GNSS_ANT_FEED'"))
+    (condition "A.NetName == '/GNSS_ANT_FEED'"))
 
 # Both resistor-separated USB sections use KiCad's _P/_N naming convention so
 # the pair rules apply on the connector and MCU sides.
@@ -38,30 +73,30 @@
     (constraint track_width (min 0.20mm) (max 0.20mm) (opt 0.20mm))
     (constraint diff_pair_gap (min 0.18mm) (max 0.25mm) (opt 0.20mm))
     (constraint diff_pair_uncoupled (max 2.5mm))
-    (condition "A.inDiffPair('USB*')"))
+    (condition "A.inDiffPair('/USB*')"))
 
 (rule "USB pair has no vias"
     (constraint disallow via)
-    (condition "A.NetName == 'USB_CONN_P' || A.NetName == 'USB_CONN_N' || A.NetName == 'USB_D_P' || A.NetName == 'USB_D_N'"))
+    (condition "A.NetName == '/USB_CONN_P' || A.NetName == '/USB_CONN_N' || A.NetName == '/USB_D_P' || A.NetName == '/USB_D_N'"))
 
 # Keep every external PN532 matching connection on the component/loop side.
 # The only NFC layer transition is the crossover embedded inside AE1 itself.
 (rule "NFC matching route width"
     (layer outer)
     (constraint track_width (min 0.30mm) (max 0.50mm) (opt 0.40mm))
-    (condition "A.NetName == 'NFC_TX1' || A.NetName == 'NFC_TX2' || A.NetName == 'NFC_TX1_F' || A.NetName == 'NFC_TX2_F' || A.NetName == 'NFC_LOOP_A' || A.NetName == 'NFC_LOOP_B'"))
+    (condition "A.NetName == '/NFC_TX1' || A.NetName == '/NFC_TX2' || A.NetName == '/NFC_TX1_F' || A.NetName == '/NFC_TX2_F' || A.NetName == '/NFC_LOOP_A' || A.NetName == '/NFC_LOOP_B'"))
 
 (rule "NFC matching has no routing vias"
     (constraint disallow via)
-    (condition "A.NetName == 'NFC_TX1' || A.NetName == 'NFC_TX2' || A.NetName == 'NFC_TX1_F' || A.NetName == 'NFC_TX2_F' || A.NetName == 'NFC_LOOP_A' || A.NetName == 'NFC_LOOP_B'"))
+    (condition "A.NetName == '/NFC_TX1' || A.NetName == '/NFC_TX2' || A.NetName == '/NFC_TX1_F' || A.NetName == '/NFC_TX2_F' || A.NetName == '/NFC_LOOP_A' || A.NetName == '/NFC_LOOP_B'"))
 
 (rule "PN532 crystal nets stay short"
     (constraint length (max 15mm))
-    (condition "A.NetName == 'NFC_OSCIN' || A.NetName == 'NFC_OSCOUT'"))
+    (condition "A.NetName == '/NFC_OSCIN' || A.NetName == '/NFC_OSCOUT'"))
 
 (rule "RTC crystal nets stay short"
     (constraint length (max 10mm))
-    (condition "A.NetName == 'RTC_OSCI' || A.NetName == 'RTC_OSCO'"))
+    (condition "A.NetName == '/RTC_OSCI' || A.NetName == '/RTC_OSCO'"))
 
 # A schematic DNP must never regain paste just because a footprint flag was
 # missed during synchronization.

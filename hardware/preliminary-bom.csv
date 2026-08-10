@@ -34,6 +34,7 @@ J4,JST,S2B-PH-SM4-TB,PROCUREMENT_GAP,JST_PH_side_entry,Protected 1S LiPo connect
 J5,Generic,2x15_P2.54mm,N/A,PinHeader_2x15_P2.54mm,Dupont expansion,MANUAL_THT,Ships unpopulated
 J7,Generic,1x02_P2.54mm,N/A,PinHeader_1x02_P2.54mm,Optional external 10k NTC,MANUAL_THT,Ships unpopulated; cut SJ1 before use
 D1,Vishay,TSAL6200,PROCUREMENT_GAP,THT_LED_D5.0mm,940nm IR emitter,MANUAL_THT,Edge-facing hand-installed part
+C607/C608,Qualified_sources,22uF_10V_X5R_plus_100nF,PROCUREMENT_GAP,1206_plus_0805,Local 5V IR pulse buffer,PCBA_FACTORY_OR_HAND,Place directly at R601/Q1 hot loop; verify effective capacitance at 5V
 BZ1,Murata,PKMCS0909E,PROCUREMENT_GAP,Buzzer_Murata_PKMCS0909E,Piezo buzzer,PCBA_FACTORY,Non-polar piezo element
 LED1-LED4,Worldsemi,WS2812B-MINI-V3,PROCUREMENT_GAP,LED_3535,Addressable RGB LEDs,PCBA_FACTORY,Pin-1 orientation review required
 R/C_general,Qualified_sources,1percent_X7R_X5R,PROCUREMENT_GAP,0805,General passives,PCBA_FACTORY,Exact MPN and LCSC population remains release-gated

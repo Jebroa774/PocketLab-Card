@@ -1,5 +1,44 @@
 # Work checkpoint — 2026-08-09
 
+## Pause checkpoint — 2026-08-10
+
+Work was paused at the user's request after the placement-source audit. The
+reproducible source scripts are ahead of the tracked generated PCB artifacts;
+regenerate the schematic, netlisted board and plane board before resuming
+routing. Do not treat the current PCB files as order-ready.
+
+Saved source state:
+
+- Generator still produces 241 symbols, 234 populated footprints, 168 named
+  nets and 38 intentional no-connect nets; a fresh KiCad ERC reports 0 items.
+- The latest temporary builder run passes pad/net parity, four-layer stackup,
+  board-inset, full NFC reservation and ESP antenna-placement assertions.
+- Latest temporary placement DRC has no copper-clearance or courtyard errors;
+  only 499 expected unrouted items and 60 silkscreen/text warnings remain.
+- U1 now uses the project-local physical-body courtyard while retaining the
+  complete stock 48 x 21 mm all-copper-layer antenna rule area.
+- The USB/charger, 3V3 buck-boost, 5V boost, battery protection and IR-current
+  islands have been electrically repacked. R710-R734 all have deterministic,
+  collision-free positions around U1, U9 and the 2.54-mm J5 header.
+- Dense reference designators are now kept on Fab/assembly layers rather than
+  production silkscreen. The guarded plane and FreeRouting scripts include the
+  inner-plane and critical-net/via checks completed in this session.
+
+Open items deliberately left for the next session:
+
+1. Finish the Sub-GHz I-PEX mechanical audit. The provisional MHF-I mating-tool
+   clearance is a 9.5-mm diameter around approximately `(80.8, 55.3)` on the
+   back side. At minimum C116, R109, R111, R112 and R122 must be moved out of
+   that space and the keepout must be encoded in the builder/board guide.
+2. Finish the RGB/IR receiver audit. WS2812B-MINI-V3 is not guaranteed from a
+   3.3-V supply (published minimum is 3.7 V); decide and implement the paused
+   +5V_RAW/TTL-buffer solution, then place LED1-LED4 with local C603-C606.
+3. Finish the paused U15/AUX5 repack for shorter R123 ILIM and R127 EN paths.
+4. Regenerate the tracked schematic/design JSON, netlisted board, L2/L3 plane
+   board and matching project/rule copies; rerun ERC/DRC before autorouting.
+5. Resume guarded routing only after the three placement items above are
+   closed. USB, GNSS RF, NFC, clocks, switch nodes and power remain manual.
+
 This checkpoint intentionally stops before autorouting. The tracked main PCB
 now mirrors the validated placement staging board so opening
 `hardware/PocketLab-Card.kicad_pro` shows the real hardware rather than the old
@@ -7,9 +46,9 @@ now mirrors the validated placement staging board so opening
 
 ## Saved state
 
-- Schematic: 239 symbols, 232 assigned footprints and 168 named nets.
+- Schematic: 241 symbols, 234 assigned footprints and 168 named nets.
 - KiCad ERC: 0 violations.
-- Placement: 232 footprints (107 front, 125 back), 0 tracks and 0 zones.
+- Placement: 234 footprints (112 front, 122 back), 0 tracks and 0 zones.
 - Board: 85.60 x 53.98 mm, four layers, nominal 1.6 mm.
 - Encoded stack target: JLC04161H-7628, 35-um outer / 15.2-um inner copper,
   0.2104-mm 7628 prepregs, 1.065-mm core and ENIG.

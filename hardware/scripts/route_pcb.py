@@ -98,6 +98,14 @@ MANAGED_SPECS: tuple[NetClassSpec, ...] = (
         description="PN532 matching path; keep on one outer layer and tune the physical loop",
         priority=3,
     ),
+    NetClassSpec(
+        "SENSITIVE",
+        0.20,
+        description=(
+            "Crystal, NFC receive and bias nodes; manually route short and via-free"
+        ),
+        priority=4,
+    ),
 )
 
 
@@ -129,21 +137,42 @@ USB_NETS = frozenset(
         "USB_D_P",
     }
 )
+USB_CONNECTOR_BRIDGE_NETS = frozenset({"USB_CONN_N", "USB_CONN_P"})
+# J1 has duplicated F.Cu-only USB data pads.  The shortest clean breakout uses
+# one tightly controlled B.Cu bridge per data net, hence exactly two through
+# vias per bridge.  Keep this exception local to the connector instead of
+# weakening the via-free rule for the MCU-side differential pair.
+USB_CONNECTOR_VIA_REGION_MM = (96.30, 100.80, 50.40, 53.00)
+USB_CONNECTOR_VIA_DIAMETER_MM = 0.60
+USB_CONNECTOR_VIA_DRILL_MM = 0.30
+USB_CONNECTOR_VIA_TOLERANCE_MM = 0.01
 RF50_NETS = frozenset({"GNSS_ANT_FEED"})
 NFC_MATCH_NETS = frozenset(
     {"NFC_LOOP_A", "NFC_LOOP_B", "NFC_TX1", "NFC_TX1_F", "NFC_TX2", "NFC_TX2_F"}
+)
+SENSITIVE_NETS = frozenset(
+    {
+        "NFC_OSCIN",
+        "NFC_OSCOUT",
+        "RTC_OSCI",
+        "RTC_OSCO",
+        "NFC_RX_AC",
+        "NFC_RX",
+        "NFC_VMID",
+    }
 )
 ASSIGNMENT_GROUPS: tuple[tuple[str, frozenset[str]], ...] = (
     ("POWER", POWER_NETS),
     ("USB_DIFF", USB_NETS),
     ("GNSS_RF", RF50_NETS),
     ("NFC_RF", NFC_MATCH_NETS),
+    ("SENSITIVE", SENSITIVE_NETS),
 )
 # These classes are intentionally left for manual routing.  FreeRouting's
 # documented -inc option means "ignore net classes", despite the potentially
 # confusing flag name.  This prevents an autorouter from deciding USB, RF,
 # NFC, plane and switch-current topology before the human review.
-MANUAL_NETCLASSES = ("POWER", "USB_DIFF", "GNSS_RF", "NFC_RF")
+MANUAL_NETCLASSES = ("POWER", "USB_DIFF", "GNSS_RF", "NFC_RF", "SENSITIVE")
 REQUIRED_FINAL_NETS = USB_NETS | {
     "GNSS_ANT_FEED",
     "NFC_DVDD",
@@ -330,29 +359,76 @@ def require_destination_available(path: Path, force: bool) -> None:
         raise RuntimeError(f"Destination exists but is not a regular file: {path}")
 
 
+def project_companions(
+    hardware_dir: Path, output_path: Path
+) -> tuple[tuple[Path, Path], ...]:
+    """Return main-project sources and basename-matched output companions."""
+    pairs = tuple(
+        (
+            hardware_dir / f"PocketLab-Card{suffix}",
+            output_path.with_suffix(suffix),
+        )
+        for suffix in (".kicad_pro", ".kicad_dru")
+    )
+    for source, destination in pairs:
+        if not source.is_file():
+            raise RuntimeError(f"Required main-project companion is missing: {source}")
+        if same_path(source, destination):
+            raise RuntimeError(
+                f"Refusing to replace the main-project companion: {destination}"
+            )
+    return pairs
+
+
 def publish_file(source: Path, destination: Path, force: bool) -> None:
     """Publish a validated temporary file without an implicit overwrite."""
     destination.parent.mkdir(parents=True, exist_ok=True)
-    if force:
-        temporary = destination.with_name(f".{destination.name}.{os.getpid()}.tmp")
-        try:
-            shutil.copy2(source, temporary)
-            os.replace(temporary, destination)
-        finally:
-            if temporary.exists():
-                temporary.unlink()
-        return
-
-    created = False
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{destination.name}.", suffix=".tmp", dir=destination.parent
+    )
+    os.close(descriptor)
+    temporary = Path(temporary_name)
     try:
-        with source.open("rb") as source_file, destination.open("xb") as destination_file:
-            created = True
-            shutil.copyfileobj(source_file, destination_file)
-    except Exception:
-        # Remove only the exact partial artifact this invocation just created.
-        if created and destination.exists() and destination.is_file():
-            destination.unlink()
-        raise
+        shutil.copy2(source, temporary)
+        if force:
+            os.replace(temporary, destination)
+        else:
+            # A hard link publishes the already-complete temporary inode in one
+            # operation and fails rather than replacing an existing path.
+            try:
+                os.link(temporary, destination)
+            except FileExistsError as exc:
+                raise RuntimeError(
+                    f"Refusing to replace existing artifact without --force: {destination}"
+                ) from exc
+    finally:
+        if temporary.exists():
+            temporary.unlink()
+
+
+def publish_board_bundle(
+    candidate_board: Path,
+    output_path: Path,
+    companion_pairs: tuple[tuple[Path, Path], ...],
+    force: bool,
+) -> None:
+    """Publish the PCB and its basename-matched project/rule companions.
+
+    Availability is checked for the complete bundle before the first atomic
+    file publication.  This prevents an already-present companion from being
+    discovered only after the routed PCB has been written.
+    """
+    destinations = (output_path,) + tuple(
+        destination for _source, destination in companion_pairs
+    )
+    for destination in destinations:
+        require_destination_available(destination, force)
+
+    # Publish companions first so a newly visible PCB never lacks the project
+    # and custom-rule files that KiCad discovers by matching its basename.
+    for source, destination in companion_pairs:
+        publish_file(source, destination, force)
+    publish_file(candidate_board, output_path, force)
 
 
 def board_net_names(board) -> frozenset[str]:
@@ -383,6 +459,32 @@ def field_is_true(value: object) -> bool:
     return str(value).strip().lower() in {"1", "true", "yes"}
 
 
+def root_local_net_name(logical_name: object) -> str:
+    """Return KiCad's physical name for a local label on the root sheet."""
+    name = str(logical_name)
+    if not name or name.startswith("/"):
+        raise RuntimeError(f"Expected an unscoped logical net name, got {name!r}")
+    return f"/{name}"
+
+
+def pin_board_net_name(
+    part: dict[str, object], pin_number: object, logical_name: object
+) -> str:
+    if logical_name is not None and str(logical_name):
+        return root_local_net_name(logical_name)
+    pin = str(pin_number)
+    no_connect_nets = {
+        str(number): str(name)
+        for number, name in dict(part.get("no_connect_nets", {})).items()
+    }
+    try:
+        return no_connect_nets[pin]
+    except KeyError as exc:
+        raise RuntimeError(
+            f"{part.get('reference', '?')}.{pin}: missing generated no-connect net name"
+        ) from exc
+
+
 def validate_design_parity(board, design_path: Path) -> None:
     """Reject an old placement board even when its gross counts look plausible."""
     parts = load_design_parts(design_path)
@@ -395,14 +497,14 @@ def validate_design_parity(board, design_path: Path) -> None:
             "Re-run build_pcb.py."
         )
 
-    expected_nets = frozenset(
+    expected_logical_nets = frozenset(
         str(net_name)
         for part in populated
         for net_name in dict(part.get("pins", {})).values()
         if net_name is not None and str(net_name)
     )
-    missing_final = REQUIRED_FINAL_NETS - expected_nets
-    obsolete = OBSOLETE_NETS & expected_nets
+    missing_final = REQUIRED_FINAL_NETS - expected_logical_nets
+    obsolete = OBSOLETE_NETS & expected_logical_nets
     if missing_final or obsolete:
         raise RuntimeError(
             "design-netlist.json is not the final routing revision; missing="
@@ -410,6 +512,11 @@ def validate_design_parity(board, design_path: Path) -> None:
             + ", obsolete="
             + repr(sorted(obsolete))
         )
+    expected_nets = frozenset(
+        pin_board_net_name(part, pin, net_name)
+        for part in populated
+        for pin, net_name in dict(part.get("pins", {})).items()
+    )
     actual_nets = board_net_names(board)
     if actual_nets != expected_nets:
         raise RuntimeError(
@@ -424,21 +531,32 @@ def validate_design_parity(board, design_path: Path) -> None:
         footprint = actual_by_ref[reference]
         actual_id = footprint.GetFPID().GetUniStringLibId()
         expected_id = str(part["footprint"])
-        expected_dnp = field_is_true(dict(part.get("fields", {})).get("DNP", ""))
+        fields = {str(name): str(value) for name, value in dict(part.get("fields", {})).items()}
+        expected_dnp = bool(
+            part.get("dnp", field_is_true(fields.get("DNP", "")))
+        )
+        expected_in_bom = bool(part.get("in_bom", True))
         if actual_id != expected_id:
             mismatches.append(f"{reference}:footprint {actual_id!r}!={expected_id!r}")
         if footprint.GetValue() != str(part.get("value", "")):
             mismatches.append(f"{reference}:value")
         if bool(footprint.IsDNP()) != expected_dnp:
             mismatches.append(f"{reference}:DNP")
+        if bool(footprint.IsExcludedFromBOM()) == expected_in_bom:
+            mismatches.append(f"{reference}:in_bom")
+        for field_name, field_value in fields.items():
+            if not footprint.HasField(field_name):
+                mismatches.append(f"{reference}:missing field {field_name}")
+            elif footprint.GetFieldText(field_name) != field_value:
+                mismatches.append(f"{reference}:field {field_name}")
 
         actual_pad_nets: dict[str, set[str]] = {}
         for pad in footprint.Pads():
             if pad.GetNumber():
                 actual_pad_nets.setdefault(pad.GetNumber(), set()).add(pad.GetNetname())
         for pin, net_name_value in dict(part.get("pins", {})).items():
-            net_name = str(net_name_value) if net_name_value else ""
-            if net_name and net_name not in actual_pad_nets.get(str(pin), set()):
+            net_name = pin_board_net_name(part, pin, net_name_value)
+            if net_name not in actual_pad_nets.get(str(pin), set()):
                 mismatches.append(f"{reference}.{pin}:{net_name}")
     if mismatches:
         raise RuntimeError(
@@ -464,6 +582,8 @@ def footprint_signature(footprint) -> tuple[object, ...]:
         int(position.y),
         round(float(footprint.GetOrientationDegrees()), 6),
         bool(footprint.IsDNP()),
+        bool(footprint.IsExcludedFromBOM()),
+        tuple(sorted(footprint.GetFieldsText().items())),
         pad_signature(footprint),
     )
 
@@ -559,8 +679,8 @@ def validate_four_layer_plane_stack(board) -> tuple[str, str, str, str]:
 
 def validate_required_planes(board) -> None:
     required = {
-        (pcbnew.In1_Cu, "GND"),
-        (pcbnew.In2_Cu, "+3V3"),
+        (pcbnew.In1_Cu, "/GND"),
+        (pcbnew.In2_Cu, "/+3V3"),
     }
     found: set[tuple[int, str]] = set()
     for zone in board.Zones():
@@ -605,7 +725,15 @@ def validate_no_critical_vias(board) -> None:
     # Mirrors the project's .kicad_dru safety rules.  FreeRouting's DSN input
     # does not reliably express a per-net no-via constraint, so reject a route
     # that violates it instead of silently accepting the autorouter result.
-    no_via_nets = USB_NETS | NFC_MATCH_NETS | {"GNSS_ANT_FEED"}
+    no_via_nets = {
+        root_local_net_name(name)
+        for name in (
+            (USB_NETS - USB_CONNECTOR_BRIDGE_NETS)
+            | NFC_MATCH_NETS
+            | SENSITIVE_NETS
+            | {"GNSS_ANT_FEED"}
+        )
+    }
     offenders = sorted(
         {
             item.GetNetname()
@@ -617,6 +745,70 @@ def validate_no_critical_vias(board) -> None:
         raise RuntimeError(
             "Critical nets must remain via-free according to PocketLab-Card.kicad_dru: "
             + ", ".join(offenders)
+        )
+
+    connector_nets = {
+        root_local_net_name(name): name for name in USB_CONNECTOR_BRIDGE_NETS
+    }
+    bridge_vias: dict[str, list[object]] = {
+        physical_name: [] for physical_name in connector_nets
+    }
+    for item in board.GetTracks():
+        if isinstance(item, pcbnew.PCB_VIA) and item.GetNetname() in bridge_vias:
+            bridge_vias[item.GetNetname()].append(item)
+
+    # A placement board has no USB bridge yet and must remain a valid autorouter
+    # input.  Once manual USB routing starts, require both complete bridges so a
+    # partial or accidentally added exception can never pass publication checks.
+    via_count = sum(len(vias) for vias in bridge_vias.values())
+    if via_count == 0:
+        return
+    invalid_counts = {
+        connector_nets[net_name]: len(vias)
+        for net_name, vias in bridge_vias.items()
+        if len(vias) != 2
+    }
+    if invalid_counts:
+        details = ", ".join(
+            f"{name}={count}" for name, count in sorted(invalid_counts.items())
+        )
+        raise RuntimeError(
+            "The J1 USB bridge must use exactly two vias on each connector-side "
+            f"data net; found {details}"
+        )
+
+    x_min, x_max, y_min, y_max = USB_CONNECTOR_VIA_REGION_MM
+    geometry_offenders: list[str] = []
+    for net_name, vias in bridge_vias.items():
+        for via in vias:
+            position = via.GetPosition()
+            x_mm = pcbnew.ToMM(position.x)
+            y_mm = pcbnew.ToMM(position.y)
+            diameter_mm = pcbnew.ToMM(via.GetWidth(pcbnew.F_Cu))
+            drill_mm = pcbnew.ToMM(via.GetDrillValue())
+            if via.GetViaType() != pcbnew.VIATYPE_THROUGH:
+                geometry_offenders.append(
+                    f"{connector_nets[net_name]}@({x_mm:.2f},{y_mm:.2f}) is not through"
+                )
+            elif not (x_min <= x_mm <= x_max and y_min <= y_mm <= y_max):
+                geometry_offenders.append(
+                    f"{connector_nets[net_name]}@({x_mm:.2f},{y_mm:.2f}) outside J1"
+                )
+            elif (
+                abs(diameter_mm - USB_CONNECTOR_VIA_DIAMETER_MM)
+                > USB_CONNECTOR_VIA_TOLERANCE_MM
+                or abs(drill_mm - USB_CONNECTOR_VIA_DRILL_MM)
+                > USB_CONNECTOR_VIA_TOLERANCE_MM
+            ):
+                geometry_offenders.append(
+                    f"{connector_nets[net_name]}@({x_mm:.2f},{y_mm:.2f}) "
+                    f"is {diameter_mm:.2f}/{drill_mm:.2f} mm"
+                )
+    if geometry_offenders:
+        raise RuntimeError(
+            "J1 USB bridge vias must be 0.60/0.30 mm through vias inside the "
+            "connector breakout region: "
+            + "; ".join(geometry_offenders)
         )
 
 
@@ -660,7 +852,10 @@ def configure_netclasses(board) -> dict[str, NetClassSpec]:
     assignments: dict[str, NetClassSpec] = {}
     actual_nets = board_net_names(board)
     for class_name, names in ASSIGNMENT_GROUPS:
-        for net_name in sorted(names & actual_nets):
+        for logical_name in sorted(names):
+            net_name = root_local_net_name(logical_name)
+            if net_name not in actual_nets:
+                continue
             class_set = pcbnew.STRINGSET()
             class_set.insert(class_name)
             # This is an exact net-name assignment.  Unlike a wildcard pattern,
@@ -917,6 +1112,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     dsn_path = args.dsn.expanduser().resolve(strict=False)
     ses_path = args.ses.expanduser().resolve(strict=False)
     export_only = args.export_only or (args.jar is None and not args.import_existing_ses)
+    companion_pairs = project_companions(hardware_dir, output_path)
 
     if export_only:
         require_destination_available(dsn_path, args.force)
@@ -929,11 +1125,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             raise RuntimeError(
                 "External SES is older than the DSN; refusing a potentially stale import"
             )
-        require_destination_available(output_path, args.force)
+        for destination in (output_path,) + tuple(
+            destination for _source, destination in companion_pairs
+        ):
+            require_destination_available(destination, args.force)
     else:
         require_destination_available(dsn_path, args.force)
         require_destination_available(ses_path, args.force)
-        require_destination_available(output_path, args.force)
+        for destination in (output_path,) + tuple(
+            destination for _source, destination in companion_pairs
+        ):
+            require_destination_available(destination, args.force)
 
     board = pcbnew.LoadBoard(str(input_path))
     layer_names = validate_four_layer_plane_stack(board)
@@ -1037,9 +1239,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         if not args.import_existing_ses:
             publish_file(scratch_dsn, dsn_path, args.force)
             publish_file(import_ses, ses_path, args.force)
-        publish_file(candidate_board, output_path, args.force)
+        publish_board_bundle(
+            candidate_board,
+            output_path,
+            companion_pairs,
+            args.force,
+        )
 
     print(f"Routed staging board: {output_path}")
+    print(
+        "Matching KiCad companions: "
+        + ", ".join(str(destination) for _source, destination in companion_pairs)
+    )
     print(
         f"Round trip retained {footprint_count} footprints (including AE1 and DNP state), "
         f"{len(original_nets)} nets and produced {track_count} tracks/vias."

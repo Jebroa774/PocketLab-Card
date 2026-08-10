@@ -2,8 +2,10 @@
 
 The placement builder deliberately creates no arbitrary copper.  This separate
 staging step gives FreeRouting real conduction areas while keeping the tracked
-main board protected.  L2 is a continuous GND plane and L3 is a continuous
-+3V3 plane; all other rails remain short, reviewed outer-layer routes/pours.
+main board protected.  L2 is a continuous GND plane.  L3 carries +3V3 except
+below the two back-side switching-regulator/inductor loops, where explicit
+plane-only rule areas prevent switch-noise coupling into the logic rail.  All
+other rails remain short, reviewed outer-layer routes/pours.
 """
 
 from __future__ import annotations
@@ -19,9 +21,21 @@ except ImportError as error:  # pragma: no cover - exercised by the CLI guard
 
 
 PLANE_SPECS = (
-    ("L2_GND_PLANE", pcbnew.In1_Cu, "GND"),
-    ("L3_3V3_PLANE", pcbnew.In2_Cu, "+3V3"),
+    ("L2_GND_PLANE", pcbnew.In1_Cu, "/GND"),
+    ("L3_3V3_PLANE", pcbnew.In2_Cu, "/+3V3"),
 )
+
+# In2.Cu is the layer directly above the back-side switching regulators.  A
+# +3V3 plane below their IC/inductor loops would be an unwanted capacitive
+# return for switch-node energy.  Keep the continuous In1.Cu GND plane, but
+# remove +3V3 below the complete converter/inductor envelopes and bridge
+# between them.  The bounds are derived from the final placement so a later
+# deliberate move cannot leave a stale coordinate-only cutout behind.
+SWITCH_PLANE_KEEPOUTS = (
+    ("L3_U6_L6_SWITCH_KEEPOUT", ("U6", "L6")),
+    ("L3_U7_L7_SWITCH_KEEPOUT", ("U7", "L7")),
+)
+SWITCH_PLANE_KEEPOUT_MARGIN_MM = 0.50
 
 
 def snapshot(board: pcbnew.BOARD) -> tuple[int, int, frozenset[str]]:
@@ -78,13 +92,79 @@ def make_plane(
     return zone
 
 
+def footprint_envelope(
+    board: pcbnew.BOARD, references: tuple[str, ...], margin_mm: float
+) -> tuple[int, int, int, int]:
+    boxes = []
+    for reference in references:
+        footprint = board.FindFootprintByReference(reference)
+        if footprint is None:
+            raise RuntimeError(f"Switch-plane keepout footprint is absent: {reference}")
+        boxes.append(footprint.GetBoundingBox(False, False))
+    margin = pcbnew.FromMM(margin_mm)
+    return (
+        min(box.GetLeft() for box in boxes) - margin,
+        min(box.GetTop() for box in boxes) - margin,
+        max(box.GetRight() for box in boxes) + margin,
+        max(box.GetBottom() for box in boxes) + margin,
+    )
+
+
+def make_plane_keepout(
+    board: pcbnew.BOARD, name: str, references: tuple[str, ...]
+) -> pcbnew.ZONE:
+    zone = pcbnew.ZONE(board)
+    zone.SetZoneName(name)
+    zone.SetLayer(pcbnew.In2_Cu)
+    zone.SetIsRuleArea(True)
+    zone.SetDoNotAllowZoneFills(True)
+    zone.SetDoNotAllowTracks(False)
+    zone.SetDoNotAllowVias(False)
+    zone.SetDoNotAllowPads(False)
+    zone.SetDoNotAllowFootprints(False)
+    # Mutate the zone-owned polygon directly.  Passing a temporary
+    # SHAPE_POLY_SET through SetOutline loses the rule-area outline in KiCad
+    # 10's SWIG bindings after save/reload.
+    left, top, right, bottom = footprint_envelope(
+        board, references, SWITCH_PLANE_KEEPOUT_MARGIN_MM
+    )
+    outline = zone.Outline()
+    outline.NewOutline()
+    for x, y in ((left, top), (right, top), (right, bottom), (left, bottom)):
+        outline.Append(pcbnew.VECTOR2I(x, y))
+    return zone
+
+
 def validate_output(path: Path, original: tuple[int, int, frozenset[str]]) -> None:
     board = pcbnew.LoadBoard(str(path))
     if snapshot(board) != original:
         raise RuntimeError("Plane save/reload changed footprints, tracks or pad nets")
     zones = {zone.GetZoneName(): zone for zone in board.Zones()}
-    if set(zones) != {spec[0] for spec in PLANE_SPECS}:
+    expected_zone_names = {spec[0] for spec in PLANE_SPECS} | {
+        spec[0] for spec in SWITCH_PLANE_KEEPOUTS
+    }
+    if set(zones) != expected_zone_names:
         raise RuntimeError(f"Unexpected zone set after reload: {sorted(zones)}")
+    for name, references in SWITCH_PLANE_KEEPOUTS:
+        keepout = zones[name]
+        if (
+            keepout.GetLayer() != pcbnew.In2_Cu
+            or not keepout.GetIsRuleArea()
+            or not keepout.GetDoNotAllowZoneFills()
+        ):
+            raise RuntimeError(f"Switch-plane keepout identity changed: {name}")
+        left, top, right, bottom = footprint_envelope(
+            board, references, SWITCH_PLANE_KEEPOUT_MARGIN_MM
+        )
+        outline_box = keepout.Outline().BBox()
+        actual = (
+            outline_box.GetLeft(),
+            outline_box.GetTop(),
+            outline_box.GetRight(),
+            outline_box.GetBottom(),
+        )
+        if actual != (left, top, right, bottom):
+            raise RuntimeError(f"Switch-plane keepout bounds changed: {name}")
     for name, layer, net_name in PLANE_SPECS:
         zone = zones[name]
         if zone.GetLayer() != layer or zone.GetNetname() != net_name:
@@ -103,6 +183,16 @@ def validate_output(path: Path, original: tuple[int, int, frozenset[str]]) -> No
         ):
             if filled.Contains(pcbnew.VECTOR2I_MM(x_mm, y_mm)):
                 raise RuntimeError(f"{name} leaked copper into the {label} keepout")
+        if layer == pcbnew.In2_Cu:
+            for keepout_name, references in SWITCH_PLANE_KEEPOUTS:
+                left, top, right, bottom = footprint_envelope(
+                    board, references, SWITCH_PLANE_KEEPOUT_MARGIN_MM
+                )
+                probe = pcbnew.VECTOR2I((left + right) // 2, (top + bottom) // 2)
+                if filled.Contains(probe):
+                    raise RuntimeError(
+                        f"{name} leaked copper into {keepout_name}"
+                    )
 
 
 def main() -> int:
@@ -153,6 +243,8 @@ def main() -> int:
             f"and {outline.VertexCount()} vertices"
         )
 
+    for spec in SWITCH_PLANE_KEEPOUTS:
+        board.Add(make_plane_keepout(board, *spec))
     for spec in PLANE_SPECS:
         board.Add(make_plane(board, outline, *spec))
     if not pcbnew.ZONE_FILLER(board).Fill(board.Zones()):
@@ -162,7 +254,10 @@ def main() -> int:
     pcbnew.SaveBoard(str(output_path), board)
     validate_output(output_path, original)
     print(f"Saved plane-filled staging board: {output_path}")
-    print("L2: GND; L3: +3V3; embedded NFC and ESP keepouts preserved by KiCad fill")
+    print(
+        "L2: continuous GND; L3: +3V3 with U6/L6 and U7/L7 switch-area cutouts; "
+        "embedded NFC and ESP keepouts preserved by KiCad fill"
+    )
     print("Outer-layer power routes, RF ground stitching and final zone review remain manual")
     return 0
 

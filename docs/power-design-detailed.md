@@ -383,7 +383,7 @@ Es darf **kein generisches QFN** verwendet werden. Projekt-Footprint:
 
 | Pin | Name | Netz / Beschaltung |
 |---:|---|---|
-| 1 | PS/SYNC | 10 kOhm nach `VSYS`; Power-Save/PFM aktiv |
+| 1 | PS/SYNC | gemeinsam mit EN hinter 10 kOhm nach `VSYS`; Power-Save/PFM aktiv |
 | 2 | PG | `PWR_3V3_PG`; 10 kOhm Pull-up nach +3V3 |
 | 3 | VAUX | nur 100 nF nach GND; keine externe Last |
 | 4 | GND | ruhige Signalmasse |
@@ -394,7 +394,7 @@ Es darf **kein generisches QFN** verwendet werden. Projekt-Footprint:
 | 10 | PGND | Leistungsmassenfläche |
 | 11 | L1 | L6 Anschluss 1 |
 | 12, 13 | VIN | `VSYS` |
-| 14 | EN | `VSYS`, direkt oder über 0 Ohm |
+| 14 | EN | gemeinsam mit PS/SYNC auf `U6_PS_SYNC`, hinter R116 10 kOhm nach `VSYS` |
 | 15 | VSEL | GND |
 
 Feedback:
@@ -474,6 +474,10 @@ Kennzeichnung manuell zu kontrollieren.
 Layout: L6 direkt zwischen L1 und L2, Eingangskondensatoren unmittelbar an
 VIN/PGND, Ausgangskondensatoren unmittelbar an VOUT/PGND. FB-Teiler an Pin 5,
 weit weg von L1/L2 und Induktor; GND-Seite des Teilers an ruhige GND-Zone.
+TI fordert außerdem einen Serienwiderstand, wenn EN oder PS/SYNC fest an VIN
+gebunden werden. R116 ist deshalb der gemeinsame 10-kOhm-Widerstand für beide
+Pins; eine direkte beziehungsweise 0-Ohm-Verbindung von EN nach VSYS ist nicht
+zulässig.
 
 ## 7. Schaltbare +5V mit TPS61023
 
@@ -535,6 +539,11 @@ werden.
 
 Optionaler Diagnose-ADC: 100 kOhm von `+5V_RAW` auf `ADC_5V_MON`, 33 kOhm von
 dort nach GND und 10 nF nach GND. Bei 5 V entstehen ca. 1.24 V.
+
+Die IR-Stufe erhält zusätzlich direkt am lokalen Pulsstromkreis C607 mit
+22 uF/10 V X5R im handfreundlichen 1206-Gehäuse und C608 mit 100 nF im
+0805-Gehäuse. Beide liegen von `+5V_RAW` nach GND und gehören räumlich zu
+R601/D1/Q1, nicht zum entfernten U7-Ausgangskondensatorbank.
 
 ## 8. 500-mA-Load-Switch für den Header
 

@@ -15,7 +15,7 @@
 
 KiCad 10 is installed locally. `PocketLab-Card.kicad_pro` is the project entry
 point and the PCB scaffold contains the exact credit-card outline. The current
-generated schematic comprises 239 symbols, 232 assigned footprints and 168
+generated schematic comprises 241 symbols, 234 assigned footprints and 168
 named nets; `erc-current.rpt` reports zero errors and zero warnings.
 
 The schematic and its machine-readable net description are reproducible with
@@ -34,7 +34,7 @@ battery using a VNA or suitable NFC fixture.
 
 `PocketLab-Card-netlisted.kicad_pcb` is the reproducible placement work file.
 The tracked `PocketLab-Card.kicad_pcb` currently mirrors that saved placement
-checkpoint so the normal project opens all 232 footprints. Routing and DRC are
+checkpoint so the normal project opens all 234 footprints. Routing and DRC are
 still being developed; neither file is an order-ready fabrication release.
 
 ## Required layout, sourcing and bring-up checks

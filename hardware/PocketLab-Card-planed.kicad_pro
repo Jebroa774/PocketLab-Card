@@ -264,7 +264,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "PocketLab-Card.kicad_pro",
+    "filename": "PocketLab-Card-planed.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -290,44 +290,6 @@
       },
       {
         "bus_width": 12,
-        "clearance": 0.25,
-        "diff_pair_gap": 0.25,
-        "diff_pair_via_gap": 0.25,
-        "diff_pair_width": 0.6,
-        "line_style": 0,
-        "microvia_diameter": 0.3,
-        "microvia_drill": 0.1,
-        "name": "POWER",
-        "pcb_color": "rgba(220, 90, 40, 1.000)",
-        "priority": 0,
-        "schematic_color": "rgba(220, 90, 40, 1.000)",
-        "track_width": 0.6,
-        "tuning_profile": "",
-        "via_diameter": 0.8,
-        "via_drill": 0.4,
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "clearance": 0.2,
-        "diff_pair_gap": 0.2,
-        "diff_pair_via_gap": 0.25,
-        "diff_pair_width": 0.2,
-        "line_style": 0,
-        "microvia_diameter": 0.3,
-        "microvia_drill": 0.1,
-        "name": "USB_DIFF",
-        "pcb_color": "rgba(40, 120, 230, 1.000)",
-        "priority": 1,
-        "schematic_color": "rgba(40, 120, 230, 1.000)",
-        "track_width": 0.2,
-        "tuning_profile": "",
-        "via_diameter": 0.6,
-        "via_drill": 0.3,
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
         "clearance": 0.2,
         "diff_pair_gap": 0.25,
         "diff_pair_via_gap": 0.25,
@@ -336,9 +298,9 @@
         "microvia_diameter": 0.3,
         "microvia_drill": 0.1,
         "name": "GNSS_RF",
-        "pcb_color": "rgba(30, 180, 100, 1.000)",
+        "pcb_color": "rgb(30, 180, 100)",
         "priority": 2,
-        "schematic_color": "rgba(30, 180, 100, 1.000)",
+        "schematic_color": "rgb(30, 180, 100)",
         "track_width": 0.36,
         "tuning_profile": "",
         "via_diameter": 0.6,
@@ -355,9 +317,9 @@
         "microvia_diameter": 0.3,
         "microvia_drill": 0.1,
         "name": "NFC_RF",
-        "pcb_color": "rgba(180, 70, 210, 1.000)",
+        "pcb_color": "rgb(180, 70, 210)",
         "priority": 3,
-        "schematic_color": "rgba(180, 70, 210, 1.000)",
+        "schematic_color": "rgb(180, 70, 210)",
         "track_width": 0.4,
         "tuning_profile": "",
         "via_diameter": 0.6,
@@ -366,17 +328,36 @@
       },
       {
         "bus_width": 12,
-        "clearance": 0.2,
+        "clearance": 0.25,
         "diff_pair_gap": 0.25,
+        "diff_pair_via_gap": 0.25,
+        "diff_pair_width": 0.6,
+        "line_style": 0,
+        "microvia_diameter": 0.3,
+        "microvia_drill": 0.1,
+        "name": "POWER",
+        "pcb_color": "rgb(220, 90, 40)",
+        "priority": 0,
+        "schematic_color": "rgb(220, 90, 40)",
+        "track_width": 0.6,
+        "tuning_profile": "",
+        "via_diameter": 0.8,
+        "via_drill": 0.4,
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "clearance": 0.2,
+        "diff_pair_gap": 0.2,
         "diff_pair_via_gap": 0.25,
         "diff_pair_width": 0.2,
         "line_style": 0,
         "microvia_diameter": 0.3,
         "microvia_drill": 0.1,
-        "name": "SENSITIVE",
-        "pcb_color": "rgba(230, 160, 40, 1.000)",
-        "priority": 4,
-        "schematic_color": "rgba(230, 160, 40, 1.000)",
+        "name": "USB_DIFF",
+        "pcb_color": "rgb(40, 120, 230)",
+        "priority": 1,
+        "schematic_color": "rgb(40, 120, 230)",
         "track_width": 0.2,
         "tuning_profile": "",
         "via_diameter": 0.6,
@@ -392,127 +373,99 @@
     "netclass_patterns": [
       {
         "netclass": "POWER",
-        "pattern": "/+3V3"
+        "pattern": "+3V3"
       },
       {
         "netclass": "POWER",
-        "pattern": "/+5V_AUX"
+        "pattern": "+5V_AUX"
       },
       {
         "netclass": "POWER",
-        "pattern": "/+5V_RAW"
+        "pattern": "+5V_RAW"
       },
       {
         "netclass": "POWER",
-        "pattern": "/BAT_FET_MID"
+        "pattern": "BAT_FET_MID"
       },
       {
         "netclass": "POWER",
-        "pattern": "/CELL_NEG"
+        "pattern": "CELL_NEG"
       },
       {
         "netclass": "POWER",
-        "pattern": "/CELL_POS"
+        "pattern": "CELL_POS"
       },
       {
         "netclass": "POWER",
-        "pattern": "/GND"
+        "pattern": "GND"
       },
       {
         "netclass": "POWER",
-        "pattern": "/U6_L1"
+        "pattern": "U6_L1"
       },
       {
         "netclass": "POWER",
-        "pattern": "/U6_L2"
+        "pattern": "U6_L2"
       },
       {
         "netclass": "POWER",
-        "pattern": "/U7_SW"
+        "pattern": "U7_SW"
       },
       {
         "netclass": "POWER",
-        "pattern": "/VBUS_FUSED"
+        "pattern": "VBUS_FUSED"
       },
       {
         "netclass": "POWER",
-        "pattern": "/VBUS_USB"
+        "pattern": "VBUS_USB"
       },
       {
         "netclass": "POWER",
-        "pattern": "/VSYS"
+        "pattern": "VSYS"
       },
       {
         "netclass": "USB_DIFF",
-        "pattern": "/USB_CONN_N"
+        "pattern": "USB_CONN_N"
       },
       {
         "netclass": "USB_DIFF",
-        "pattern": "/USB_CONN_P"
+        "pattern": "USB_CONN_P"
       },
       {
         "netclass": "USB_DIFF",
-        "pattern": "/USB_D_N"
+        "pattern": "USB_D_N"
       },
       {
         "netclass": "USB_DIFF",
-        "pattern": "/USB_D_P"
+        "pattern": "USB_D_P"
       },
       {
         "netclass": "GNSS_RF",
-        "pattern": "/GNSS_ANT_FEED"
+        "pattern": "GNSS_ANT_FEED"
       },
       {
         "netclass": "NFC_RF",
-        "pattern": "/NFC_LOOP_A"
+        "pattern": "NFC_LOOP_A"
       },
       {
         "netclass": "NFC_RF",
-        "pattern": "/NFC_LOOP_B"
+        "pattern": "NFC_LOOP_B"
       },
       {
         "netclass": "NFC_RF",
-        "pattern": "/NFC_TX1"
+        "pattern": "NFC_TX1"
       },
       {
         "netclass": "NFC_RF",
-        "pattern": "/NFC_TX1_F"
+        "pattern": "NFC_TX1_F"
       },
       {
         "netclass": "NFC_RF",
-        "pattern": "/NFC_TX2"
+        "pattern": "NFC_TX2"
       },
       {
         "netclass": "NFC_RF",
-        "pattern": "/NFC_TX2_F"
-      },
-      {
-        "netclass": "SENSITIVE",
-        "pattern": "/NFC_OSCIN"
-      },
-      {
-        "netclass": "SENSITIVE",
-        "pattern": "/NFC_OSCOUT"
-      },
-      {
-        "netclass": "SENSITIVE",
-        "pattern": "/RTC_OSCI"
-      },
-      {
-        "netclass": "SENSITIVE",
-        "pattern": "/RTC_OSCO"
-      },
-      {
-        "netclass": "SENSITIVE",
-        "pattern": "/NFC_RX_AC"
-      },
-      {
-        "netclass": "SENSITIVE",
-        "pattern": "/NFC_RX"
-      },
-      {
-        "netclass": "SENSITIVE",
-        "pattern": "/NFC_VMID"
+        "pattern": "NFC_TX2_F"
       }
     ]
   },

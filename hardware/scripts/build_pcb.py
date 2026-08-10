@@ -110,48 +110,81 @@ class Occupied:
 # this is stricter than merely reserving the copper annulus.
 NFC_OUTER = Box(22.85, 23.45, 58.95, 52.55)
 
-# Espressif's library courtyard includes a very large RF recommendation area.
-# For collision placement we model the actual module body separately and keep
-# the antenna end free on both PCB sides.  The original footprint courtyard is
-# retained in the output for the final DRC/review.
-ESP_BODY = Box(83.9, 20.0, 102.1, 45.6)
+# The project-local U1 footprint has a physical assembly courtyard, while its
+# original all-layer antenna rule area remains unchanged.  Keep this explicit
+# body model as an independent placement assertion and reserve the antenna end
+# on both PCB sides.
+ESP_BODY = Box(83.5, 20.0, 101.7, 45.6)
 # Stock ESP32-S3-WROOM-1 embeds an all-layer footprint keepout extending 24 mm
 # left/right around its antenna end.  At the fixed module position only the
 # board-interior portion below is relevant.
-ESP_ANTENNA = Box(68.9, 20.0, 105.6, 26.2)
+ESP_ANTENNA = Box(68.5, 20.0, 105.6, 26.2)
 
 
 FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     FixedPlacement("AE1", "F", 40.9, 38.0, 0.0, False, False, True),
     # RF modules and their external antenna connectors.
-    FixedPlacement("U1", "F", 93.0, 32.75, 0.0, True, True, False),
+    # Shift U1 0.40 mm left to create a manufacturable front-side microSD
+    # protection strip.  R203 follows by the same amount.
+    FixedPlacement("U1", "F", 92.6, 32.75, 0.0, True, True, False),
     # GNSS is a straight edge-fed chain: J3 -> D501 -> U4 pin 11.  The DNP
     # active-antenna bias branch is kept immediately beside that line.
     FixedPlacement("U4", "F", 33.2, 59.5, 180.0),
     FixedPlacement("U17", "B", 40.5, 55.5),
-    FixedPlacement("J3", "F", 22.5, 55.3, 0.0, False, True, True),
+    FixedPlacement("J3", "F", 22.5, 56.2, 180.0, True, True, True),
     FixedPlacement("D501", "F", 25.9, 56.2),
     FixedPlacement("L501", "F", 26.2, 59.0, 90.0),
     FixedPlacement("R505", "F", 26.2, 62.6, 90.0),
-    FixedPlacement("C504", "F", 22.4, 60.5, 90.0),
-    FixedPlacement("U3", "B", 64.0, 53.0, 0.0, True, False, False),
+    FixedPlacement("C504", "F", 24.0, 60.7, 90.0),
+    # GNSS supply/load-switch support and UART source damping.  Back-side
+    # angles are chosen so the serialized physical orientations match the
+    # comments below after KiCad's footprint flip.
+    FixedPlacement("R501", "B", 37.85, 55.175, 90.0),
+    FixedPlacement("C501", "B", 39.0, 58.4, 180.0),
+    FixedPlacement("C502", "B", 42.7, 58.4, 180.0),
+    FixedPlacement("R502", "B", 34.2, 53.8),
+    FixedPlacement("R506", "B", 43.9, 55.9, 180.0),
+    FixedPlacement("R507", "B", 36.0, 63.0, 180.0),
+    # Rotate U3 about the centre of its existing envelope so the digital row
+    # faces the routing channel at y=53; its IPEX remains clear from J5/IR.
+    FixedPlacement("U3", "B", 82.0, 67.0, 180.0, True, False, False),
     # Edge connectors and through-hole user interfaces.
     FixedPlacement("J1", "F", 102.6, 51.7, 90.0, True, True, True),
-    FixedPlacement("U16", "F", 94.8, 48.5),
-    FixedPlacement("R201", "F", 88.0, 47.2),
-    FixedPlacement("R202", "F", 88.0, 50.2),
+    # Rotate the USB protector so its N/P pins face J1 in the same physical
+    # order as the MCU pair.  The 22-ohm resistors sit immediately below U1;
+    # pad 2 faces the MCU and the 0.26 mm courtyard gaps remain DRC-clean.
+    FixedPlacement("U16", "F", 94.8, 48.5, 180.0),
+    FixedPlacement("R201", "F", 85.5, 47.5, 180.0),
+    FixedPlacement("R202", "F", 85.5, 49.75, 180.0),
+    # Keep the ESP32 enable network and supply decoupling beside the module
+    # instead of allowing them to occupy the USB breakout channel.
+    FixedPlacement("C202", "F", 81.2, 28.0, 180.0),
+    FixedPlacement("C203", "F", 77.5, 28.0, 180.0),
+    FixedPlacement("R203", "F", 81.4, 31.4, 180.0),
+    FixedPlacement("C201", "F", 79.8, 33.7, 180.0),
     FixedPlacement("J4", "F", 102.1, 65.5, 90.0, True, True, True),
     FixedPlacement("J7", "F", 85.5, 70.0),
     FixedPlacement("J5", "F", 59.0, 69.45, 270.0, True, True, True),
     FixedPlacement("D1", "F", 75.0, 72.0, 90.0, True, True, True),
     FixedPlacement("U13", "F", 65.0, 71.0, 0.0, False, True),
-    FixedPlacement("J2", "B", 50.0, 59.6),
+    # Edge-access microSD under the ESP body.  Electrical pads retain
+    # 0.325 mm copper-to-edge clearance; the card intentionally projects out.
+    FixedPlacement("J2", "B", 99.25, 39.0, 90.0, False, True, False),
     # NFC controller just outside the loop annulus.
     FixedPlacement("U2", "F", 65.0, 42.6),
+    # Keep the 27.12 MHz Pierce oscillator directly below U2.  The two load
+    # capacitors face the crystal signal pads while their ground pads remain
+    # exposed for very short stitching vias into the L2 ground plane.
+    FixedPlacement("Y301", "F", 65.0, 48.4),
+    FixedPlacement("C306", "F", 61.8, 48.1, 90.0),
+    FixedPlacement("C307", "F", 68.2, 48.1, 270.0),
     FixedPlacement("L301", "F", 61.0, 37.0, 90.0),
     FixedPlacement("L302", "F", 65.0, 37.0, 90.0),
     FixedPlacement("C308", "F", 68.0, 36.0),
     FixedPlacement("C309", "F", 68.0, 33.0),
+    # C311 is a DNP NFC tuning option.  Fix it in the NFC bank so the generic
+    # placer cannot put it directly in front of U1's USB pins.
+    FixedPlacement("C311", "F", 78.0, 38.5),
     FixedPlacement("R303", "F", 47.0, 22.2),
     FixedPlacement("R304", "F", 39.5, 22.2),
     # Visible controls occupy the strip below the complete NFC keepout.
@@ -161,52 +194,172 @@ FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     FixedPlacement("LED4", "B", 86.0, 33.0),
     FixedPlacement("SW3", "F", 44.0, 56.0),
     FixedPlacement("SW4", "F", 54.0, 56.0),
+    # Strap/NFC test pads remain accessible on the front, but outside the
+    # coupled USB escape corridor along U1's lower-left corner.
+    FixedPlacement("TP201", "F", 62.0, 52.0),
+    FixedPlacement("TP202", "F", 65.0, 52.0),
+    FixedPlacement("TP203", "F", 60.3, 54.5),
+    FixedPlacement("TP301", "F", 60.3, 57.5),
     # ESP service buttons and the high-current IR/buzzer hardware.
     FixedPlacement("SW1", "F", 75.0, 48.0),
-    FixedPlacement("SW2", "B", 94.0, 42.0),
-    FixedPlacement("R601", "F", 92.0, 69.5),
-    FixedPlacement("Q1", "F", 86.0, 65.0),
+    FixedPlacement("SW2", "B", 56.5, 56.0),
+    # Put the IR pulse buffer, series resistor, LED and MOSFET in one local
+    # current loop.  R601 pad 2 faces D1; the two gate resistors sit beside Q1.
+    FixedPlacement("C607", "F", 79.5, 63.0),
+    FixedPlacement("C608", "F", 79.5, 59.8),
+    FixedPlacement("R601", "F", 75.0, 63.5, 270.0),
+    FixedPlacement("Q1", "F", 80.3, 68.4, 270.0),
+    FixedPlacement("R602", "F", 84.0, 65.4, 180.0),
+    FixedPlacement("R603", "F", 80.3, 65.4, 180.0),
     FixedPlacement("BZ1", "F", 91.0, 57.0),
     FixedPlacement("Q4", "F", 91.0, 64.0),
-    # Power conversion islands on the back.  Passives are packed around these
-    # anchors by functional sub-group below.
-    FixedPlacement("U5", "B", 91.0, 49.0),
+    # U3 local SPI and supply parts sit on F.Cu opposite its rotated digital
+    # row.  Short vias land directly beside the module pads on B.Cu.
+    FixedPlacement("R403", "F", 69.0, 53.0),
+    FixedPlacement("R406", "F", 73.0, 53.0, 180.0),
+    FixedPlacement("R402", "F", 69.8, 56.0, 90.0),
+    FixedPlacement("R401", "F", 72.2, 56.0, 90.0),
+    FixedPlacement("R404", "F", 74.6, 56.0, 90.0),
+    FixedPlacement("C401", "F", 66.5, 67.0, 180.0),
+    FixedPlacement("C402", "F", 70.2, 63.5, 180.0),
+    # USB input protection and charger.  The high-frequency IN/BAT/OUT
+    # capacitors face their U5 pins; programming and default resistors remain
+    # in the same right-side power island rather than at the far board edge.
+    FixedPlacement("F1", "B", 94.9, 47.1),
+    FixedPlacement("D101", "B", 90.2, 47.1),
+    # Pin 13 (VBUS) faces the connector-side capacitors, CELL_POS faces the
+    # two-capacitor row below, and VSYS faces the converter-side capacitors.
+    FixedPlacement("U5", "B", 90.2, 50.5, 90.0),
+    FixedPlacement("C103", "B", 94.15, 52.0, 180.0),
+    FixedPlacement("C106", "B", 94.15, 49.75, 180.0),
+    FixedPlacement("C104", "B", 92.4, 54.1),
+    FixedPlacement("C121", "B", 88.8, 54.1),
+    FixedPlacement("C105", "B", 86.9, 50.5, 90.0),
+    FixedPlacement("C122", "B", 86.8, 46.8, 90.0),
+    # Keep the four analogue charger-programming resistors immediately below
+    # U5.  Quiet status/default pulls remain with the region placer so the
+    # reserved microSD bulk-capacitor slot is not consumed by fixed power parts.
+    FixedPlacement("R111", "B", 85.2, 54.0),
+    FixedPlacement("R112", "B", 85.2, 56.2),
+    FixedPlacement("R113", "B", 88.9, 57.2),
+    FixedPlacement("R114", "B", 92.6, 57.2),
+    FixedPlacement("R128", "B", 90.6, 32.0),
+    # TPS63070: retain the compact dual switch-node geometry and move the HF
+    # bypasses plus control/feedback components into the newly opened gap.
     FixedPlacement("U6", "B", 67.0, 44.0),
     FixedPlacement("L6", "B", 62.5, 44.0, 90.0),
-    FixedPlacement("C107", "B", 70.5, 47.7),
     FixedPlacement("C108", "B", 62.0, 39.8),
-    FixedPlacement("C123", "B", 65.5, 39.8),
-    FixedPlacement("C110", "B", 62.0, 49.8),
-    FixedPlacement("C111", "B", 65.6, 49.8),
-    FixedPlacement("C112", "B", 69.2, 49.8),
-    FixedPlacement("C124", "B", 72.5, 49.8),
-    FixedPlacement("U7", "B", 77.0, 44.0),
-    FixedPlacement("L7", "B", 72.5, 44.0),
-    FixedPlacement("C114", "B", 75.0, 40.3),
-    FixedPlacement("C115", "B", 78.6, 40.3),
-    FixedPlacement("C116", "B", 82.2, 40.3),
-    FixedPlacement("U15", "B", 88.0, 58.0),
-    FixedPlacement("U8", "B", 94.0, 57.5),
-    FixedPlacement("U14", "B", 86.0, 66.5),
-    FixedPlacement("Q2", "B", 90.0, 66.5),
-    FixedPlacement("Q3", "B", 94.5, 66.5),
+    FixedPlacement("C123", "B", 66.6, 40.8, 180.0),
+    FixedPlacement("C124", "B", 67.95, 47.62, 270.0),
+    FixedPlacement("C107", "B", 70.55, 44.6, 180.0),
+    FixedPlacement("R116", "B", 70.3, 41.2, 90.0),
+    FixedPlacement("R117", "B", 70.4, 47.4, 90.0),
+    FixedPlacement("R118", "B", 73.15, 47.7, 180.0),
+    FixedPlacement("R119", "B", 72.8, 41.6, 90.0),
+    FixedPlacement("C110", "B", 60.8, 49.8),
+    FixedPlacement("C111", "B", 64.5, 50.8),
+    FixedPlacement("C112", "B", 68.2, 51.1),
+    # TPS61023: move the complete island right, freeing U6's quiet feedback
+    # side.  C113 is physically parallel to R120 and both divider parts face
+    # U7.1; R403/R404 are moved below the island.
+    FixedPlacement("U7", "B", 81.5, 44.0),
+    FixedPlacement("L7", "B", 77.0, 44.0),
+    FixedPlacement("C113", "B", 86.4, 41.8, 270.0),
+    FixedPlacement("R120", "B", 84.5, 41.8, 270.0),
+    FixedPlacement("R121", "B", 84.5, 45.5, 270.0),
+    FixedPlacement("R122", "B", 84.0, 51.1),
+    FixedPlacement("C114", "B", 81.1, 47.5),
+    FixedPlacement("C115", "B", 81.3, 41.65, 180.0),
+    FixedPlacement("C116", "B", 77.4, 51.1),
+    # Header load switch, current-limit resistor and bypasses form their own
+    # compact island.  Rotation puts IN on the left and OUT on the right.
+    FixedPlacement("U15", "B", 94.5, 60.3, 180.0),
+    FixedPlacement("C117", "B", 88.9, 60.8),
+    FixedPlacement("C119", "B", 95.9, 63.9, 90.0),
+    FixedPlacement("C118", "B", 95.9, 67.8, 90.0),
+    FixedPlacement("R123", "B", 88.9, 63.1),
+    FixedPlacement("R124", "B", 88.1, 37.0, 90.0),
+    FixedPlacement("R127", "B", 91.2, 28.0, 90.0),
+    FixedPlacement("U8", "B", 82.0, 36.5),
+    FixedPlacement("C120", "B", 81.7, 39.3),
+    # Cell protection follows the physical current order
+    # GND -> Q3 -> common drains -> Q2 -> CELL_NEG/J4.
+    FixedPlacement("U14", "B", 88.0, 65.5),
+    FixedPlacement("C102", "B", 85.6, 65.75, 270.0),
+    FixedPlacement("R104", "B", 91.0, 65.6),
+    FixedPlacement("R105", "B", 85.2, 62.7),
+    FixedPlacement("Q3", "B", 88.45, 71.0, 180.0),
+    FixedPlacement("Q2", "B", 92.8, 71.0),
+    FixedPlacement("R107", "B", 88.7, 67.8),
+    FixedPlacement("R106", "B", 92.4, 67.8),
     # Sensors and expanders use the upper-right back side; the complete NFC
-    # loop opening remains empty on both sides.
+    # loop opening remains empty on both sides.  Keep every local bypass part
+    # beside its IC instead of leaving it to the generic block placer.
     FixedPlacement("U9", "B", 64.0, 31.0),
+    FixedPlacement("C701", "B", 61.3, 24.8, 90.0),
+    FixedPlacement("R703", "B", 64.8, 24.5),
     FixedPlacement("U18", "B", 75.0, 29.5),
-    FixedPlacement("U12", "B", 97.0, 34.0),
-    FixedPlacement("U10", "B", 72.0, 35.5),
-    FixedPlacement("U11", "B", 77.0, 35.5),
-    FixedPlacement("Y701", "B", 81.0, 36.0),
-    # microSD protection and local energy storage sit directly beside J2.
-    FixedPlacement("U19", "B", 40.5, 59.0),
-    FixedPlacement("R510", "B", 26.5, 54.0),
-    FixedPlacement("R511", "B", 30.0, 54.0),
-    FixedPlacement("R512", "B", 33.5, 54.0),
-    FixedPlacement("R513", "B", 37.0, 54.0),
-    FixedPlacement("C512", "B", 59.5, 56.0),
-    FixedPlacement("C510", "B", 59.5, 60.0),
-    FixedPlacement("C511", "B", 59.5, 63.0),
+    FixedPlacement("C707", "B", 80.95, 27.5, 180.0),
+    FixedPlacement("R701", "B", 69.2, 28.0, 90.0),
+    FixedPlacement("R702", "B", 69.2, 31.8, 90.0),
+    FixedPlacement("U10", "B", 72.0, 36.0),
+    FixedPlacement("C703", "B", 72.0, 33.317, 180.0),
+    FixedPlacement("C702", "B", 70.5, 38.65),
+    FixedPlacement("U11", "B", 78.0, 35.7),
+    FixedPlacement("C704", "B", 78.0, 33.335, 180.0),
+    FixedPlacement("C705", "B", 78.0, 38.2),
+    FixedPlacement("TP703", "B", 66.0, 37.2),
+    FixedPlacement("TP701", "B", 81.25, 31.2),
+    FixedPlacement("TP702", "B", 86.0, 37.0),
+    # Moving J2 to the right edge opens a quiet lower-left RTC island.  The
+    # two crystal paths remain symmetric and C706 faces the RTC supply pin.
+    FixedPlacement("U12", "B", 50.5, 62.0, 180.0),
+    FixedPlacement("Y701", "B", 45.3, 63.27, 270.0),
+    FixedPlacement("C706", "B", 56.2, 63.9, 180.0),
+    # Direct MCU GPIO resistors use every remaining source-side pocket around
+    # U1/J1.  The four right-edge parts stay above J4's through-hole volume;
+    # the longer GPIO41-44 stubs are an explicit density compromise.
+    FixedPlacement("R710", "B", 103.0, 27.75, 180.0),
+    FixedPlacement("R711", "B", 99.5, 27.75),
+    FixedPlacement("R712", "B", 88.75, 29.0, 90.0),
+    FixedPlacement("R713", "F", 81.0, 52.25, 270.0),
+    FixedPlacement("R714", "F", 78.25, 52.25, 180.0),
+    FixedPlacement("R715", "B", 96.0, 27.75),
+    FixedPlacement("R716", "F", 100.25, 59.0, 270.0),
+    FixedPlacement("R717", "F", 102.5, 59.0, 270.0),
+    FixedPlacement("R718", "F", 83.75, 52.25, 180.0),
+    FixedPlacement("R719", "F", 98.0, 59.0, 270.0),
+    FixedPlacement("R720", "F", 84.5, 57.25, 270.0),
+    FixedPlacement("R721", "F", 81.25, 55.0, 180.0),
+    # The TCA9535 protection bank fits in the 2.82-mm top strip, outside both
+    # the NFC component reservation and ESP antenna keepout.
+    FixedPlacement("R722", "B", 66.6, 21.82, 180.0),
+    FixedPlacement("R723", "B", 62.9, 21.82, 180.0),
+    FixedPlacement("R724", "B", 59.2, 21.82),
+    FixedPlacement("R725", "B", 55.5, 21.82),
+    FixedPlacement("R726", "B", 51.8, 21.82),
+    FixedPlacement("R727", "B", 48.1, 21.82),
+    FixedPlacement("R728", "B", 44.4, 21.82),
+    FixedPlacement("R729", "B", 40.7, 21.82),
+    # Header-side I2C/SPI damping remains immediately above J5 while leaving
+    # the GNSS module and planned four-LED/capacitor row clear.
+    FixedPlacement("R730", "F", 33.2, 66.5, 180.0),
+    FixedPlacement("R731", "F", 36.7, 66.5, 180.0),
+    FixedPlacement("R732", "F", 29.7, 66.5, 180.0),
+    FixedPlacement("R733", "F", 26.2, 66.5),
+    FixedPlacement("R734", "F", 22.7, 66.5),
+    # J2 crosses immediately to the front-side ESD bank.  R510-R512 remain at
+    # the ESP source; card-driven MISO is damped by R513 directly below U19.
+    FixedPlacement("U19", "F", 103.85, 38.5, 90.0, False, True, False),
+    FixedPlacement("R510", "F", 81.45, 38.92, 180.0),
+    FixedPlacement("R511", "F", 89.0, 47.8, 270.0),
+    FixedPlacement("R512", "F", 91.2, 47.8, 270.0),
+    FixedPlacement("R513", "F", 103.1, 42.55, 90.0),
+    # C510/C511 are local at the edge.  The larger C512 stays 1210 and uses
+    # the solid L3 rail as lower-frequency write-current storage.
+    FixedPlacement("C512", "B", 85.25, 29.0),
+    FixedPlacement("C510", "F", 104.3, 34.47, 90.0, False, True, False),
+    FixedPlacement("C511", "F", 104.3, 30.8, 90.0, False, True, False),
 )
 
 
@@ -246,6 +399,36 @@ def natural_key(value: str) -> list[object]:
     return [int(token) if token.isdigit() else token for token in re.split(r"(\d+)", value)]
 
 
+def field_is_true(value: object) -> bool:
+    return str(value).strip().lower() in {"1", "true", "yes"}
+
+
+def root_local_net_name(logical_name: object) -> str:
+    """Return KiCad's physical name for a local label on the root sheet."""
+    name = str(logical_name)
+    if not name or name.startswith("/"):
+        raise RuntimeError(f"Expected an unscoped logical net name, got {name!r}")
+    return f"/{name}"
+
+
+def pin_board_net_name(
+    part: dict[str, object], pin_number: object, logical_name: object
+) -> str:
+    if logical_name is not None and str(logical_name):
+        return root_local_net_name(logical_name)
+    pin = str(pin_number)
+    no_connect_nets = {
+        str(number): str(name)
+        for number, name in dict(part.get("no_connect_nets", {})).items()
+    }
+    try:
+        return no_connect_nets[pin]
+    except KeyError as exc:
+        raise RuntimeError(
+            f"{part.get('reference', '?')}.{pin}: missing generated no-connect net name"
+        ) from exc
+
+
 def load_design(path: Path) -> list[dict[str, object]]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if payload.get("format") != 1 or not isinstance(payload.get("parts"), list):
@@ -269,6 +452,8 @@ def load_footprint(hardware_dir: Path, part: dict[str, object]) -> pcbnew.FOOTPR
 
     if library == "PocketLab_Custom":
         library_dir = hardware_dir / "PocketLab_Custom.pretty"
+    elif library == "PocketLab_Card":
+        library_dir = hardware_dir / "footprints" / "PocketLab_Card.pretty"
     else:
         library_dir = footprint_root() / f"{library}.pretty"
     try:
@@ -285,8 +470,12 @@ def load_footprint(hardware_dir: Path, part: dict[str, object]) -> pcbnew.FOOTPR
     footprint.SetReference(str(part["reference"]))
     footprint.SetValue(str(part["value"]))
     footprint.Value().SetVisible(False)
-    if str(dict(part.get("fields", {})).get("DNP", "")).lower() in {"1", "true", "yes"}:
-        footprint.SetDNP(True)
+    fields = {str(name): str(value) for name, value in dict(part.get("fields", {})).items()}
+    footprint.SetFields(fields)
+    for field_name in fields:
+        footprint.GetField(field_name).SetVisible(False)
+    footprint.SetDNP(bool(part.get("dnp", field_is_true(fields.get("DNP", "")))))
+    footprint.SetExcludedFromBOM(not bool(part.get("in_bom", True)))
     return footprint
 
 
@@ -312,10 +501,9 @@ def validate_footprint_pads(part: dict[str, object], footprint: pcbnew.FOOTPRINT
 def create_nets(board: pcbnew.BOARD, parts: Sequence[dict[str, object]]) -> dict[str, pcbnew.NETINFO_ITEM]:
     names = sorted(
         {
-            str(net_name)
+            pin_board_net_name(part, pin, net_name)
             for part in parts
-            for net_name in dict(part["pins"]).values()
-            if net_name is not None and str(net_name)
+            for pin, net_name in dict(part["pins"]).items()
         }
     )
     result: dict[str, pcbnew.NETINFO_ITEM] = {}
@@ -334,9 +522,7 @@ def assign_pad_nets(
         by_number.setdefault(pad.GetNumber(), []).append(pad)
 
     for pin, net_name_value in dict(part["pins"]).items():
-        if net_name_value is None or not str(net_name_value):
-            continue
-        net_name = str(net_name_value)
+        net_name = pin_board_net_name(part, pin, net_name_value)
         for pad in by_number[str(pin)]:
             pad.SetNet(nets[net_name])
 
@@ -394,12 +580,13 @@ def place_at_origin(
 
 
 def set_reference_style(footprint: pcbnew.FOOTPRINT, side: str) -> None:
+    """Keep dense reference designators on assembly/Fab, not production silk."""
     bounds = courtyard_box(footprint, side)
     reference = footprint.Reference()
     reference.SetVisible(True)
-    reference.SetLayer(pcbnew.F_SilkS if side == "F" else pcbnew.B_SilkS)
-    reference.SetTextSize(vec_mm(0.65, 0.65))
-    reference.SetTextThickness(pcbnew.FromMM(0.1))
+    reference.SetLayer(pcbnew.F_Fab if side == "F" else pcbnew.B_Fab)
+    reference.SetTextSize(vec_mm(0.8, 0.8))
+    reference.SetTextThickness(pcbnew.FromMM(0.12))
     reference.SetPosition(vec_mm((bounds.left + bounds.right) / 2.0, bounds.top - 0.38))
 
 
@@ -425,7 +612,18 @@ def collision_with(
 ) -> Occupied | None:
     candidate = box.expanded(PLACEMENT_CLEARANCE)
     for item in occupied:
-        if item.side == side and candidate.intersects(item.box):
+        # J2 intentionally spans the B-side projection of U1's embedded pad-41
+        # thermal vias.  Those 0.20 mm holes omit B.Mask and are fully tented;
+        # the nearest J2 shell copper starts 0.40 mm beyond the shifted via
+        # array.  Retain every U1 via as an obstacle for all other footprints.
+        reviewed_tented_via_overlap = (
+            reference == "J2" and item.reference == "U1.PTH41"
+        )
+        if (
+            item.side == side
+            and not reviewed_tented_via_overlap
+            and candidate.intersects(item.box)
+        ):
             return item
     return None
 
@@ -631,7 +829,7 @@ SD_REFS = refs(
     "R510", "R511", "R512", "R513", "R514", "R515", "R516", "R517", "R518", "R519",
     "C510", "C511",
 )
-EXPANSION_REFS = {f"R{number}" for number in range(710, 722)}
+EXPANSION_REFS = {f"R{number}" for number in range(710, 735)}
 POWER_TESTPOINTS = {f"TP{number}" for number in range(101, 111)}
 
 
@@ -771,6 +969,11 @@ def add_placement_guides(board: pcbnew.BOARD) -> None:
         pcbnew.Cmts_User,
         0.72,
     )
+    # JST-PH cable polarity is not standardized.  Keep the board-defined
+    # polarity visible even after the connector is fitted, on silk and fab.
+    for layer in (pcbnew.F_SilkS, pcbnew.F_Fab):
+        add_text(board, "BAT -", 96.0, 63.6, layer, 0.78)
+        add_text(board, "BAT +", 96.0, 67.4, layer, 0.78)
 
 
 def remove_template_caption(board: pcbnew.BOARD) -> None:
@@ -808,10 +1011,13 @@ def validate_round_trip(
         )
 
     expected_assignments = {
-        (str(part["reference"]), str(pin), str(net_name))
+        (
+            str(part["reference"]),
+            str(pin),
+            pin_board_net_name(part, pin, net_name),
+        )
         for part in expected_parts
         for pin, net_name in dict(part["pins"]).items()
-        if net_name is not None and str(net_name)
     }
     actual_assignments = {
         (footprint.GetReference(), pad.GetNumber(), pad.GetNetname())
@@ -823,6 +1029,34 @@ def validate_round_trip(
     if missing_assignments:
         sample = sorted(missing_assignments, key=lambda row: (natural_key(row[0]), natural_key(row[1])))[:12]
         raise RuntimeError(f"Round-trip lost pad/net assignments, first entries: {sample}")
+
+    actual_by_ref = {footprint.GetReference(): footprint for footprint in footprints}
+    metadata_mismatches: list[str] = []
+    for part in expected_parts:
+        reference = str(part["reference"])
+        footprint = actual_by_ref[reference]
+        fields = {
+            str(name): str(value)
+            for name, value in dict(part.get("fields", {})).items()
+        }
+        expected_dnp = bool(
+            part.get("dnp", field_is_true(fields.get("DNP", "")))
+        )
+        expected_in_bom = bool(part.get("in_bom", True))
+        if bool(footprint.IsDNP()) != expected_dnp:
+            metadata_mismatches.append(f"{reference}:DNP")
+        if bool(footprint.IsExcludedFromBOM()) == expected_in_bom:
+            metadata_mismatches.append(f"{reference}:in_bom")
+        for field_name, field_value in fields.items():
+            if not footprint.HasField(field_name):
+                metadata_mismatches.append(f"{reference}:missing {field_name}")
+            elif footprint.GetFieldText(field_name) != field_value:
+                metadata_mismatches.append(f"{reference}:{field_name}")
+    if metadata_mismatches:
+        raise RuntimeError(
+            "Round-trip footprint metadata mismatch, first entries: "
+            + ", ".join(metadata_mismatches[:12])
+        )
 
 
 def validate_serialized_stackup(output: Path) -> None:
@@ -880,9 +1114,9 @@ def main() -> int:
 
     all_parts = load_design(design_path)
     populated_parts = [part for part in all_parts if str(part.get("footprint", ""))]
-    if len(all_parts) != 239 or len(populated_parts) != 232:
+    if len(all_parts) != 241 or len(populated_parts) != 234:
         raise RuntimeError(
-            f"Design count changed: expected 239 symbols / 232 footprints, got "
+            f"Design count changed: expected 241 symbols / 234 footprints, got "
             f"{len(all_parts)} / {len(populated_parts)}. Review placement assumptions first."
         )
 
@@ -967,10 +1201,9 @@ def main() -> int:
         shutil.copyfile(rules_source, output_path.with_suffix(".kicad_dru"))
 
     expected_nets = {
-        str(net_name)
+        pin_board_net_name(part, pin, net_name)
         for part in populated_parts
-        for net_name in dict(part["pins"]).values()
-        if net_name is not None and str(net_name)
+        for pin, net_name in dict(part["pins"]).items()
     }
     validate_round_trip(output_path, populated_parts, expected_nets)
     validate_serialized_stackup(output_path)

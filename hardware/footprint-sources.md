@@ -9,6 +9,7 @@ Project-local footprints:
 
 | Footprint | Basis | Release note |
 |---|---|---|
+| `PocketLab_Card:ESP32-S3-WROOM-1_PhysicalCourtyard` | KiCad 10 `RF_Module:ESP32-S3-WROOM-1`; only the oversized antenna-inclusive courtyard was replaced by an 18.70 x 26.10 mm physical-body courtyard, 0.25 mm beyond the stock F.Fab body outline | The stock 48 x 21 mm multilayer antenna keepout, pads, Fab, Silk and 3D model remain unchanged; U1 is assigned this variant by the schematic generator |
 | `E07-900M10S` | Ebyte's official `E07-900M10S.PcbLib`, imported with KiCad 10 and supplemented with Fab/Courtyard data | Verify the exact 22-pad IPEX module variant against received parts |
 | `TPS63070_RNM0015A` | TI MPQF446A / drawing 4222000 Rev. B | Asymmetric power lands and split paste require 1:1 fabrication review |
 | `BMP390_LGA-10_2x2mm` | Bosch BST-BMP390-DS002-07 | Manufacturer bottom view was mirrored to the component-side land pattern; inspect pin 1 in the assembler viewer |
@@ -16,6 +17,7 @@ Project-local footprints:
 | `Coilcraft_XFL4020` | Coilcraft XFL4020 drawing 745-3 | Used by L6; verify selected inductor suffix and height |
 | `Cyntec_HBME042A-1R0MS` | TI part callout plus Cyntec HBLE042A official land drawing | Used by L7; verify the orderable suffix and received geometry |
 | `NFC_Loop_35x27mm_4T_TUNE` | Original four-turn 0.50/0.50-mm PCB geometry | Prototype only; final matching must be measured on the assembled card with a VNA |
+| `CSD16406Q3_VSON-8_3.3x3.3mm_P0.65mm_JLC` | KiCad 10 NexFET VSON footprint and TI CSD16406Q3 DQG package; signal lands 1-4 narrowed by 0.01 mm | Keeps the minimum different-net pad gap at JLCPCB's 0.15 mm limit; verify the exact DQG land/stencil pattern in the assembler viewer |
 
 Primary source links are embedded in each `.kicad_mod` description so they
 remain visible in KiCad's footprint properties. The NFC footprint also embeds
