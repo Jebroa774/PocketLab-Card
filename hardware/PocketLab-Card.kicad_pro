@@ -335,11 +335,11 @@
         "line_style": 0,
         "microvia_diameter": 0.3,
         "microvia_drill": 0.1,
-        "name": "GNSS_RF",
+        "name": "LF_RFID",
         "pcb_color": "rgba(30, 180, 100, 1.000)",
         "priority": 2,
         "schematic_color": "rgba(30, 180, 100, 1.000)",
-        "track_width": 0.36,
+        "track_width": 0.4,
         "tuning_profile": "",
         "via_diameter": 0.6,
         "via_drill": 0.3,
@@ -404,6 +404,10 @@
       },
       {
         "netclass": "POWER",
+        "pattern": "/LF_5V"
+      },
+      {
+        "netclass": "POWER",
         "pattern": "/BAT_FET_MID"
       },
       {
@@ -459,8 +463,40 @@
         "pattern": "/USB_D_P"
       },
       {
-        "netclass": "GNSS_RF",
-        "pattern": "/GNSS_ANT_FEED"
+        "netclass": "LF_RFID",
+        "pattern": "/LF_ANT_A"
+      },
+      {
+        "netclass": "LF_RFID",
+        "pattern": "/LF_ANT_B"
+      },
+      {
+        "netclass": "LF_RFID",
+        "pattern": "/LF_CEXT"
+      },
+      {
+        "netclass": "LF_RFID",
+        "pattern": "/LF_CLK_4M"
+      },
+      {
+        "netclass": "LF_RFID",
+        "pattern": "/LF_QGND"
+      },
+      {
+        "netclass": "LF_RFID",
+        "pattern": "/LF_RX"
+      },
+      {
+        "netclass": "LF_RFID",
+        "pattern": "/LF_TAP"
+      },
+      {
+        "netclass": "LF_RFID",
+        "pattern": "/LF_TX1"
+      },
+      {
+        "netclass": "LF_RFID",
+        "pattern": "/LF_TX2"
       },
       {
         "netclass": "NFC_RF",

@@ -1,5 +1,7 @@
 #include "hardware_manager.h"
 
+#include <cmath>
+
 #include "board_pins.h"
 #include "firmware_config.h"
 #include "json_util.h"
@@ -46,13 +48,19 @@ void HardwareManager::begin() {
   setSafeOutput(pins::SD_CS_N, HIGH);
   setSafeOutput(pins::IR_TX, LOW);
   setSafeOutput(pins::RGB_DATA, LOW);
+  setSafeOutput(pins::LF_SCLK, HIGH);
+  setSafeOutput(pins::LF_DIN, LOW);
 
   pinMode(pins::NFC_IRQ_N, INPUT_PULLUP);
   pinMode(pins::SUBGHZ_GDO0, INPUT);
   pinMode(pins::SUBGHZ_GDO2, INPUT);
-  pinMode(pins::GNSS_TIMEPULSE, INPUT);
+  pinMode(pins::LF_DOUT, INPUT);
+  pinMode(pins::PAIR_N, INPUT_PULLUP);
   pinMode(pins::IR_RX, INPUT_PULLUP);
   pinMode(pins::IOEXP_INT_N, INPUT_PULLUP);
+  pinMode(pins::BOARD_TEMP_ADC, INPUT);
+  analogReadResolution(12);
+  analogSetPinAttenuation(pins::BOARD_TEMP_ADC, ADC_11db);
 
   // Expansion pins never become outputs unless a future, separately audited
   // firmware build explicitly enables that capability.
@@ -77,6 +85,9 @@ void HardwareManager::begin() {
   if (status_.statusExpanderPresent) updateStatusExpanderInputs();
 
   status_.nfcResponding = probeI2cAddress(config::PN532_I2C_ADDRESS);
+  status_.secureElementPresent = probeSecureElement();
+  status_.pairButtonPressed = digitalRead(pins::PAIR_N) == LOW;
+  updateBoardTemperature();
   probeSubGhz();
   lastPollMs_ = millis();
 }
@@ -89,6 +100,11 @@ void HardwareManager::poll() {
   if (status_.statusExpanderPresent) updateStatusExpanderInputs();
   if (status_.controlExpanderPresent) updateControlExpanderInputs();
   status_.nfcResponding = probeI2cAddress(config::PN532_I2C_ADDRESS);
+  status_.pairButtonPressed = digitalRead(pins::PAIR_N) == LOW;
+  updateBoardTemperature();
+  status_.pairingWindowOpen = pairingWindowUntilMs_ != 0 &&
+                              static_cast<int32_t>(pairingWindowUntilMs_ - now) > 0;
+  if (!status_.pairingWindowOpen) pairingWindowUntilMs_ = 0;
 }
 
 bool HardwareManager::probeI2cAddress(uint8_t address) {
@@ -127,7 +143,7 @@ bool HardwareManager::configureControlExpander() {
   if (!probeI2cAddress(config::TCA9534_CONTROL_ADDRESS)) return false;
 
   // Write the safe latch before enabling outputs: charger stays in USB100
-  // mode, charging remains enabled, AUX 5 V/GNSS/boost stay off, and PN532 is
+  // mode, charging remains enabled, AUX 5 V/LF RFID/boost stay off, and PN532 is
   // held in reset. P6/P7 remain inputs for the active-low user buttons.
   controlOutputs_ = 0x00;
   if (!writeI2cRegister(config::TCA9534_CONTROL_ADDRESS, TCA9534_OUTPUT_PORT,
@@ -146,7 +162,9 @@ bool HardwareManager::configureControlExpander() {
   status_.chargerDisabled = false;
   status_.aux5Enabled = false;
   status_.nfcResetReleased = false;
-  status_.gnssPowerEnabled = false;
+  status_.lfRfidPowerEnabled = false;
+  status_.lfRfidTransportOk = false;
+  status_.lfAntennaFail = true;
   status_.boost5Enabled = false;
   return true;
 }
@@ -186,23 +204,154 @@ bool HardwareManager::setControlOutput(uint8_t bit, bool high) {
     status_.aux5Enabled = high;
   } else if (bit == static_cast<uint8_t>(pins::ControlExpanderPin::NfcResetN)) {
     status_.nfcResetReleased = high;
-  } else if (bit == static_cast<uint8_t>(pins::ControlExpanderPin::GnssPowerEnable)) {
-    status_.gnssPowerEnabled = high;
+  } else if (bit == static_cast<uint8_t>(pins::ControlExpanderPin::LfRfidPowerEnable)) {
+    status_.lfRfidPowerEnabled = high;
   } else if (bit == static_cast<uint8_t>(pins::ControlExpanderPin::Boost5Enable)) {
     status_.boost5Enabled = high;
   }
   return true;
 }
 
-bool HardwareManager::setGnssPower(bool enabled) {
-  if (!setControlOutput(
-          static_cast<uint8_t>(pins::ControlExpanderPin::GnssPowerEnable), enabled)) {
+bool HardwareManager::probeSecureElement() {
+  // ATECC608C normally sleeps and therefore does not ACK a plain address
+  // probe. Its documented wake token is an all-zero byte at 100 kHz.
+  Wire.setClock(100000);
+  Wire.beginTransmission(0x00);
+  Wire.endTransmission(true);
+  delay(3);
+  const bool present = probeI2cAddress(config::ATECC608C_I2C_ADDRESS);
+  if (present) {
+    Wire.beginTransmission(config::ATECC608C_I2C_ADDRESS);
+    Wire.write(0x01);  // Sleep word address; no configuration is changed.
+    Wire.endTransmission(true);
+  }
+  Wire.setClock(config::I2C_FREQUENCY_HZ);
+  return present;
+}
+
+void HardwareManager::htrcInitializeInterface() {
+  digitalWrite(pins::LF_DIN, LOW);
+  digitalWrite(pins::LF_SCLK, HIGH);
+  delayMicroseconds(config::LF_SERIAL_HALF_PERIOD_US);
+  digitalWrite(pins::LF_DIN, HIGH);
+  delayMicroseconds(config::LF_SERIAL_HALF_PERIOD_US);
+}
+
+void HardwareManager::htrcWriteBits(uint8_t value, uint8_t count) {
+  for (int8_t bit = static_cast<int8_t>(count) - 1; bit >= 0; --bit) {
+    digitalWrite(pins::LF_SCLK, LOW);
+    digitalWrite(pins::LF_DIN, (value & (1U << bit)) != 0 ? HIGH : LOW);
+    delayMicroseconds(config::LF_SERIAL_HALF_PERIOD_US);
+    digitalWrite(pins::LF_SCLK, HIGH);
+    delayMicroseconds(config::LF_SERIAL_HALF_PERIOD_US);
+  }
+}
+
+void HardwareManager::htrcCommand(uint8_t command) {
+  noInterrupts();
+  htrcInitializeInterface();
+  htrcWriteBits(command, 8);
+  interrupts();
+}
+
+uint8_t HardwareManager::htrcCommandWithResponse(uint8_t command) {
+  uint8_t response = 0;
+  noInterrupts();
+  htrcInitializeInterface();
+  htrcWriteBits(command, 8);
+  digitalWrite(pins::LF_DIN, LOW);
+  for (uint8_t bit = 0; bit < 8; ++bit) {
+    digitalWrite(pins::LF_SCLK, LOW);
+    delayMicroseconds(config::LF_SERIAL_HALF_PERIOD_US);
+    digitalWrite(pins::LF_SCLK, HIGH);
+    delayMicroseconds(config::LF_SERIAL_HALF_PERIOD_US);
+    response = static_cast<uint8_t>((response << 1) |
+                                    (digitalRead(pins::LF_DOUT) == HIGH ? 1U : 0U));
+  }
+  interrupts();
+  return response;
+}
+
+bool HardwareManager::configureHtrc110() {
+  // 4 MHz external clock, smart comparator and LP1 enabled. Page 0 uses the
+  // 6-kHz/160-Hz filters and high gain; page 1 enables the antenna bridge.
+  htrcCommand(0x70);
+  htrcCommand(0x4B);
+  htrcCommand(0x50);
+  htrcCommand(0x60);
+  delay(5);
+
+  const uint8_t page0 = htrcCommandWithResponse(0x04);
+  const uint8_t page1 = htrcCommandWithResponse(0x05);
+  const uint8_t page3 = htrcCommandWithResponse(0x07);
+  if ((page0 & 0x0F) != 0x0B || (page1 & 0x0F) != 0x00 ||
+      (page3 & 0x0F) != 0x00) {
+    status_.lfRfidTransportOk = false;
     return false;
+  }
+
+  status_.lfPhase = static_cast<uint8_t>(htrcCommandWithResponse(0x08) & 0x3F);
+  status_.lfSamplingTime =
+      static_cast<uint8_t>(((status_.lfPhase << 1) + 0x3F) & 0x3F);
+  htrcCommand(static_cast<uint8_t>(0x80 | status_.lfSamplingTime));
+  const uint8_t sampling = htrcCommandWithResponse(0x02) & 0x3F;
+  const uint8_t page2 = htrcCommandWithResponse(0x06);
+  status_.lfAntennaFail = (page2 & 0x10) != 0;
+  status_.lfRfidTransportOk = sampling == status_.lfSamplingTime;
+  return status_.lfRfidTransportOk;
+}
+
+bool HardwareManager::setLfRfidPower(bool enabled) {
+  if (enabled && status_.boardOverTemperature) return false;
+  if (enabled == status_.lfRfidPowerEnabled) {
+    return !enabled || configureHtrc110();
+  }
+  if (enabled) {
+    if (!status_.boost5Enabled) {
+      if (!setBoost5(true)) return false;
+      lfOwnsBoost_ = true;
+      delay(3);
+    }
+    if (!setControlOutput(
+            static_cast<uint8_t>(pins::ControlExpanderPin::LfRfidPowerEnable), true)) {
+      if (lfOwnsBoost_) setBoost5(false);
+      lfOwnsBoost_ = false;
+      return false;
+    }
+    delay(config::LF_POWER_SETTLE_MS);
+    return configureHtrc110();
+  }
+
+  if (!setControlOutput(
+          static_cast<uint8_t>(pins::ControlExpanderPin::LfRfidPowerEnable), false)) {
+    return false;
+  }
+  status_.lfRfidTransportOk = false;
+  status_.lfAntennaFail = true;
+  status_.lfPhase = 0xFF;
+  status_.lfSamplingTime = 0xFF;
+  if (lfOwnsBoost_) {
+    lfOwnsBoost_ = false;
+    return setBoost5(false);
   }
   return true;
 }
 
+bool HardwareManager::diagnoseLfRfid() {
+  return status_.lfRfidPowerEnabled && configureHtrc110();
+}
+
+bool HardwareManager::armPairingWindow() {
+  status_.pairButtonPressed = digitalRead(pins::PAIR_N) == LOW;
+  if (!status_.pairButtonPressed || !status_.secureElementPresent) return false;
+  pairingWindowUntilMs_ = millis() + config::PAIRING_WINDOW_MS;
+  status_.pairingWindowOpen = true;
+  return true;
+}
+
 bool HardwareManager::setBoost5(bool enabled) {
+  if (enabled && status_.boardOverTemperature) return false;
+  if (!enabled && status_.lfRfidPowerEnabled) return false;
   if (!setControlOutput(static_cast<uint8_t>(pins::ControlExpanderPin::Boost5Enable),
                         enabled)) {
     return false;
@@ -236,7 +385,9 @@ void HardwareManager::sendIrByteLsb(uint8_t value) {
 }
 
 bool HardwareManager::sendIrNec(uint8_t address, uint8_t command, uint8_t repeats) {
-  if (!config::IR_TX_COMPILED || repeats > 2) return false;
+  if (!config::IR_TX_COMPILED || repeats > 2 || status_.boardOverTemperature) {
+    return false;
+  }
 
   const uint32_t now = millis();
   if (lastIrTxMs_ != 0 && static_cast<uint32_t>(now - lastIrTxMs_) < 150) {
@@ -316,6 +467,65 @@ void HardwareManager::updateControlExpanderInputs() {
       (input & (1U << static_cast<uint8_t>(pins::ControlExpanderPin::UserButtonBN))) == 0;
 }
 
+void HardwareManager::updateBoardTemperature() {
+  constexpr uint8_t SAMPLE_COUNT = 16;
+  uint32_t sumMillivolts = 0;
+  for (uint8_t sample = 0; sample < SAMPLE_COUNT; ++sample) {
+    sumMillivolts += analogReadMilliVolts(pins::BOARD_TEMP_ADC);
+  }
+  const float millivolts = static_cast<float>(sumMillivolts) / SAMPLE_COUNT;
+
+  // Near-rail readings indicate an open/shorted divider and are reported as
+  // invalid instead of producing a misleading extreme temperature.
+  if (millivolts < 20.0F || millivolts > config::BOARD_TEMP_DIVIDER_MV - 20.0F) {
+    status_.boardTemperatureValid = false;
+    status_.boardOverTemperature = true;
+    enforceThermalShutdown();
+    return;
+  }
+
+  const float ntcOhms = config::BOARD_TEMP_DIVIDER_OHMS * millivolts /
+                         (config::BOARD_TEMP_DIVIDER_MV - millivolts);
+  constexpr float NOMINAL_KELVIN = 25.0F + 273.15F;
+  const float inverseKelvin =
+      (1.0F / NOMINAL_KELVIN) +
+      (std::log(ntcOhms / config::BOARD_TEMP_NOMINAL_OHMS) /
+       config::BOARD_TEMP_BETA);
+  const float celsius = (1.0F / inverseKelvin) - 273.15F;
+  if (!std::isfinite(celsius) || celsius < -40.0F || celsius > 125.0F) {
+    status_.boardTemperatureValid = false;
+    status_.boardOverTemperature = true;
+    enforceThermalShutdown();
+    return;
+  }
+
+  status_.boardTemperatureC = celsius;
+  status_.boardTemperatureValid = true;
+  if (celsius >= config::BOARD_TEMP_SHUTDOWN_C) {
+    status_.boardOverTemperature = true;
+  } else if (celsius <= config::BOARD_TEMP_RELEASE_C) {
+    status_.boardOverTemperature = false;
+  }
+
+  if (status_.boardOverTemperature) {
+    enforceThermalShutdown();
+  } else if (status_.chargerDisabled && status_.controlExpanderPresent) {
+    // Only the thermal policy currently asserts CHG_DISABLE. Rails are not
+    // automatically re-enabled after cooling; the app must request them.
+    setControlOutput(static_cast<uint8_t>(pins::ControlExpanderPin::ChargerDisable),
+                     false);
+  }
+}
+
+void HardwareManager::enforceThermalShutdown() {
+  digitalWrite(pins::IR_TX, LOW);
+  if (!status_.controlExpanderPresent) return;
+  if (status_.lfRfidPowerEnabled) setLfRfidPower(false);
+  setControlOutput(static_cast<uint8_t>(pins::ControlExpanderPin::Aux5Enable), false);
+  if (status_.boost5Enabled) setBoost5(false);
+  setControlOutput(static_cast<uint8_t>(pins::ControlExpanderPin::ChargerDisable), true);
+}
+
 uint8_t HardwareManager::readCc1101StatusRegister(uint8_t address) {
   SPI.beginTransaction(SPISettings(config::SPI_FREQUENCY_HZ, MSBFIRST, SPI_MODE0));
   digitalWrite(pins::SUBGHZ_CS_N, LOW);
@@ -352,7 +562,7 @@ bool HardwareManager::readDirectGpio(uint8_t gpio, bool &level) const {
 
 String HardwareManager::statusJson() const {
   String result;
-  result.reserve(900);
+  result.reserve(1000);
   result += F("{\"ioExpander\":");
   result += json::boolean(status_.statusExpanderPresent && status_.controlExpanderPresent);
   result += F(",\"ioExpanders\":{\"statusTca9535\":");
@@ -376,8 +586,24 @@ String HardwareManager::statusJson() const {
   result += static_cast<unsigned>(status_.cc1101PartNumber);
   result += F(",\"cc1101Version\":");
   result += static_cast<unsigned>(status_.cc1101Version);
-  result += F(",\"gnssPower\":");
-  result += json::boolean(status_.gnssPowerEnabled);
+  result += F(",\"lfRfid\":{\"power\":");
+  result += json::boolean(status_.lfRfidPowerEnabled);
+  result += F(",\"transport\":");
+  result += json::boolean(status_.lfRfidTransportOk);
+  result += F(",\"antennaFail\":");
+  result += json::boolean(status_.lfAntennaFail);
+  result += F(",\"phase\":");
+  result += static_cast<unsigned>(status_.lfPhase);
+  result += F(",\"samplingTime\":");
+  result += static_cast<unsigned>(status_.lfSamplingTime);
+  result += '}';
+  result += F(",\"security\":{\"atecc608c\":");
+  result += json::boolean(status_.secureElementPresent);
+  result += F(",\"pairButton\":");
+  result += json::boolean(status_.pairButtonPressed);
+  result += F(",\"pairingWindow\":");
+  result += json::boolean(status_.pairingWindowOpen);
+  result += F(",\"provisioned\":false}");
   result += F(",\"boost5\":");
   result += json::boolean(status_.boost5Enabled);
   result += F(",\"aux5\":");
@@ -406,6 +632,17 @@ String HardwareManager::statusJson() const {
   result += json::boolean(status_.userButtonAPressed);
   result += F(",\"b\":");
   result += json::boolean(status_.userButtonBPressed);
+  result += '}';
+  result += F(",\"boardTemperature\":{\"valid\":");
+  result += json::boolean(status_.boardTemperatureValid);
+  result += F(",\"celsius\":");
+  if (status_.boardTemperatureValid) {
+    result += String(status_.boardTemperatureC, 1);
+  } else {
+    result += F("null");
+  }
+  result += F(",\"overTemperature\":");
+  result += json::boolean(status_.boardOverTemperature);
   result += '}';
   result += F(",\"txPolicy\":{\"subGhz\":");
   result += json::boolean(config::SUBGHZ_TX_COMPILED);

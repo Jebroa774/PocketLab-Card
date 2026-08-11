@@ -21,8 +21,9 @@ must verify regulator temperature, battery current and RF noise in every mode.
 | microSD write transient | 3.3 V | 200 mA |
 | Four RGB LEDs, full white | 5 V | 240 mA |
 | CC1101 transmit | 3.3 V | 40 mA |
-| GNSS plus active antenna | 3.3 V | 50 mA |
+| HTRC110 logic plus antenna bridge | 5 V | up to about 140 mA; measure final coil |
 | Sensors, RTC, expanders and OLED | 3.3 V | 100 mA |
+| Board-temperature divider | 3.3 V | about 0.17 mA at 25 degrees C |
 | IR transmitter, current V1 default | 5 V | approximately 100 mA pulsed |
 
 The allocations do not all occur continuously. The 3.3-V rail is nevertheless
@@ -55,3 +56,5 @@ lets the battery supplement short load peaks.
 - Reject IR boost mode below a configurable battery threshold.
 - Flush microSD data before deep sleep or power-domain shutdown.
 - Record brownout and overtemperature events in a persistent diagnostic log.
+- At 80 degrees C board temperature, stop charging and all switchable 5-V
+  loads; require cooling below 70 degrees C before releasing the charger.

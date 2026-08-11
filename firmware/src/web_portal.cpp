@@ -10,11 +10,9 @@
 
 namespace pocketlab {
 
-WebPortal::WebPortal(HardwareManager &hardware, StorageManager &storage,
-                     GnssTripLogger &gnss)
+WebPortal::WebPortal(HardwareManager &hardware, StorageManager &storage)
     : hardware_(hardware),
       storage_(storage),
-      gnss_(gnss),
       server_(config::HTTP_PORT),
       webSocket_(config::WEBSOCKET_PORT) {}
 
@@ -89,9 +87,10 @@ void WebPortal::configureRoutes() {
   server_.on(F("/api/upload"), HTTP_POST,
              [this]() { handleUploadComplete(); },
              [this]() { handleUploadChunk(); });
-  server_.on(F("/api/trip/start"), HTTP_POST, [this]() { handleTripStart(); });
-  server_.on(F("/api/trip/stop"), HTTP_POST, [this]() { handleTripStop(); });
-  server_.on(F("/api/gnss/power"), HTTP_POST, [this]() { handleGnssPower(); });
+  server_.on(F("/api/lf/power"), HTTP_POST, [this]() { handleLfPower(); });
+  server_.on(F("/api/lf/diagnose"), HTTP_POST, [this]() { handleLfDiagnose(); });
+  server_.on(F("/api/security/pairing-window"), HTTP_POST,
+             [this]() { handlePairingArm(); });
   server_.on(F("/api/sd/remount"), HTTP_POST, [this]() { handleSdRemount(); });
   server_.on(F("/api/subghz/tx"), HTTP_POST,
              [this]() { handleLockedTransmit(F("subghz_tx")); });
@@ -158,8 +157,6 @@ String WebPortal::buildStatusJson() const {
   result += hardware_.statusJson();
   result += F(",\"storage\":");
   result += storage_.statusJson();
-  result += F(",\"gnss\":");
-  result += gnss_.statusJson();
   result += '}';
   return result;
 }
@@ -254,10 +251,6 @@ void WebPortal::handleFileDownload() {
 
 void WebPortal::handleFileDelete() {
   if (!authorizeMutation()) return;
-  if (gnss_.tripActive()) {
-    sendError(409, F("stop_trip_before_file_changes"));
-    return;
-  }
   String path;
   if (!storage_.normalizePath(server_.arg(F("path")), path, false)) {
     sendError(400, F("invalid_path"));
@@ -279,10 +272,6 @@ void WebPortal::handleUploadChunk() {
     uploadError_ = String();
     if (!uploadAuthorized_) {
       uploadError_ = F("invalid_session_token");
-      return;
-    }
-    if (gnss_.tripActive()) {
-      uploadError_ = F("stop_trip_before_file_changes");
       return;
     }
 
@@ -329,55 +318,42 @@ void WebPortal::handleUploadComplete() {
   }
 }
 
-void WebPortal::handleTripStart() {
-  if (!authorizeMutation()) return;
-  if (!hardware_.status().gnssPowerEnabled && !hardware_.setGnssPower(true)) {
-    sendError(503, F("gnss_power_enable_failed"));
-    return;
-  }
-  gnss_.setPowered(true);
-  String error;
-  if (!gnss_.startTrip(error)) {
-    String payload = F("{\"ok\":false,\"error\":\"");
-    payload += json::escape(error);
-    payload += F("\"}");
-    sendJson(409, payload);
-    return;
-  }
-  sendJson(200, F("{\"ok\":true,\"message\":\"trip_started\"}"));
-}
-
-void WebPortal::handleTripStop() {
-  if (!authorizeMutation()) return;
-  gnss_.stopTrip();
-  sendJson(200, F("{\"ok\":true,\"message\":\"trip_stopped\"}"));
-}
-
-void WebPortal::handleGnssPower() {
+void WebPortal::handleLfPower() {
   if (!authorizeMutation()) return;
   const bool enabled = server_.arg(F("enabled")) == F("1") ||
                        server_.arg(F("enabled")) == F("true");
-  if (!enabled && gnss_.tripActive()) {
-    sendError(409, F("stop_trip_before_gnss_power_off"));
+  if (!hardware_.setLfRfidPower(enabled)) {
+    sendError(503, enabled ? F("lf_rfid_self_test_failed")
+                           : F("control_expander_unavailable"));
     return;
   }
-  // On shutdown the ESP32 UART is made high-impedance before GNSS_3V3 is
-  // removed.  On startup the load switch is enabled before UART TX begins.
-  if (!enabled) gnss_.setPowered(false);
-  if (!hardware_.setGnssPower(enabled)) {
-    sendError(503, F("control_expander_unavailable"));
+  sendJson(200, F("{\"ok\":true,\"message\":\"lf_rfid_power_changed\"}"));
+}
+
+void WebPortal::handleLfDiagnose() {
+  if (!authorizeMutation()) return;
+  if (!hardware_.status().lfRfidPowerEnabled) {
+    sendError(409, F("lf_rfid_power_off"));
     return;
   }
-  if (enabled) gnss_.setPowered(true);
-  sendJson(200, F("{\"ok\":true,\"message\":\"gnss_power_changed\"}"));
+  if (!hardware_.diagnoseLfRfid()) {
+    sendError(503, F("lf_rfid_self_test_failed"));
+    return;
+  }
+  sendJson(200, F("{\"ok\":true,\"message\":\"lf_rfid_diagnosis_complete\"}"));
+}
+
+void WebPortal::handlePairingArm() {
+  if (!authorizeMutation()) return;
+  if (!hardware_.armPairingWindow()) {
+    sendError(409, F("hold_pair_button_and_check_secure_element"));
+    return;
+  }
+  sendJson(200, F("{\"ok\":true,\"message\":\"pairing_window_open_60s\"}"));
 }
 
 void WebPortal::handleSdRemount() {
   if (!authorizeMutation()) return;
-  if (gnss_.tripActive()) {
-    sendError(409, F("stop_trip_before_sd_remount"));
-    return;
-  }
   if (!storage_.remount()) {
     sendError(503, F("sd_mount_failed"));
     return;

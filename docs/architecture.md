@@ -13,9 +13,10 @@ flowchart LR
     REG33 --> MCU[ESP32-S3-WROOM-1-N8R2]
     REG33 --> NFC[PN532 + NFC loop]
     REG33 --> SUB[E07-900MM10S CC1101 module + spring antenna]
-    REG33 --> GPS[MAX-M10S + GNSS U.FL]
+    REG33 --> SEC[ATECC608C + PAIR button]
     REG33 --> SD[microSD]
     REG33 --> SENS[IMU + barometer + RTC + fuel gauge]
+    REG33 --> TEMP[10-k NTC board-temperature divider]
     REG33 --> IOX[TCA9535 status/expansion I/O]
     REG33 --> CTL[TCA9534 internal control I/O]
     REG33 --> OLED[0.42-inch OLED]
@@ -24,16 +25,19 @@ flowchart LR
     RAW --> IR[940 nm IR driver]
     RAW --> RGB[RGB LEDs via AHCT data buffer]
     RAW --> LIM[TPS2553 current-limited switch]
+    RAW --> LFSW[TPS22919 switched LF_5V]
+    LFSW --> LF[HTRC110 + removable 125 kHz coil]
     LIM --> AUX[+5V_AUX expansion output]
 
     MCU <-->|I2C| NFC
     MCU <-->|I2C| SENS
     MCU <-->|I2C| IOX
     MCU <-->|I2C| CTL
+    TEMP -->|GPIO9 ADC| MCU
     MCU -->|I2C| OLED
     MCU <-->|Shared SPI| SUB
     MCU <-->|Shared SPI| SD
-    MCU <-->|UART + PPS| GPS
+    MCU <-->|3-wire level shifted| LF
     MCU --> WEB[Local Wi-Fi web interface]
 ```
 
@@ -47,7 +51,7 @@ flowchart LR
 | +3V3 | 3.3 V | TPS63070 | MCU, radios, storage, sensors |
 | +5V_RAW | 5.0 V switchable | TPS61023 | IR driver, RGB LEDs and TPS2553 input |
 | +5V_AUX | 5.0 V protected | TPS2553 from +5V_RAW | J5 pin 29 only |
-| GNSS_3V3 | 3.3 V switched | TPS22919 from +3V3 | MAX-M10S VCC and V_IO |
+| LF_5V | 5.0 V switched | TPS22919 from +5V_RAW | HTRC110, oscillator and AHCT level shifter |
 
 The 5 V converter is disabled by default. Firmware enables it only for IR,
 RGB illumination or an explicitly requested auxiliary load. IR and the RGB
@@ -74,15 +78,15 @@ system rail and all dependent functions are off.
 |---|---|---|
 | I2C | PN532, OLED, TCA9535, TCA9534, optional BMI270/BMP390, PCF8563, MAX17048 | 3.3 V, one 3.3-kohm pull-up pair, 400 kHz target |
 | SPI | E07 CC1101 module, microSD | Shared SCK/MOSI/MISO, dedicated chip selects |
-| UART1 | MAX-M10S | GNSS UBX/NMEA control and data |
+| LF three-wire | HTRC110 | GPIO18 SCLK, GPIO21 DOUT, GPIO35 DIN through level shifters |
 | USB | ESP32-S3 native USB | Firmware upload, CDC and optional HID |
 
 ## RF floorplan rules
 
 1. Put the ESP32 module antenna at a short board edge and respect its
    all-layer keep-out.
-2. Keep the GNSS module beside its U.FL connector with a very short 50 ohm
-   trace; keep the 5 V switching converter away from this corner.
+2. Keep the HTRC110 resonant bridge, current limiter, RX divider and coil
+   connector in one short outer-layer loop; keep switch nodes away from RX.
 3. Keep the E07-900MM10S module close to the lower-edge matching network. Pin 6
    feeds the C403/R405/C404 pi network and the hand-soldered T3-868M spring;
    the complete spring lies inside the milled pocket and card envelope.
@@ -97,13 +101,14 @@ system rail and all dependent functions are off.
    regional variant is a separately reviewed assembly choice, not an automatic
    substitution; antenna, firmware limits and local rules must match it.
 
-## GNSS antenna configuration
+## 125 kHz LF antenna configuration
 
-The default build uses a passive antenna on the board-level GNSS U.FL. MAX-M10S
-`V_BCKP` is NC, so V1 does not promise hot-start retention while GNSS power is
-off. The optional active-antenna bias parts R505, L501 and C504 are DNP; fitting
-them requires a review of the complete u-blox bias/supervision topology and RF
-measurements. R507 and R508 are fixed 1-kohm UART back-power limit resistors.
+J3 accepts a removable nominal 400-uH coil. C505 isolates the external coil
+path, R502 limits fault/current stress, C506 is the 3.9-nF starting resonance
+value and C507/C508 are DNP trim sites. R503 provides the protected return and
+R504 divides the antenna tap for HTRC110 RX. These values are a bring-up
+starting point only: measure actual inductance, Q, phase, coil current and tap
+voltage before fitting final values or attempting tag write modes.
 
 ## Firmware power arbitration
 

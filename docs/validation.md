@@ -1,94 +1,84 @@
 # Design validation log
 
-## 2026-08-09 architecture baseline
+## Architecture checks
 
-- ESP32-S3-WROOM-1-N8R2 was selected for its 1.27 mm castellated edge pads,
-  8 MB flash and 2 MB PSRAM.
-- 12 direct free GPIOs remain: 1, 2, 4, 8, 9, 40, 41, 42, 43, 44, 47, 48.
-- No duplicate ESP32 pin allocations were found.
-- U9/TCA9535 P10-P17 provide eight additional low-speed digital I/Os through
-  220-ohm series resistors; U18/TCA9534 handles the internal control outputs.
-- J5 contains 30 positions at 2.54 mm pitch and its documented pin count balances.
-- U3 is the 10 x 10 mm E07-900MM10S. Pin 6 feeds a DNP/0-ohm/DNP pi network and
-  the T3-868M spring. The spring body, 18.8 x 6.58 mm pocket and adjacent pad
-  remain inside the original card envelope. Only the right end is electrically
-  connected; the marked left anchor is nonconductive and mechanical. Final
-  tuning still requires S11 measurement with the received module, adhesive,
-  enclosure and battery.
-- 5 V auxiliary output is switchable and requires a 500 mA hardware current limit.
+- ESP32-S3-WROOM-1-N8R2; no duplicate dedicated GPIO allocations.
+- Eleven direct J5 GPIOs remain: 1, 2, 4, 8, 40, 41, 42, 43, 44, 47, 48.
+- GPIO9 is reserved for the internal board NTC; J5 pin 7 is a protected
+  high-impedance measurement point, not a general-purpose output.
+- GPIO38 is dedicated to active-low PAIR. U9 adds eight low-speed EX inputs;
+  U18 controls charger, AUX 5 V, NFC reset, LF 5 V and the 5-V boost.
+- J5 contains 30 plated positions at 2.54-mm pitch.
+- LF serial logic is translated in both directions; HTRC110 and its clock use
+  switched 5 V, while the ESP32 and ATECC608C remain on 3.3 V.
+- ATECC608C is present in SOIC-8 but intentionally unprovisioned.
 
-## 2026-08-09 assembly-oriented revision
+## 2026-08-11 generated design
 
-- KiCad 10.0.3 installed locally; project and mechanical outline scaffolded.
-- General passives are 0805; 0603 is allowed only where electrical/RF layout
-  requires it. 0402, 0201, BGA and WLCSP packages are prohibited in V1.
-- ESP32-S3-MINI was replaced with the larger ESP32-S3-WROOM-1 module.
-- Bare CC1101 plus crystal/matching was replaced with an Ebyte castellated module.
-- MIA-M10Q was replaced with the larger MAX-M10S LCC module.
-- TCA9535 QFN was replaced with TCA9535PWR in TSSOP-24.
-- RV-3028-C7 was replaced with PCF8563T in SOIC-8.
-- BMI270 and BMP390 are optional because JLCPCB lists them as Standard-only.
-- Top-only SMT was an early economy target. The current dense placement builder
-  deliberately uses both PCB sides; final side allocation, assembler class and
-  cost remain subject to DFM review. Headers and the 5 mm IR LED remain
-  post-assembly hand-fit parts.
+- KiCad 10 schematic: 273 symbols, 266 footprints, 183 logical/231 PCB nets.
+- ERC: 0 errors, 0 warnings.
+- Placement builder: 132 front and 134 back footprints; scripted courtyard, board,
+  NFC, ESP and spring-pocket keepout audit passes.
+- The routed checkpoint itself retains 128 front and 138 back footprints from
+  its validated staging base. The side-count difference is limited to generic,
+  unrouted packing slots; all 266 references remain present.
+- Inner-plane staging regenerates with L2 GND and L3 +3V3 plus switcher cutouts.
+- Stack-up audit: nominal 1.2-mm `JLC04121H-7628`, four copper layers,
+  0.665-mm core, two 0.2104-mm 7628 prepregs and ENIG are serialized in the
+  template, main, netlisted and plane-staging boards.
+- Routing checkpoint: guarded digital fanout plus DRC-clean U6_L1, U6_L2,
+  U7_SW, RTC_OSCI/RTC_OSCO, U6/U7 local power and U7 feedback routes. The two
+  U7 power-pin neckdowns and the 5-V Kelvin branch are confined by named rule
+  areas. R405 orientation was corrected before RF routing. The provisional
+  Sub-GHz feed is now retained DRC-clean: C404 is perpendicular to the line,
+  the module-side section stays on B.Cu, and one 0.60/0.30-mm via moves the
+  antenna-side section to F.Cu outside the spring-notch edge clearance.
+- R201/R202 were moved to a validated vertical side-by-side placement. Native
+  D+/D- is complete from the ESP32 through the two series resistors and U16 to
+  all four J1 data pads. The MCU side has no vias. A staggered five-via J1
+  bridge passes pad, hole, copper and filled-plane DRC; its 0.15-mm clearance
+  rule is limited to the fine-pitch connector bridge area.
+- U16 is 0.55 mm farther inboard. R102 is fixed as a front-side 0805; its J1-B5
+  pull-down path, ground return and U16 pin-6 protection branch are complete.
+  CC2 uses two standard 0.50/0.30-mm through vias, outer-layer tracks only and
+  a local 0.20-mm clearance rule limited to its C103/C104 centre-gap escape.
+  R101 is fixed on B.
+- Three compact KMR221GLFS switches now provide UP/OK/DOWN. SELECT uses
+  U9/P07 with R607; BMP390 pin 7 is NC and the sensor remains usable by I2C.
+  RESET, BOOT and PAIR retain their dedicated functions.
+- Conflicting SPI_SCK/SPI_MOSI/SPI_MISO, I2C_SCL, GPIO44_MCU, NFC_DVDD,
+  user-button, IR_LED_A1, GPIO43, NFC_LOADMOD, LF_DOUT_5V and OLED_VCC autorouter copper
+  was removed as complete nets, avoiding dangling stubs while those nets wait
+  for reviewed routes around USB and the new button strip.
+- DRC: no routed-geometry or schematic-parity error. Six reviewed footprint
+  library-comparison warnings and 499 unconnected items remain.
+- The PCB is therefore not order-ready.
 
 ## Firmware checkpoint
 
-- Tool: PlatformIO Core 6.1.19
-- Platform: Espressif 32
-- Framework: Arduino-ESP32 3.3.8
-- Target: ESP32-S3-DevKitC-1-N8R2, 8 MB flash, 2 MB quad PSRAM
-- Result after N8R2 pin remap: successful clean build
-- Current full firmware image: 1,127,376-byte `firmware.bin` (2026-08-09 build)
+The three-button PCB change is intentionally hardware-only for now; the
+firmware below is the preceding two-button checkpoint and has not been changed.
 
-## 2026-08-09 complete schematic checkpoint
+- PlatformIO/Arduino-ESP32 3.3.8 build succeeds for ESP32-S3 N8R2.
+- RAM: 49,568 / 327,680 bytes; application flash: 1,113,399 / 3,342,336 bytes.
+- LF power sequencing, HTRC configuration/phase/ANTFAIL diagnosis, ATECC wake
+  probe, physical pairing window, web UI, microSD, bounded NEC IR and the
+  board-temperature safety policy compile.
+- Tag decoding, app authentication, ATECC provisioning and owner recovery are
+  not implemented or claimed.
 
-- Tool: KiCad CLI 10.0.5
-- Generated schematic: 259 symbols, 252 assigned footprints and 179 named logical nets.
-- Current schematic ERC: 0 errors and 0 warnings.
-- PN532 pin 39 DVDD is the internal-LDO output and directly feeds AVDD/TVDD;
-  each supply has local decoupling. RX uses the implemented 2.7-kohm loop tap,
-  1-nF AC coupling and 1-kohm VMID bias branch.
-- AE1 is the project-local 35 x 27 mm, four-turn, 0.50/0.50 mm prototype loop.
-  Its footprint reserves a 36 x 29 mm keep-out on all copper layers.
-- GNSS V_BCKP is NC. The passive U.FL path is the default; R505/L501/C504 are
-  DNP active-antenna bias options, and R507/R508 are fixed 1-kohm UART limits.
-- microSD has C512 47-uF local bulk capacitance and U19/SRV05-4 signal ESD.
-- J8 is the 12 x 11 mm ER-OLED0.42-1W bare panel. Its 16 FPC pads and all seven
-  required 0805 support capacitors pass the generated pad and placement audit.
-- J5 pins 28/30 and SJ1 implement the optional external 10-kohm battery NTC connection.
-- Direct GPIOs, expander GPIOs and exposed I2C/SPI buses all have populated
-  series-resistor stages. The one shared I2C pull-up pair is 3.3 kohm.
-- TP105-TP110 expose VBUS_USB, VBUS_FUSED, VSYS, +3V3, +5V_RAW and +5V_AUX;
-  TP101-TP104 expose the protected battery-chain nodes and GND.
-- A clean ERC validates connectivity rules, not component suitability, RF
-  behavior, layout, thermal performance or manufacturability.
+## Outstanding before an order
 
-## PCB status
-
-- The earlier 21-footprint render was a mechanical placement study and is now
-  superseded by the complete schematic/netlist.
-- A fully netlisted placement/routing board is being generated and reviewed.
-  Placement, critical-route design, plane strategy and DRC are not yet closed.
-- No current PCB file is an order-ready fabrication release.
-
-## Outstanding before PCB order
-
-- Reconfirm every supplier part number, stock and PCBA class immediately before
-  ordering; stock status is not a design-time guarantee.
-- Reconfirm PN532 availability: NXP marks it NRND. A future controller migration
-  may be required even though V1 retains PN532 for prototype compatibility.
-- Simulate/verify the IR pulse current and perform an optical safety review.
-- Review regulator thermal behavior and switching-noise placement.
-- Calculate USB and RF trace geometries from the fabricator's exact stack-up.
-- Finish placement and routing, then run KiCad DRC with zero unexplained items.
-- Measure and tune the NFC loop/matching network on assembled prototypes with a
-  VNA or NFC fixture; guessed values are not a production release.
-- Verify GNSS insertion loss and Sub-GHz radiated behavior with the actual
-  antennas and enclosure.
-- Perform an independent schematic/layout, polarity, footprint and assembly
-  review before generating an order archive.
-- Verify RF frequency, power, duty cycle, antenna and emissions against the
-  rules of every region in which the card will be operated. Prototype RF
-  operation is not evidence of regulatory compliance.
+1. Reroute the cleared USB/button/display-adjacent digital nets, then route the
+   remaining 499 open items. Resolve the front/back LF SMD placement against
+   its no-via rule before manual LF routing; complete NFC and power routing,
+   refill planes and close DRC with no unexplained item.
+2. Independently review every footprint, polarity and custom land pattern.
+3. Recheck live JLC/LCSC stock, assembly side/class, BOM and CPL rotations.
+4. Measure/tune the NFC loop and Sub-GHz network on assembled prototypes.
+5. Measure the actual LF coil and select resonance values from phase, current,
+   voltage, temperature and range data.
+6. Current-limit first power-up and verify charger, protection and all rails
+   before connecting an unprotected cell or external equipment.
+7. Define and review the phone-app key protocol, reset/recovery flow and ATECC
+   slot/lock manifest before irreversible provisioning.

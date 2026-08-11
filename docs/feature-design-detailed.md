@@ -6,7 +6,7 @@ is **not** a fabrication release: NFC tuning, controlled-impedance geometry,
 antenna selection, ERC/DRC, and a first-article review remain mandatory.
 
 The current dense layout plan uses two-sided JLCPCB PCBA. Parts with hidden
-pads, LGA, U.FL, and the microSD connector are factory-only. General passives
+pads, LGA, fine-pitch FPC, and the microSD connector are factory-only. General passives
 remain 0805; 0603 is used only where RF performance or package geometry
 requires it.
 
@@ -21,12 +21,19 @@ requires it.
 - The shared SPI bus is limited to 8 MHz in the first firmware because the E07
   module is specified to 10 MHz and the microSD branch increases bus loading.
   The captured Sub-GHz and microSD branches use 22-ohm damping resistors.
-- Every J5 digital net has a populated series stage: 100 ohm on the 12 direct
-  GPIOs and exposed I2C/SPI buses, 220 ohm on EX0-EX7. These resistors do not
-  replace a connector-side ESD/overvoltage device if the deployment requires
-  one.
+- Every J5 digital net has a populated series stage: 100 ohm on the 11 direct
+  GPIOs, the GPIO9 board-temperature probe and exposed I2C/SPI buses; 220 ohm
+  on EX0-EX7. U24/U25 add shunt ESD
+  protection to the five shared I2C/SPI header nets. The remaining direct and
+  expander GPIO resistors do not replace a connector-side protection device if
+  the deployment requires full-port ESD or overvoltage tolerance.
 - All RF values below are initial values, not promises of a tuned antenna.
   C0G/NP0 capacitors and high-Q RF inductors are required.
+
+GPIO9/ADC1_CH8 is reserved for R736/RT701, a 10-kohm/10-kohm board-temperature
+divider located beside the 5-V converter area. J5 pin 7 reaches the same node
+through R714 as a measurement point only; external circuitry must remain
+high-impedance and must never drive this pin.
 
 ## U2 PN532 NFC controller
 
@@ -168,61 +175,42 @@ Frequency, power, antenna, and duty cycle must be configured for the legal regio
 the 868 MHz build is not a universal-frequency transmitter, and successful
 prototype operation is not proof of regulatory compliance.
 
-## U4 MAX-M10S GNSS and external antenna
+## U4 HTRC110 125 kHz LF-RFID and secure pairing
 
 Official references:
 
-- [MAX-M10S data sheet, R08](https://content.u-blox.com/sites/default/files/MAX-M10S_DataSheet_UBX-20035208.pdf)
-- [MAX-M10S integration manual](https://content.u-blox.com/sites/default/files/MAX-M10S_IntegrationManual_UBX-20053088.pdf)
+- [NXP HTRC110 data sheet](https://www.nxp.com/docs/en/data-sheet/037031.pdf)
+- [NXP AN98080 HTRC110 application note](https://www.nxp.com/docs/en/application-note/AN98080.pdf)
+- [Microchip ATECC608C product page](https://www.microchip.com/en-us/product/atecc608c)
 
-### MAX-M10S pin-to-net table
+U4 is powered from switched `LF_5V`; U17/TPS22919 is enabled by U18 P4 only
+after the 5-V boost is stable. Y501 supplies the permitted 4-MHz CMOS clock.
+GPIO18 SCLK and GPIO35 DIN pass through U21/SN74AHCT125 for valid 5-V logic;
+U4 DOUT returns through U22/SN74LVC1G17 to GPIO21. MODE is grounded for the
+normal short local serial interface.
 
-| Pin | Name | Connection |
-|---:|---|---|
-| 1, 10, 12 | GND | GND; dense local via stitching |
-| 2 | TXD | `GNSS_UART_TX_MOD`, then R507 1 kOhm to `GNSS_RX_FROM_MODULE` / ESP GPIO21 |
-| 3 | RXD | `GNSS_UART_RX_MOD`, then R508 1 kOhm to `GNSS_TX_TO_MODULE` / ESP GPIO35 |
-| 4 | TIMEPULSE | `GNSS_TIMEPULSE` / ESP GPIO18; ESP input only at startup |
-| 5 | EXTINT | NC in the captured V1 schematic |
-| 6 | V_BCKP | NC in V1; no backup rail or hot-start-retention promise |
-| 7 | V_IO | `GNSS_3V3`; 100 nF |
-| 8 | VCC | `GNSS_3V3`; 10 uF + 100 nF |
-| 9 | RESET_N | `GNSS_RESET_N`; R502 10-kohm pull-up to `GNSS_3V3` |
-| 11 | RF_IN | 50 Ohm GNSS feed from U.FL/antenna network |
-| 13 | LNA_EN | Active-antenna switch control; NC in passive build |
-| 14 | VCC_RF | Active-antenna supervisor supply only; NC in passive build |
-| 15 | VIO_SEL | NC for 3.3 V I/O; GND would select 1.8 V |
-| 16, 17 | SDA, SCL | NC; UART is the selected interface |
-| 18 | SAFEBOOT_N | NC; never pull low; internally linked to TIMEPULSE through 1 kOhm |
+### Resonant path
 
-`GNSS_3V3` comes from an active-high load switch controlled by U18/TCA9534
-P4.
-Fit a 100 kOhm pulldown on the load-switch enable so GNSS is off while the
-expander pins are inputs. The switch and source rail must tolerate at least
-100 mA startup current. Its controlled rise time must keep the V_IO ramp within
-the u-blox limit of 25 us/V to 35,000 us/V; targeting roughly 0.2 ms to 5 ms at
-3.3 V gives useful margin. When GNSS V_IO is off, the ESP must not drive RXD,
-TIMEPULSE, or any other module PIO; populated R507/R508 provide 1-kohm UART
-back-power limiting but do not make an unpowered interface generally safe.
+J3 is a 2.54-mm two-pin connector for a removable nominal 400-uH coil. C505
+provides coil-path isolation, R502 is a 47-ohm pulse-rated starting current
+limit and C506 is the fitted 3.9-nF C0G starting resonance value. C507/C508 are
+100-pF/220-pF C0G DNP trim pads. R503 provides a 1-kohm protected return and
+R504 is the 150-kohm RX divider; C509 is an optional DNP RX EMI trim.
 
-### RF route and active-antenna option
+Route `LF_TX1`, `LF_TX2`, `LF_ANT_A`, `LF_ANT_B` and `LF_TAP` as one short,
+wide, via-free outer-layer loop. Keep `LF_RX`, `LF_QGND` and `LF_CEXT` short
+and away from switching nodes. The 3.9-nF/400-uH combination is not an order
+value: measure coil inductance and Q, phase, peak current, tap voltage and
+HTRC110 `ANTFAIL` on the assembled prototype before final capacitor selection.
 
-The default, lowest-risk build is a passive external GNSS antenna. J3/U.FL,
-D501 (`TPD1E0B04`, 0.13 pF) and U4 RF_IN share the short `GNSS_ANT_FEED` path.
-There is no default DC bias on the connector.
+### Secure element and PAIR button
 
-R505 (10 ohm, 0.25 W), L501 (27 nH high-Q) and C504 (10 nF) are explicitly DNP
-active-antenna-bias provisions. They are not a complete short/open supervisor.
-Before fitting them, review the complete u-blox reference topology, antenna
-voltage/current needs, fault behavior and firmware control; then measure RF
-insertion loss and noise. `GNSS_LNA_EN` is available at TP502 for bring-up.
-
-Put J3, D501, the optional bias branch and RF_IN in a straight, very short
-chain. Route as a 50-ohm grounded coplanar waveguide calculated from the actual
-ordered four-layer stack-up; use a solid L2 GND reference and via fence. Avoid
-vias and stubs. Keep the chain at least 5 mm from DC/DC inductors, ESP32/module
-antennas, SD clock, NFC transmitter and digital edge traces. Maintain solid GND
-under the MAX-M10S and do not route signals below it.
+U23 is the hand-reworkable SOIC-8 ATECC608C-SSHDA-T on the shared I2C bus.
+SW6 pulls `PAIR_N`/GPIO38 low. Development boards ship with the secure element
+unprovisioned; locking its zones and enabling ESP32 secure-boot/flash-encryption
+eFuses are irreversible production steps requiring a reviewed key manifest,
+recovery procedure and app protocol. Firmware may open a short pairing window
+only while SW6 is physically held, but this alone is not persistent ownership.
 
 ## J2 microSD (Molex 104031-0811)
 
@@ -313,6 +301,11 @@ and C614-C616 support VCOMH/VCC. All seven parts are 0805 for hand rework.
 for I2C. Inspect FPC pin 1, exposed-contact side and every solder joint before
 folding because a reversed panel cannot be corrected in firmware.
 
+SW3, SW7 and SW4 are the adjacent `UP`, `OK` and `DOWN` navigation controls.
+All three use the same C&K KMR221GLFS footprint as the RESET/BOOT service
+buttons. R608, R607 and R609 provide the respective 10-kohm pull-ups. SELECT
+uses U9/P07; it does not share the dedicated PAIR security input.
+
 ## U9/U18 I/O expanders
 
 Official references: [TI TCA9535 data sheet](https://www.ti.com/lit/ds/symlink/tca9535.pdf)
@@ -334,7 +327,7 @@ U9 is a TCA9535PWR at 7-bit address `0x20` (A0/A1/A2 low):
 | P04 | `FG_ALERT_N` |
 | P05 | `BMI_INT1` |
 | P06 | `BMI_INT2` |
-| P07 | `BMP_INT` |
+| P07 | `USER_BUTTON_SELECT_N`, active-low OK/SELECT input |
 | P10-P17 | `EX0_INT`-`EX7_INT`; R722-R729 220 ohm to J5 EX0-EX7 |
 
 U18 is a TCA9534PWR at 7-bit address `0x21` (A0 high, A1/A2 low):
@@ -345,12 +338,12 @@ U18 is a TCA9534PWR at 7-bit address `0x21` (A0 high, A1/A2 low):
 | P1 | `CHG_DISABLE`, active-high charge disable |
 | P2 | `AUX5_EN`, protected header-output enable |
 | P3 | `NFC_RESET_N` |
-| P4 | `GNSS_POWER_EN` |
+| P4 | `LF_RFID_EN` |
 | P5 | `BOOST5_EN` |
-| P6 | `USER_BUTTON_A_N`, active-low input |
-| P7 | `USER_BUTTON_B_N`, active-low input |
+| P6 | `USER_BUTTON_A_N`, active-low UP input |
+| P7 | `USER_BUTTON_B_N`, active-low DOWN input |
 
-External pull resistors hold charger, GNSS, NFC and 5-V controls in their safe
+External pull resistors hold charger, LF RFID, NFC and 5-V controls in their safe
 states until firmware has discovered and configured U18. Firmware must never
 assume the expanders retained their direction/output registers across a reset.
 
@@ -365,12 +358,12 @@ Official reference: [Bosch BMI270 data sheet](https://www.bosch-sensortec.com/me
 | 1 | SDO/SA0 | GND for address 0x68; +3V3 would select 0x69 |
 | 2 | ASDX | NC (VDDIO also allowed; never GND) |
 | 3 | ASCX | NC (VDDIO also allowed; never GND) |
-| 4 | INT1 | `BMI_INT1` to U9/P05 and TP701 |
+| 4 | INT1 | `BMI_INT1` to U9/P05 |
 | 5 | VDDIO | +3V3, 100 nF at pin |
 | 6 | GNDIO | GND |
 | 7 | GND | GND |
 | 8 | VDD | +3V3, 100 nF at pin |
-| 9 | INT2 | `BMI_INT2` to U9/P06 and TP703 |
+| 9 | INT2 | `BMI_INT2` to U9/P06 |
 | 10 | OCSB | NC |
 | 11 | OSDO | NC |
 | 12 | CSB | +3V3 directly or through 0 Ohm |
@@ -393,7 +386,7 @@ Official reference: [Bosch BMP390 data sheet](https://www.bosch-sensortec.com/me
 | 4 | SDI | `I2C_SDA` |
 | 5 | SDO/SA0 | GND for address 0x76; +3V3 selects 0x77; never float |
 | 6 | CSB | +3V3/0 Ohm; optional 10 kOhm pull-up footprint |
-| 7 | INT | `BMP_INT` to U9/P07 and TP702 |
+| 7 | INT | NC; pressure is read by I2C polling so U9/P07 can serve SELECT |
 | 10 | VDD | +3V3, 100 nF at pin |
 
 Do not put copper, via holes, paste, adhesive, conformal coating, or cleaning
@@ -461,9 +454,8 @@ layout:
 
 The E07 custom footprint already present in `PocketLab_Custom.pretty` uses the
 official 20 x 14 mm body, 1.27 mm pitch, and 0.8 x 1.8 mm castellated lands.
-MAX-M10S uses the u-blox 18-LCC land pattern (body 9.7 x 10.1 mm, 2.5 mm max
-height); use the official u-blox/KiCad footprint and the integration-manual
-stencil apertures rather than redrawing it.
+HTRC110 and ATECC608C deliberately use standard SOIC packages so both remain
+inspectable and hand-reworkable after factory assembly.
 
 AE1 uses `NFC_Loop_35x27mm_4T_TUNE`: 35 x 27 mm copper, four turns,
 0.50/0.50 mm track/spacing, and a short plated B.Cu crossover. The footprint is
@@ -476,10 +468,10 @@ Before exporting an engineering-prototype Gerber/BOM/CPL set:
 
 1. Independently review all project-local and stock footprints, pin-one
    orientation, polarity and JLC/LCSC component previews.
-2. Finish physical placement and routing, preserving ESP32, NFC, GNSS and
+2. Finish physical placement and routing, preserving ESP32, NFC, LF RFID and
    Sub-GHz keep-outs and return paths; close DRC with no unexplained items.
-3. Calculate 90-ohm USB and 50-ohm GNSS geometry from the actually ordered
-   stack-up; validate the U.FL, D501 ESD and DNP bias footprints.
+3. Calculate 90-ohm USB and 50-ohm Sub-GHz geometry from the actually ordered
+   stack-up; validate LF coil resonance, current, voltage and DNP tune sites.
 4. Confirm microSD connector and U19 availability plus exact 104031-0811
    pad/detect orientation before BOM lock.
 5. Verify the approximately 100-mA IR design and fitted 39-ohm/1-W part, enforce
@@ -489,6 +481,6 @@ Before exporting an engineering-prototype Gerber/BOM/CPL set:
 
 The first cards remain engineering prototypes. Before any volume release,
 measure loop inductance/Q and tune the complete NFC match on the assembled card
-with a VNA or NFC fixture. Also verify GNSS insertion loss, Sub-GHz radiated
+with a VNA or NFC fixture. Also verify LF resonance/range, Sub-GHz radiated
 behavior, power/thermal margins and applicable RF/regulatory limits using the
 actual antennas, enclosure and battery.

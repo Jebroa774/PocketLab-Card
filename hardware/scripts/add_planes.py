@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import shutil
 import sys
 
 try:
@@ -252,6 +253,10 @@ def main() -> int:
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     pcbnew.SaveBoard(str(output_path), board)
+    for suffix in (".kicad_pro", ".kicad_dru"):
+        source = input_path.with_suffix(suffix)
+        if source.is_file():
+            shutil.copyfile(source, output_path.with_suffix(suffix))
     validate_output(output_path, original)
     print(f"Saved plane-filled staging board: {output_path}")
     print(

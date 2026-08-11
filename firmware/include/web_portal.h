@@ -4,7 +4,6 @@
 #include <WebServer.h>
 #include <WebSocketsServer.h>
 
-#include "gnss_trip_logger.h"
 #include "hardware_manager.h"
 #include "storage_manager.h"
 
@@ -12,8 +11,7 @@ namespace pocketlab {
 
 class WebPortal {
  public:
-  WebPortal(HardwareManager &hardware, StorageManager &storage,
-            GnssTripLogger &gnss);
+  WebPortal(HardwareManager &hardware, StorageManager &storage);
 
   bool begin();
   void poll();
@@ -35,16 +33,15 @@ class WebPortal {
   void handleFileDelete();
   void handleUploadChunk();
   void handleUploadComplete();
-  void handleTripStart();
-  void handleTripStop();
-  void handleGnssPower();
+  void handleLfPower();
+  void handleLfDiagnose();
+  void handlePairingArm();
   void handleSdRemount();
   void handleIrTransmit();
   void handleLockedTransmit(const __FlashStringHelper *capability);
 
   HardwareManager &hardware_;
   StorageManager &storage_;
-  GnssTripLogger &gnss_;
   WebServer server_;
   WebSocketsServer webSocket_;
   String ssid_;

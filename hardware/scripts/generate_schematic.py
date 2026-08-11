@@ -29,6 +29,7 @@ import kicad_sch_api as ksa  # noqa: E402
 
 NC = None
 R0805 = "Resistor_SMD:R_0805_2012Metric"
+R0603 = "Resistor_SMD:R_0603_1608Metric"
 C0805 = "Capacitor_SMD:C_0805_2012Metric"
 C0603 = "Capacitor_SMD:C_0603_1608Metric"
 L0805 = "Inductor_SMD:L_0805_2012Metric"
@@ -153,9 +154,6 @@ def build_power() -> None:
         "Jumper:SolderJumper-2_P1.3mm_Bridged_RoundedPad1.0x1.5mm", 165.1, 127.0,
         {"1": "CHG_TS", "2": "CHG_TS_FIXED"})
     passive(b, "R108", "10k TS fixed", R0805, 177.8, 127.0, "CHG_TS_FIXED", "GND")
-    add(b, "Connector_Generic:Conn_01x01", "J9", "GPIO38 2.54mm DUPONT",
-        "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical", 177.8, 139.7,
-        {"1": "GPIO38"})
     passive(b, "R109", "100k", R0805, 190.5, 127.0, "CHARGER_PGOOD_N", "+3V3")
     passive(b, "R110", "100k", R0805, 203.2, 127.0, "CHARGER_CHG_N", "+3V3")
     passive(b, "R111", "3.48k 1%", R0805, 215.9, 127.0, "CHG_ILIM", "GND")
@@ -230,7 +228,7 @@ def build_power() -> None:
     passive(b, "R125", "10k", R0805, 127.0, 266.7, "FG_ALERT_N", "+3V3")
     passive(b, "C120", "100nF", C0805, 139.7, 266.7, "CELL_POS", "GND")
 
-    for index, net in enumerate(("GND", "VBUS_FUSED", "CELL_NEG", "+3V3", "+5V_RAW", "+5V_AUX", "GNSS_3V3"), start=101):
+    for index, net in enumerate(("GND", "VBUS_FUSED", "CELL_NEG", "+3V3", "+5V_RAW", "+5V_AUX", "LF_5V"), start=101):
         add(b, "power:PWR_FLAG", f"#FLG{index}", "PWR_FLAG", "", 165.1 + (index - 101) * 12.7, 279.4, {"1": net})
 
     for index, net in enumerate(("VBUS_USB", "VBUS_FUSED", "VSYS", "+3V3", "+5V_RAW", "+5V_AUX"), start=105):
@@ -244,12 +242,12 @@ def build_mcu() -> None:
         "PocketLab_Card:ESP32-S3-WROOM-1_PhysicalCourtyard", 355.6, 114.3,
         {"1": "GND", "2": "+3V3", "3": "ESP_EN", "4": "GPIO4_MCU", "5": "I2C_SDA",
          "6": "I2C_SCL", "7": "NFC_IRQ_N", "8": "SUBGHZ_GDO0", "9": "SUBGHZ_GDO2",
-         "10": "SD_CS_N", "11": "GNSS_TIMEPULSE", "12": "GPIO8_MCU", "13": "USB_D_N",
-         "14": "USB_D_P", "15": "JTAG_STRAP_TP", "16": "STRAP_BOOT_TP", "17": "GPIO9_MCU",
+         "10": "SD_CS_N", "11": "LF_SCLK_3V3", "12": "GPIO8_MCU", "13": "USB_D_N",
+         "14": "USB_D_P", "15": "JTAG_STRAP_TP", "16": "STRAP_BOOT_TP", "17": "BOARD_TEMP_ADC",
          "18": "RGB_DATA", "19": "SPI_MOSI", "20": "SPI_SCK", "21": "SPI_MISO",
-         "22": "SUBGHZ_CS_N", "23": "GNSS_RX_FROM_MODULE", "24": "GPIO47_MCU",
+         "22": "SUBGHZ_CS_N", "23": "LF_DOUT_3V3", "24": "GPIO47_MCU",
          "25": "GPIO48_MCU", "26": "STRAP_VDD_SPI_TP", "27": "BOOT_N",
-         "28": "GNSS_TX_TO_MODULE", "29": "IR_TX", "30": "IR_RX", "31": "GPIO38_MCU",
+         "28": "LF_DIN_3V3", "29": "IR_TX", "30": "IR_RX", "31": "GPIO38_MCU",
          "32": "IOEXP_INT_N", "33": "GPIO40_MCU", "34": "GPIO41_MCU", "35": "GPIO42_MCU",
          "36": "GPIO44_MCU", "37": "GPIO43_MCU", "38": "GPIO2_MCU", "39": "GPIO1_MCU",
          "40": "GND", "41": "GND"}, Manufacturer="Espressif", MPN="ESP32-S3-WROOM-1-N8R2", LCSC="C2913204")
@@ -354,42 +352,109 @@ def build_subghz() -> None:
         LCSC="C381193", Assembly="MANUAL_EDGE_SOLDER")
 
 
-def build_gnss_sd() -> None:
-    b = "05 GNSS / ANTENNA / MICROSD"
-    add(b, "RF_GPS:MAX-M10S", "U4", "MAX-M10S-00B", "RF_GPS:ublox_MAX", 863.6, 101.6,
-        {"1": "GND", "2": "GNSS_UART_TX_MOD", "3": "GNSS_UART_RX_MOD",
-         "4": "GNSS_TIMEPULSE", "5": NC, "6": NC, "7": "GNSS_3V3",
-         "8": "GNSS_3V3", "9": "GNSS_RESET_N", "10": "GND", "11": "GNSS_ANT_FEED",
-         "12": "GND", "13": "GNSS_LNA_EN", "14": "GNSS_VCC_RF", "15": NC,
-         "16": NC, "17": NC, "18": NC}, Manufacturer="u-blox", MPN="MAX-M10S-00B", LCSC="C4153167")
-    add(b, "Connector_Generic:Conn_01x06", "U17", "TPS22919DCKR GNSS LOAD SWITCH",
+def build_lf_rfid_sd() -> None:
+    b = "05 LF RFID / SECURITY / MICROSD"
+
+    # The HTRC110 is a 5-V analogue front end.  A dedicated load switch keeps
+    # the complete LF island unpowered until both the 5-V boost and LF enable
+    # have been deliberately asserted.  The /03EE reel part is NXP's current
+    # replacement for the obsolete /02EE tube variant and keeps the same SO14
+    # pinout.  The 4-MHz CMOS oscillator is permitted by the HTRC110 data sheet
+    # and avoids a difficult-to-source low-frequency crystal/load network.
+    add(b, "RF_RFID:HTRC11001T", "U4", "HTRC11001T/03EE,11 125kHz",
+        "Package_SO:SO-14_3.9x8.65mm_P1.27mm", 863.6, 101.6,
+        {"1": "GND", "2": "LF_TX2", "3": "LF_5V", "4": "LF_TX1",
+         "5": "GND", "6": "LF_CLK_4M", "7": NC, "8": "LF_SCLK_5V",
+         "9": "LF_DIN_5V", "10": "LF_DOUT_5V",
+         "12": "LF_CEXT", "13": "LF_QGND", "14": "LF_RX"},
+        Manufacturer="NXP", MPN="HTRC11001T/03EE,11", LCSC="C501317")
+    add(b, "Connector_Generic:Conn_01x06", "U17", "TPS22919DCKR LF 5V LOAD SWITCH",
         "Package_TO_SOT_SMD:SOT-363_SC-70-6", 812.8, 165.1,
-        {"1": "+3V3", "2": "GND", "3": "GNSS_POWER_EN", "4": NC,
-         "5": "GNSS_QOD", "6": "GNSS_3V3"},
-        Manufacturer="TI", MPN="TPS22919DCKR")
-    passive(b, "R501", "100R QOD discharge", R0805, 838.2, 165.1, "GNSS_QOD", "GNSS_3V3")
-    passive(b, "R502", "10k", R0805, 850.9, 165.1, "GNSS_RESET_N", "GNSS_3V3")
-    passive(b, "R506", "100k SAFE-OFF", R0805, 838.2, 177.8, "GNSS_POWER_EN", "GND")
-    passive(b, "R507", "1k UART BACKPOWER LIMIT", R0805, 850.9, 177.8,
-            "GNSS_RX_FROM_MODULE", "GNSS_UART_TX_MOD")
-    passive(b, "R508", "1k UART BACKPOWER LIMIT", R0805, 863.6, 177.8,
-            "GNSS_TX_TO_MODULE", "GNSS_UART_RX_MOD")
-    passive(b, "C501", "100nF", C0805, 863.6, 165.1, "GNSS_3V3", "GND")
-    passive(b, "C502", "10uF", C0805, 876.3, 165.1, "GNSS_3V3", "GND")
-    passive(b, "R505", "10R 0.25W DNP ACTIVE-ANT BIAS", R0805, 825.5, 203.2,
-            "GNSS_VCC_RF", "GNSS_BIAS", DNP="true")
-    passive(b, "L501", "27nH high-Q DNP ACTIVE-ANT BIAS", L0805, 838.2, 203.2,
-            "GNSS_BIAS", "GNSS_ANT_FEED", DNP="true")
-    passive(b, "C504", "10nF DNP ACTIVE-ANT BIAS", C0603, 850.9, 203.2,
-            "GNSS_BIAS", "GND", DNP="true")
-    add(b, "Device:D_TVS", "D501", "TPD1E0B04 0.13pF RF ESD",
-        "Package_SON:Texas_DPY0002A_0.6x1mm_P0.65mm", 863.6, 203.2,
-        {"1": "GND", "2": "GNSS_ANT_FEED"}, Manufacturer="TI", MPN="TPD1E0B04DPYR")
-    add(b, "Connector:Conn_Coaxial", "J3", "GNSS ANT U.FL",
-        "Connector_Coaxial:U.FL_Hirose_U.FL-R-SMT-1_Vertical", 889.0, 203.2,
-        {"1": "GNSS_ANT_FEED", "2": "GND"})
-    add(b, "Connector:TestPoint", "TP502", "LNA ENABLE", "TestPoint:TestPoint_Pad_D1.0mm", 939.8, 203.2,
-        {"1": "GNSS_LNA_EN"})
+        {"1": "+5V_RAW", "2": "GND", "3": "LF_RFID_EN", "4": NC,
+         "5": "LF_QOD", "6": "LF_5V"}, Manufacturer="TI",
+        MPN="TPS22919DCKR", LCSC="C2149796")
+    passive(b, "R501", "100R QOD discharge", R0805, 825.5, 165.1,
+            "LF_QOD", "LF_5V")
+    passive(b, "R506", "100k SAFE-OFF", R0805, 838.2, 165.1,
+            "LF_RFID_EN", "GND")
+    passive(b, "C501", "100nF HTRC supply", C0805, 850.9, 165.1,
+            "LF_5V", "GND")
+    passive(b, "C502", "10uF HTRC pulse reservoir", C0805, 863.6, 165.1,
+            "LF_5V", "GND")
+    add(b, "Connector_Generic:Conn_01x04", "Y501", "4MHz 5V CMOS OSCILLATOR",
+        "Oscillator:Oscillator_SMD_EuroQuartz_XO32-4Pin_3.2x2.5mm_RotB_HandSoldering",
+        876.3, 165.1, {"1": "LF_5V", "2": "GND", "3": "LF_CLK_4M", "4": "LF_5V"},
+        Manufacturer="YXC", MPN="OH2EL89CFI-111YLC-4M", LCSC="C42448900")
+    passive(b, "C513", "100nF OSC supply", C0805, 889.0, 165.1,
+            "LF_5V", "GND")
+    passive(b, "C503", "100nF CEXT", C0805, 901.7, 165.1,
+            "LF_CEXT", "GND")
+    passive(b, "C504", "100nF QGND", C0805, 914.4, 165.1,
+            "LF_QGND", "GND")
+
+    # External 400-uH LF coil connector.  C505 and the split resonant
+    # capacitance protect both HTRC driver pins if the removable coil cable is
+    # shorted.  3.9 nF is the conservative starting population; C507/C508 are
+    # hand-tune sites and must be selected after measuring the actual coil in
+    # its final enclosure at 125 kHz.  R504 belongs directly at U4.RX.
+    passive(b, "C505", "100nF C0G COIL ISOLATION", C0805, 812.8, 203.2,
+            "LF_TX1", "LF_ANT_A")
+    passive(b, "R503", "1k LF EMI RETURN", R0805, 825.5, 203.2,
+            "LF_ANT_A", "GND")
+    add(b, "Connector_Generic:Conn_01x02", "J3", "EXTERNAL 400uH LF COIL",
+        "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical", 838.2, 203.2,
+        {"1": "LF_ANT_A", "2": "LF_ANT_B"}, Assembly="MANUAL_COIL_CONNECTOR")
+    passive(b, "R502", "47R 0.5W ANTENNA CURRENT LIMIT",
+            "Resistor_SMD:R_1210_3225Metric", 850.9, 203.2,
+            "LF_ANT_B", "LF_TAP")
+    passive(b, "C506", "3.9nF C0G LF RESONANCE", C0805, 863.6, 203.2,
+            "LF_TAP", "LF_TX2")
+    passive(b, "C507", "100pF C0G DNP LF TUNE", C0603, 876.3, 203.2,
+            "LF_TAP", "LF_TX2", DNP="true")
+    passive(b, "C508", "220pF C0G DNP LF TUNE", C0603, 889.0, 203.2,
+            "LF_TAP", "LF_TX2", DNP="true")
+    passive(b, "R504", "150k 1% RX DIVIDER", R0805, 901.7, 203.2,
+            "LF_TAP", "LF_RX")
+    passive(b, "C509", "10pF C0G DNP RX EMI", C0603, 914.4, 203.2,
+            "LF_RX", "LF_QGND", DNP="true")
+    add(b, "Connector:TestPoint", "TP502", "LF ANTENNA TAP - HIGH VOLTAGE",
+        "TestPoint:TestPoint_Pad_D1.0mm", 927.1, 203.2, {"1": "LF_TAP"})
+
+    # HTRC inputs require 0.7*VDD high level, so 3.3-V ESP32 outputs are lifted
+    # by a TTL-compatible AHCT buffer.  HTRC DOUT is then reduced to 3.3 V by
+    # a 5.5-V-tolerant LVC Schmitt buffer.  The two unused AHCT channels are
+    # explicitly disabled instead of leaving CMOS inputs floating.
+    add(b, "Connector_Generic:Conn_02x07_Odd_Even", "U21", "SN74AHCT125PWR LF 3V3-TO-5V",
+        "Package_SO:TSSOP-14_4.4x5mm_P0.65mm", 812.8, 228.6,
+        {"1": "GND", "2": "LF_SCLK_3V3", "3": "LF_SCLK_5V",
+         "4": "GND", "5": "LF_DIN_3V3", "6": "LF_DIN_5V", "7": "GND",
+         "8": NC, "9": "GND", "10": "LF_5V", "11": NC,
+         "12": "GND", "13": "LF_5V", "14": "LF_5V"},
+        Manufacturer="TI", MPN="SN74AHCT125PWR", LCSC="C36365")
+    passive(b, "C515", "100nF AHCT supply", C0805, 838.2, 228.6,
+            "LF_5V", "GND")
+    add(b, "74xGxx:74LVC1G17", "U22", "SN74LVC1G17DBVR LF 5V-TO-3V3",
+        "Package_TO_SOT_SMD:SOT-23-5_HandSoldering", 863.6, 228.6,
+        {"1": NC, "2": "LF_DOUT_5V", "3": "GND", "4": "LF_DOUT_3V3", "5": "+3V3"},
+        Manufacturer="TI", MPN="SN74LVC1G17DBVR", LCSC="C7836")
+    passive(b, "C516", "100nF LVC supply", C0805, 889.0, 228.6,
+            "+3V3", "GND")
+
+    # ATECC608C stores the future app/device identity and owner keys.  It is
+    # intentionally left unprovisioned in development; locking its zones and
+    # burning ESP32 security eFuses are separate, irreversible release steps.
+    add(b, "Security:ATECC608A-SSHDA", "U23", "ATECC608C-SSHDA-T",
+        "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm", 914.4, 228.6,
+        {"1": NC, "2": NC, "3": NC, "4": "GND", "5": "I2C_SDA",
+         "6": "I2C_SCL", "7": NC, "8": "+3V3"},
+        Manufacturer="Microchip", MPN="ATECC608C-SSHDA-T", LCSC="C28975195")
+    passive(b, "C517", "100nF secure element", C0805, 939.8, 228.6,
+            "+3V3", "GND")
+    add(b, "Switch:SW_Push", "SW6", "PAIR", "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KMR2",
+        965.2, 228.6, {"1": "PAIR_N", "2": "GND"},
+        Manufacturer="C&K", MPN="KMR221GLFS", LCSC="C72443")
+    passive(b, "R509", "10k PAIR pull-up", R0805, 990.6, 228.6,
+            "PAIR_N", "+3V3")
 
     add(b, "Connector:Micro_SD_Card_Det2", "J2", "microSD",
         "Connector_Card:microSD_HC_Molex_104031-0811", 838.2, 266.7,
@@ -461,16 +526,15 @@ def build_ir_ui() -> None:
 
     for index, x in enumerate((76.2, 114.3, 152.4, 190.5), start=1):
         din = "RGB_DIN1" if index == 1 else f"RGB_D{index-1}_{index}"
-        dout = "RGB_DOUT4" if index == 4 else f"RGB_D{index}_{index+1}"
+        # The final LED data output has no downstream consumer. Mark it NC
+        # instead of keeping an otherwise purposeless test pad and named net.
+        dout = NC if index == 4 else f"RGB_D{index}_{index+1}"
         add(b, "LED:WS2812B", f"LED{index}", "WS2812B-2020",
             "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm", x, 457.2,
             {"1": "+5V_RAW", "2": dout, "3": "GND", "4": din},
             Manufacturer="Worldsemi", MPN="WS2812B-2020", LCSC="C965555")
         passive(b, f"C{602 + index}", "100nF", C0805, x, 482.6, "+5V_RAW", "GND")
-    passive(b, "R605", "68R", R0805, 63.5, 457.2, "RGB_BUF_5V", "RGB_DIN1")
-    add(b, "Connector:TestPoint", "TP601", "RGB DOUT", "TestPoint:TestPoint_Pad_D1.0mm", 215.9, 457.2,
-        {"1": "RGB_DOUT4"})
-
+    passive(b, "R605", "68R", R0603, 63.5, 457.2, "RGB_BUF_5V", "RGB_DIN1")
     # The bare 0.42-inch panel is soldered by its 16-way, 0.65-mm-pitch FPC
     # and then folded over the land pattern.  This is substantially smaller
     # than a carrier module while the supporting charge-pump capacitors stay
@@ -491,14 +555,25 @@ def build_ir_ui() -> None:
     passive(b, "C614", "2.2uF X7R", C0805, 63.5, 546.1, "OLED_VCOMH", "GND")
     passive(b, "C615", "4.7uF X5R", C0805, 76.2, 546.1, "OLED_VCC", "GND")
     passive(b, "C616", "100nF X7R", C0805, 88.9, 546.1, "OLED_VCC", "GND")
-    passive(b, "R606", "100R GPIO38 PROTECTION", R0805, 127.0, 520.7,
-            "GPIO38_MCU", "GPIO38")
-    add(b, "Switch:SW_Push", "SW3", "USER A", "Button_Switch_SMD:SW_SPST_TL3305A", 177.8, 533.4,
-        {"1": "USER_BUTTON_A_N", "2": "GND"})
-    add(b, "Switch:SW_Push", "SW4", "USER B", "Button_Switch_SMD:SW_SPST_TL3305A", 203.2, 533.4,
-        {"1": "USER_BUTTON_B_N", "2": "GND"})
-    passive(b, "R608", "10k", R0805, 177.8, 558.8, "USER_BUTTON_A_N", "+3V3")
-    passive(b, "R609", "10k", R0805, 203.2, 558.8, "USER_BUTTON_B_N", "+3V3")
+    passive(b, "R606", "100R PAIR GPIO PROTECTION", R0603, 127.0, 520.7,
+            "GPIO38_MCU", "PAIR_N")
+    # Three compact, identical UI buttons provide deterministic UP/DOWN/OK
+    # navigation without borrowing RESET, BOOT or the security PAIR button.
+    # SELECT uses the former optional BMP390 interrupt input on U9; pressure
+    # data remains available by normal I2C polling.
+    for reference, value, x, net in (
+        ("SW3", "UP", 177.8, "USER_BUTTON_A_N"),
+        ("SW7", "SELECT", 203.2, "USER_BUTTON_SELECT_N"),
+        ("SW4", "DOWN", 228.6, "USER_BUTTON_B_N"),
+    ):
+        add(b, "Switch:SW_Push", reference, value,
+            "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KMR2", x, 533.4,
+            {"1": net, "2": "GND"}, Manufacturer="C&K", MPN="KMR221GLFS",
+            LCSC="C72443")
+    passive(b, "R607", "10k", R0603, 203.2, 558.8,
+            "USER_BUTTON_SELECT_N", "+3V3")
+    passive(b, "R608", "10k", R0603, 177.8, 558.8, "USER_BUTTON_A_N", "+3V3")
+    passive(b, "R609", "10k", R0603, 228.6, 558.8, "USER_BUTTON_B_N", "+3V3")
 
 
 def build_sensors_io() -> None:
@@ -507,7 +582,7 @@ def build_sensors_io() -> None:
         "Package_SO:TSSOP-24_4.4x7.8mm_P0.65mm", 355.6, 431.8,
         {"1": "IOEXP_INT_N", "2": "GND", "3": "GND", "4": "SD_DETECT_N",
          "5": "CHARGER_CHG_N", "6": "CHARGER_PGOOD_N", "7": "AUX5_FAULT_N", "8": "FG_ALERT_N",
-         "9": "BMI_INT1", "10": "BMI_INT2", "11": "BMP_INT", "12": "GND",
+         "9": "BMI_INT1", "10": "BMI_INT2", "11": "USER_BUTTON_SELECT_N", "12": "GND",
          "13": "EX0_INT", "14": "EX1_INT", "15": "EX2_INT", "16": "EX3_INT",
          "17": "EX4_INT", "18": "EX5_INT", "19": "EX6_INT", "20": "EX7_INT",
          "21": "GND", "22": "I2C_SCL", "23": "I2C_SDA", "24": "+3V3"},
@@ -520,7 +595,7 @@ def build_sensors_io() -> None:
     add(b, "Interface_Expansion:TCA9534", "U18", "TCA9534PWR INTERNAL CONTROL",
         "Package_SO:TSSOP-16_4.4x5mm_P0.65mm", 647.7, 431.8,
         {"1": "+3V3", "2": "GND", "3": "GND", "4": "BQ_EN1", "5": "CHG_DISABLE",
-         "6": "AUX5_EN", "7": "NFC_RESET_N", "8": "GND", "9": "GNSS_POWER_EN",
+         "6": "AUX5_EN", "7": "NFC_RESET_N", "8": "GND", "9": "LF_RFID_EN",
          "10": "BOOST5_EN", "11": "USER_BUTTON_A_N", "12": "USER_BUTTON_B_N",
          "13": "IOEXP_INT_N", "14": "I2C_SCL", "15": "I2C_SDA", "16": "+3V3"},
         Manufacturer="TI", MPN="TCA9534PWR")
@@ -533,21 +608,13 @@ def build_sensors_io() -> None:
          "12": "+3V3", "13": "I2C_SCL", "14": "I2C_SDA"}, Manufacturer="Bosch", MPN="BMI270", LCSC="C2836813")
     passive(b, "C702", "100nF", C0603, 419.1, 482.6, "+3V3", "GND")
     passive(b, "C703", "100nF", C0603, 431.8, 482.6, "+3V3", "GND")
-    add(b, "Connector:TestPoint", "TP701", "BMI INT1", "TestPoint:TestPoint_Pad_D1.0mm", 444.5, 482.6,
-        {"1": "BMI_INT1"})
-    add(b, "Connector:TestPoint", "TP703", "BMI INT2", "TestPoint:TestPoint_Pad_D1.0mm", 457.2, 482.6,
-        {"1": "BMI_INT2"})
-
     add(b, "Connector_Generic:Conn_02x05_Odd_Even", "U11", "BMP390 (FULL OPTION)",
         "PocketLab_Custom:BMP390_LGA-10_2x2mm", 495.3, 431.8,
         {"1": "+3V3", "2": "I2C_SCL", "3": "GND", "4": "I2C_SDA", "5": "GND",
-         "6": "+3V3", "7": "BMP_INT", "8": "GND", "9": "GND", "10": "+3V3"},
+         "6": "+3V3", "7": NC, "8": "GND", "9": "GND", "10": "+3V3"},
         Manufacturer="Bosch", MPN="BMP390", LCSC="C5124834")
     passive(b, "C704", "100nF", C0603, 482.6, 482.6, "+3V3", "GND")
     passive(b, "C705", "100nF", C0603, 495.3, 482.6, "+3V3", "GND")
-    add(b, "Connector:TestPoint", "TP702", "BMP INT", "TestPoint:TestPoint_Pad_D1.0mm", 508.0, 482.6,
-        {"1": "BMP_INT"})
-
     add(b, "Timer_RTC:PCF8563T", "U12", "PCF8563T", "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm", 571.5, 431.8,
         {"1": "RTC_OSCI", "2": "RTC_OSCO", "3": NC, "4": "GND", "5": "I2C_SDA",
          "6": "I2C_SCL", "7": NC, "8": "+3V3"}, Manufacturer="NXP", MPN="PCF8563T/5,518", LCSC="C7440")
@@ -555,13 +622,28 @@ def build_sensors_io() -> None:
         {"1": "RTC_OSCI", "2": "RTC_OSCO"}, Manufacturer="Abracon", MPN="ABS07-32.768KHZ-7-T")
     passive(b, "C706", "100nF", C0805, 571.5, 482.6, "+3V3", "GND")
 
+    # Board-temperature monitor in the last compact back-side placement
+    # pocket.  The 10-k/10-k divider reads about half scale at 25 degC and
+    # uses GPIO9/ADC1_CH8.  R714 keeps the node observable at J5 while the
+    # firmware permanently treats that header position as input-only.
+    passive(b, "R736", "10k 1% BOARD TEMP BIAS", R0603, 622.3, 495.3,
+            "+3V3", "BOARD_TEMP_ADC", Manufacturer="UNI-ROYAL",
+            MPN="0603WAF1002T5E", LCSC="C25804")
+    add(b, "Device:Thermistor", "RT701", "10k NTC B3950 1%", R0603,
+        647.7, 495.3, {"1": "BOARD_TEMP_ADC", "2": "GND"},
+        Manufacturer="KUU", MPN="KNTC0603/10KF3950", LCSC="C2892547")
+
     direct = [1, 2, 4, 8, 9, 40, 41, 42, 43, 44, 47, 48]
     for offset, gpio in enumerate(direct):
-        passive(b, f"R{710 + offset}", "100R", R0805, 317.5 + (offset % 6) * 25.4,
-                546.1 + (offset // 6) * 25.4, f"GPIO{gpio}_MCU", f"GPIO{gpio}")
+        internal_net = "BOARD_TEMP_ADC" if gpio == 9 else f"GPIO{gpio}_MCU"
+        header_net = "BOARD_TEMP_HDR" if gpio == 9 else f"GPIO{gpio}"
+        value = "100R BOARD TEMP PROBE" if gpio == 9 else "100R"
+        passive(b, f"R{710 + offset}", value, R0603,
+                317.5 + (offset % 6) * 25.4, 546.1 + (offset // 6) * 25.4,
+                internal_net, header_net)
 
     for offset in range(8):
-        passive(b, f"R{722 + offset}", "220R EXPANSION PROTECTION", R0805,
+        passive(b, f"R{722 + offset}", "220R EXPANSION PROTECTION", R0603,
                 317.5 + (offset % 4) * 25.4, 596.9 + (offset // 4) * 25.4,
                 f"EX{offset}_INT", f"EX{offset}")
 
@@ -573,12 +655,29 @@ def build_sensors_io() -> None:
         (734, "SPI_MISO", "SPI_MISO_HDR", "100R"),
     )
     for offset, (number, internal_net, header_net, value) in enumerate(header_bus):
-        passive(b, f"R{number}", value, R0805, 431.8 + offset * 25.4, 622.3,
+        passive(b, f"R{number}", value, R0603, 431.8 + offset * 25.4, 622.3,
                 internal_net, header_net)
+
+    # Two low-capacitance shunt arrays protect all five shared external bus
+    # lines without consuming any GPIO. They reuse
+    # the microSD protection part already selected for U19, avoiding another
+    # package or procurement class. The remaining general-purpose and
+    # GPIO/expander pins retain their series-current limiting; fully protecting all
+    # 26 exposed signals would cost seven arrays and too much escape routing.
+    add(b, "Power_Protection:SRV05-4", "U24", "SRV05-4MR6T1G J5 BUS ESD",
+        SOT23_6, 584.2, 647.7,
+        {"1": "I2C_SDA_HDR", "2": "GND", "3": "I2C_SCL_HDR",
+         "4": NC, "5": "+3V3", "6": NC},
+        Manufacturer="onsemi", MPN="SRV05-4MR6T1G")
+    add(b, "Power_Protection:SRV05-4", "U25", "SRV05-4MR6T1G J5 SPI ESD",
+        SOT23_6, 660.4, 647.7,
+        {"1": "SPI_MISO_HDR", "2": "GND", "3": "SPI_MOSI_HDR",
+         "4": "SPI_SCK_HDR", "5": "+3V3", "6": NC},
+        Manufacturer="onsemi", MPN="SRV05-4MR6T1G")
 
     header = {
         "1": "+3V3", "2": "GND", "3": "GPIO1", "4": "GPIO2", "5": "GPIO4", "6": "GPIO8",
-        "7": "GPIO9", "8": "GPIO40", "9": "GPIO41", "10": "GPIO42", "11": "GPIO43",
+        "7": "BOARD_TEMP_HDR", "8": "GPIO40", "9": "GPIO41", "10": "GPIO42", "11": "GPIO43",
         "12": "GPIO44", "13": "GPIO47", "14": "GPIO48", "15": "EX0", "16": "EX1",
         "17": "EX2", "18": "EX3", "19": "EX4", "20": "EX5", "21": "EX6", "22": "EX7",
         "23": "I2C_SDA_HDR", "24": "I2C_SCL_HDR", "25": "SPI_SCK_HDR", "26": "SPI_MOSI_HDR",
@@ -666,7 +765,7 @@ def emit_schematic(output: Path, design_json: Path, allow_isolated: bool = False
         "02 ESP32-S3 MCU / USB": (317.5, 38.1),
         "03 PN532 NFC / TUNABLE LOOP": (482.6, 38.1),
         "04 E07 CC1101 SUB-GHZ": (660.4, 38.1),
-        "05 GNSS / ANTENNA / MICROSD": (812.8, 38.1),
+        "05 LF RFID / SECURITY / MICROSD": (812.8, 38.1),
         "06 IR / RGB / BUTTONS / OLED": (50.8, 355.6),
         "07 SENSORS / RTC / IO EXPANSION": (317.5, 355.6),
     }
@@ -755,7 +854,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("output", type=Path)
     parser.add_argument("--design-json", type=Path, default=None)
-    parser.add_argument("--only", choices=("power", "mcu", "nfc", "subghz", "gnss_sd", "ir_ui", "sensors_io"))
+    parser.add_argument("--only", choices=("power", "mcu", "nfc", "subghz", "lf_rfid_sd", "ir_ui", "sensors_io"))
     args = parser.parse_args()
 
     builders = {
@@ -763,7 +862,7 @@ def main() -> int:
         "mcu": build_mcu,
         "nfc": build_nfc,
         "subghz": build_subghz,
-        "gnss_sd": build_gnss_sd,
+        "lf_rfid_sd": build_lf_rfid_sd,
         "ir_ui": build_ir_ui,
         "sensors_io": build_sensors_io,
     }

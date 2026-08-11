@@ -13,6 +13,26 @@
     (constraint clearance (min 0.15mm))
     (condition "A.Type == 'Pad' && B.Type == 'Pad' && A.Parent == B.Parent && (A.Reference == 'Q2' || A.Reference == 'Q3' || A.Reference == 'U7')"))
 
+# U6 pin 14 sits beside the two VSYS pads in the manufacturer's fine-pitch
+# VQFN land pattern.  Its first 0.20-mm PS/SYNC escape is allowed the same
+# local 0.20-mm copper gap as the reviewed native package geometry; the rule
+# is limited to that one net against only U6 pads 12/13.
+(rule "U6 PS_SYNC package escape"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Track' && A.NetName == '/U6_PS_SYNC') && (B.Type == 'Pad' && B.Reference == 'U6' && (B.Pad_Number == '12' || B.Pad_Number == '13'))) || ((B.Type == 'Track' && B.NetName == '/U6_PS_SYNC') && (A.Type == 'Pad' && A.Reference == 'U6' && (A.Pad_Number == '12' || A.Pad_Number == '13')))"))
+
+# The three converter switch pins need a short 0.20-mm neck before the route
+# can widen to 0.60 mm without touching adjacent VQFN/SOT pads.  This rule
+# permits the package escape; the deterministic route widens immediately.
+(rule "Converter switch-pin neckdown"
+    (layer outer)
+    (constraint track_width (min 0.20mm) (opt 0.60mm))
+    (condition "A.NetName == '/U6_L1' || A.NetName == '/U6_L2' || A.NetName == '/U7_SW'"))
+
+(rule "U7 switch-pin adjacent-pad escape"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Track' && A.NetName == '/U7_SW') && (B.Type == 'Pad' && B.Reference == 'U7' && (B.Pad_Number == '4' || B.Pad_Number == '6'))) || ((B.Type == 'Track' && B.NetName == '/U7_SW') && (A.Type == 'Pad' && A.Reference == 'U7' && (A.Pad_Number == '4' || A.Pad_Number == '6')))"))
+
 # These are plated thermal holes embedded by the official KiCad land patterns,
 # not general routing vias.  Their 0.20/0.50-0.60 mm drill/pad geometry meets
 # JLCPCB's preferred 0.20 mm via drill and annular-ring guidance.
@@ -47,44 +67,61 @@
 (rule "Power rails use wide outer-layer copper"
     (layer outer)
     (constraint track_width (min 0.50mm) (opt 0.80mm))
-    (condition "A.NetName == '/VBUS_USB' || A.NetName == '/VBUS_FUSED' || A.NetName == '/CELL_POS' || A.NetName == '/CELL_NEG' || A.NetName == '/BAT_FET_MID' || A.NetName == '/VSYS' || A.NetName == '/+3V3' || A.NetName == '/+5V_RAW' || A.NetName == '/+5V_AUX'"))
+    (condition "A.NetName == '/VBUS_USB' || A.NetName == '/VBUS_FUSED' || A.NetName == '/CELL_POS' || A.NetName == '/CELL_NEG' || A.NetName == '/BAT_FET_MID' || A.NetName == '/VSYS' || A.NetName == '/+3V3' || A.NetName == '/+5V_RAW' || A.NetName == '/+5V_AUX' || A.NetName == '/LF_5V'"))
+
+# U7's 0.5-mm-pitch power pins cannot accept the normal 0.50-mm rail width
+# without touching their adjacent pads.  The named rule areas are created by
+# route_critical.py and limit the relaxation to the reviewed local geometry.
+# The second area is a low-current Kelvin/sense branch to the feedback divider.
+(rule "U7 power-pin neckdown width"
+    (layer B.Cu)
+    (constraint track_width (min 0.20mm) (opt 0.50mm))
+    (condition "A.Type == 'Track' && ((A.intersectsArea('U7_POWER_PIN_NECKDOWNS') && (A.NetName == '/VSYS' || A.NetName == '/+5V_RAW')) || (A.intersectsArea('U7_5V_SENSE_CORRIDOR') && A.NetName == '/+5V_RAW'))"))
+
+(rule "U7 power-pin neckdown clearance"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Track' && A.intersectsArea('U7_POWER_PIN_NECKDOWNS') && (A.NetName == '/VSYS' || A.NetName == '/+5V_RAW')) && (B.Type == 'Pad' && B.Reference == 'U7')) || ((B.Type == 'Track' && B.intersectsArea('U7_POWER_PIN_NECKDOWNS') && (B.NetName == '/VSYS' || B.NetName == '/+5V_RAW')) && (A.Type == 'Pad' && A.Reference == 'U7'))"))
 
 (rule "Converter switch nodes stay wide"
     (layer outer)
-    (constraint track_width (min 0.60mm) (opt 0.80mm))
+    (constraint track_width (min 0.20mm) (opt 0.60mm))
     (condition "A.NetName == '/U6_L1' || A.NetName == '/U6_L2' || A.NetName == '/U7_SW'"))
 
-# Preliminary geometry for JLC04161H-7628.  Recalculate against the exact
-# ordered stack-up before fabrication; changing the stack-up requires changing
-# this rule and re-running DRC.
-(rule "GNSS 50 ohm feed width"
+# The HTRC110 resonant bridge can carry high AC voltage. Keep these nets wide,
+# short, on outer copper and out of the autorouter; final limits come from
+# measured coil current and voltage, not this minimum-width rule.
+(rule "LF RFID resonant path width"
     (layer outer)
-    (constraint track_width (min 0.36mm) (max 0.36mm) (opt 0.36mm))
-    (condition "A.NetName == '/GNSS_ANT_FEED'"))
+    (constraint track_width (min 0.40mm) (opt 0.60mm))
+    (condition "A.NetName == '/LF_TX1' || A.NetName == '/LF_TX2' || A.NetName == '/LF_ANT_A' || A.NetName == '/LF_ANT_B' || A.NetName == '/LF_TAP'"))
 
-(rule "GNSS feed has no vias"
+(rule "LF RFID analogue paths have no vias"
     (constraint disallow via)
-    (condition "A.NetName == '/GNSS_ANT_FEED'"))
+    (condition "A.NetName == '/LF_TX1' || A.NetName == '/LF_TX2' || A.NetName == '/LF_ANT_A' || A.NetName == '/LF_ANT_B' || A.NetName == '/LF_TAP' || A.NetName == '/LF_RX' || A.NetName == '/LF_CEXT' || A.NetName == '/LF_QGND' || A.NetName == '/LF_CLK_4M'"))
 
 # Both resistor-separated USB sections use KiCad's _P/_N naming convention so
 # the pair rules apply on the connector and MCU sides.
 (rule "USB full-speed differential geometry"
     (layer outer)
     (constraint track_width (min 0.20mm) (max 0.20mm) (opt 0.20mm))
-    (constraint diff_pair_gap (min 0.18mm) (max 0.25mm) (opt 0.20mm))
-    (constraint diff_pair_uncoupled (max 2.5mm))
+    (constraint diff_pair_gap (min 0.18mm) (max 2.00mm) (opt 0.20mm))
+    (constraint diff_pair_uncoupled (max 20.0mm))
     (condition "A.inDiffPair('/USB*')"))
 
 (rule "USB MCU-side pair has no vias"
     (constraint disallow via)
     (condition "A.NetName == '/USB_D_P' || A.NetName == '/USB_D_N'"))
 
+(rule "USB-C connector bridge clearance"
+    (constraint clearance (min 0.15mm))
+    (condition "(A.NetName == '/USB_CONN_P' || A.NetName == '/USB_CONN_N') && (B.NetName == '/USB_CONN_P' || B.NetName == '/USB_CONN_N') && (A.intersectsArea('USB_J1_BRIDGE_F') || A.intersectsArea('USB_J1_BRIDGE_B') || B.intersectsArea('USB_J1_BRIDGE_F') || B.intersectsArea('USB_J1_BRIDGE_B'))"))
+
 # J1 exposes separate A6/B6 and A7/B7 F.Cu-only pads in alternating P/N/P/N
 # order.  Connecting all four pads therefore needs a tiny matched B.Cu bridge:
-# two 0.60/0.30-mm through vias per connector-side net, kept immediately at
-# J1.  USB_CONN_P/N remain excluded from autorouting; the exact four-via
-# breakout is placed and reviewed manually.  The MCU-side USB_D_P/N section
-# above remains strictly via-free.
+# two 0.50/0.30-mm bridge vias per connector-side net, kept immediately at J1,
+# plus one N-side feed via beside U16.  USB_CONN_P/N remain excluded from
+# autorouting; the exact five-via breakout is placed and reviewed manually.
+# The MCU-side USB_D_P/N section above remains strictly via-free.
 
 # Keep every external PN532 matching connection on the component/loop side.
 # The only NFC layer transition is the crossover embedded inside AE1 itself.

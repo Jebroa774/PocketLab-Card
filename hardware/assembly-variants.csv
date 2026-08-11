@@ -1,4 +1,4 @@
-Variant,U1_ESP32,U2_PN532,U3_SUBGHZ,U4_GNSS,U8_FUEL,U10_IMU,U11_BARO,U12_RTC,D1_IR,J5_EXT,C109,C310_C312,R505_L501_C504,PCBA
-FULL-PROTOTYPE,Fit,Fit,Fit,Fit,Fit,Fit,Fit,Fit,Hand_after,Hand_after,DNP,DNP,DNP,Two_sided_standard_review
-CORE-NOSENSORS,Fit,Fit,Fit,Fit,Fit,DNP,DNP,Fit,Hand_after,Hand_after,DNP,DNP,DNP,Two_sided_standard_review
-CORE-NORADIO,Fit,Fit,DNP,Fit,Fit,DNP,DNP,Fit,Hand_after,Hand_after,DNP,DNP,DNP,Two_sided_standard_review
+Variant,U1_ESP32,U2_PN532,U3_SUBGHZ,U4_LF_RFID,U23_SECURE,U8_FUEL,U10_IMU,U11_BARO,U12_RTC,D1_D3_IR,J3_LF_COIL,J5_EXT,C109,C310_C312,C507_C509,PCBA
+FULL-PROTOTYPE,Fit,Fit,Fit,Fit,Fit_unprovisioned,Fit,Fit,Fit,Fit,Hand_after,Hand_after_tuning,Hand_after,DNP,DNP,DNP,Two_sided_standard_review
+CORE-NOSENSORS,Fit,Fit,Fit,Fit,Fit_unprovisioned,Fit,DNP,DNP,Fit,Hand_after,Hand_after_tuning,Hand_after,DNP,DNP,DNP,Two_sided_standard_review
+CORE-NORADIO,Fit,Fit,DNP,Fit,Fit_unprovisioned,Fit,DNP,DNP,Fit,Hand_after,Hand_after_tuning,Hand_after,DNP,DNP,DNP,Two_sided_standard_review

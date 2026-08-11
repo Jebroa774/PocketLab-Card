@@ -221,7 +221,7 @@ Produktionsdefault ist `EN2=0`, `EN1=0`. Die aktuelle sichere Firmware lässt
 EN1 dauerhaft Low und bleibt damit im USB100-Modus; eine spätere Umschaltung
 auf USB500 ist nur nach einer verlässlichen Erkennung der zulässigen
 Quellenstromstärke erlaubt. Im 100-mA-Startzustand müssen PN532, 5-V-Boost,
-GNSS-Antennenversorgung, RGB-LEDs und externe Lasten sicher ausgeschaltet
+LF-RFID-Versorgung, RGB-LEDs und externe Lasten sicher ausgeschaltet
 bleiben. Falls der ESP32 unter 100 mA nicht zuverlässig startet, ist für den
 Prototyp ein Akku erforderlich.
 
@@ -240,6 +240,23 @@ Ein Festwiderstand hält TS elektrisch im gültigen Bereich, misst aber **keine
 Zellentemperatur**. Für ein endgültiges Produkt ist ein Akku mit drittem
 NTC-Kontakt die bevorzugte Lösung. Nur Standard-LiPo/Li-Ion mit 4.20-V-
 Ladeschlussspannung verwenden, keine 4.35-V-LiHV-Zelle.
+
+#### 3.4.1 Interne Platinentemperatur
+
+R736 (10 kOhm, 1 %) liegt von +3V3 nach `BOARD_TEMP_ADC`; RT701 (10-kOhm-NTC,
+B3950) liegt vom Messknoten nach GND. GPIO9/ADC1_CH8 misst dadurch bei 25 Grad C
+ungefähr 1.65 V. Der NTC sitzt auf der Rückseite neben der 5-V-Leistungszone und
+ist ein Schutz-/Diagnosewert, kein Ersatz für einen NTC direkt an der Zelle.
+J5 Pin 7 erreicht denselben Knoten nur über R714 und darf ausschließlich
+hochohmig gemessen werden.
+
+Die Bring-up-Firmware mittelt 16 ADC-Messungen. Ab 80 Grad C sperrt sie neue
+IR/LF/Boost-Anforderungen und schaltet Ladefreigabe sowie vorhandene 5-V-Lasten
+ab. Unter 70 Grad C wird nur die Ladefreigabe automatisch zurückgenommen; die
+Lasten bleiben aus, bis die App sie erneut einschaltet. Diese Schwellen müssen
+am bestückten Prototyp gegen eine externe Temperaturmessung kalibriert werden.
+Ein offener oder kurzgeschlossener Teiler wird ausfallsicher wie Übertemperatur
+behandelt.
 
 ### 3.5 Verlustleistung
 
@@ -627,7 +644,7 @@ großes `+` im Silkscreen.
    `VSYS`, TP108 `+3V3`, TP109 `+5V_RAW` und TP110 `+5V_AUX`.
 9. TP104 ist der gemeinsame GND-Testpunkt; lokale Masse-Probe-Pads dürfen beim
    Layout nahe kritischer Rails ergänzt werden, sofern der Platz reicht.
-10. Schaltwandler und Induktoren maximal weit vom GNSS-Eingang, U.FL,
+10. Schaltwandler und Induktoren maximal weit vom LF-RX-Eingang,
     NFC-Matching und Sub-GHz-RF-Pfad entfernt platzieren.
 
 ## 11. Bring-up und Abnahmekriterien
@@ -660,7 +677,7 @@ machen.
 10. USB-Daten mit HS-Eye/Packet-Fehlerrate soweit verfügbar prüfen; mindestens
     Flash, CDC und längerer Datentransfer mit beiden Steckerorientierungen.
 11. RF-Rauschvergleich mit allen Wandlerzuständen durchführen, besonders
-    GNSS C/N0, Sub-GHz-Empfang und NFC-Lesereichweite.
+    LF-RFID-Reichweite/Phase, Sub-GHz-Empfang und NFC-Lesereichweite.
 12. Erst nach diesen Tests einen realen, geschützten 4.2-V-LiPo anschließen.
 
 ## 12. Offizielle Quellen

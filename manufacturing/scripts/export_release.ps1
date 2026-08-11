@@ -37,9 +37,11 @@ $defaultDnp = @(
     'C310', # NFC matching options; values are selected from measurements.
     'C311',
     'C312',
-    'R505', # GNSS active-antenna bias network; passive antenna is the default.
-    'L501',
-    'C504'
+    'C403', # Sub-GHz pi-match shunt options; select after RF measurement.
+    'C404',
+    'C507', # LF resonance/RX trim options; select with the real external coil.
+    'C508',
+    'C509'
 )
 
 function Find-KiCadCli {
@@ -339,8 +341,10 @@ $masterBom = foreach ($row in $rawBomRows) {
             $note = 'Default DNP; fit only after VSYS stability test.'
         } elseif ($designator -in @('C310', 'C311', 'C312')) {
             $note = 'Default DNP; NFC matching option. Select value only after antenna/VNA characterization.'
-        } elseif ($designator -in @('R505', 'L501', 'C504')) {
-            $note = 'Default DNP; GNSS passive-antenna configuration. Populate only as a complete, reviewed active-antenna bias network.'
+        } elseif ($designator -in @('C403', 'C404')) {
+            $note = 'Default DNP; Sub-GHz pi-match option. Select only after assembled-board RF measurement.'
+        } elseif ($designator -in @('C507', 'C508', 'C509')) {
+            $note = 'Default DNP; LF resonance/RX trim option. Select only with the measured external coil.'
         } elseif (-not $row.Footprint) {
             $note = 'No purchasable PCB footprint; review as schematic/PCB structure.'
         }

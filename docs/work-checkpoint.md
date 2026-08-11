@@ -1,153 +1,98 @@
 # Work checkpoint — 2026-08-11
 
-## Current inboard-antenna and three-IR checkpoint — 2026-08-11
-
-- The active PCB and reproducible staging PCB now contain 252 footprints: 113
-  front, 139 back and 220 physical nets; the placement file has no tracks.
-- U3 is the 10 x 10 mm E07-900MM10S. Its pin-6 pi network reaches a T3-868M
-  spring in an 18.8 x 6.58 mm open-bottom pocket. The pad follows after the
-  required 0.6-mm PCB bridge; the complete spring stays inside the card envelope.
-  The pad is the only electrical connection, while a marked nonconductive bond
-  to the upper pocket wall mechanically secures the free end.
-- D1-D3 are flat TSAL6200 emitters along the left short edge. All three bodies
-  remain inside the outline and D3 clears the lower corner radius.
-- J5 keeps all 30 connections and 2.54-mm pitch in a compact row-major 6 x 5
-  matrix. Individual Dupont leads or breakaway strips fit; a 2 x 15 housing does not.
-- ERC reports zero violations. Placement DRC has seven reviewed
-  library-comparison warnings and 499 open connections; no copper-edge,
-  silkscreen-edge or courtyard geometry violation remains.
-- The firmware builds successfully with bounded authenticated NEC IR output;
-  Sub-GHz TX and arbitrary GPIO output remain disabled.
-- Routing is still the release blocker. This checkpoint is not order-ready.
-
-## Compact-display checkpoint — 2026-08-10
-
-- SW1 `RESET` and SW2 `BOOT` now use adjacent, front-side C&K KMR221GLFS
-  service switches with explicit silkscreen labels. The larger SW3/SW4 user
-  buttons remain unchanged for comfortable operation.
-- LED1-LED4 now use compact 2-mm WS2812B-2020 packages with the existing 5-V
-  logic-buffered chain and local C603-C606 decoupling.
-- The protected LiPo connector J4 is on the back side and turned 90 degrees
-  counter-clockwise relative to its former front-side orientation. Mirrored
-  polarity marks are provided on the bottom silkscreen.
-- Replaced the rejected 15.5 x 13 mm OLED carrier module with a bare
-  EastRising ER-OLED0.42-1W panel (12 x 11 x 1.25 mm, 72 x 40 pixels).
-- J8 now has the complete 16-way 0.65-mm FPC pinout and seven local 0805
-  charge-pump/decoupling capacitors. The FPC is soldered before the glass is
-  folded and bonded; it is not a plug-in module.
-- Added SW5 as a low-current main switch on the TPS63070 enable path and
-  exposed the freed GPIO38 through R606 on the separate 2.54-mm J9 pad.
-- Generated design at that checkpoint: 250 symbols, 243 populated footprints, 175 named
-  schematic nets. ERC is clean. The placement builder reports no unapproved
-  component, edge, NFC, ESP antenna or Sub-GHz service-keepout collision.
-- `PocketLab-Card.kicad_pcb` mirrors the new 243-footprint placement;
-  `PocketLab-Card-planed.kicad_pcb` has regenerated L2 GND/L3 +3V3 planes.
-- Routing is still open. The placement DRC has seven known footprint-library
-  mismatch warnings and 499 expected unconnected items, so the project remains
-  explicitly not order-ready.
-
-## Pause checkpoint — 2026-08-10
-
-Work was paused at the user's request after the placement-source audit. The
-reproducible source scripts are ahead of the tracked generated PCB artifacts;
-regenerate the schematic, netlisted board and plane board before resuming
-routing. Do not treat the current PCB files as order-ready.
-
-Saved source state:
-
-- Generator still produces 241 symbols, 234 populated footprints, 168 named
-  nets and 38 intentional no-connect nets; a fresh KiCad ERC reports 0 items.
-- The latest temporary builder run passes pad/net parity, four-layer stackup,
-  board-inset, full NFC reservation and ESP antenna-placement assertions.
-- Latest temporary placement DRC has no copper-clearance or courtyard errors;
-  only 499 expected unrouted items and 60 silkscreen/text warnings remain.
-- U1 now uses the project-local physical-body courtyard while retaining the
-  complete stock 48 x 21 mm all-copper-layer antenna rule area.
-- The USB/charger, 3V3 buck-boost, 5V boost, battery protection and IR-current
-  islands have been electrically repacked. R710-R734 all have deterministic,
-  collision-free positions around U1, U9 and the 2.54-mm J5 header.
-- Dense reference designators are now kept on Fab/assembly layers rather than
-  production silkscreen. The guarded plane and FreeRouting scripts include the
-  inner-plane and critical-net/via checks completed in this session.
-
-Open items deliberately left for the next session:
-
-1. Finish the Sub-GHz I-PEX mechanical audit. The provisional MHF-I mating-tool
-   clearance is a 9.5-mm diameter around approximately `(80.8, 55.3)` on the
-   back side. At minimum C116, R109, R111, R112 and R122 must be moved out of
-   that space and the keepout must be encoded in the builder/board guide.
-2. Finish the RGB/IR receiver audit. WS2812B-MINI-V3 is not guaranteed from a
-   3.3-V supply (published minimum is 3.7 V); decide and implement the paused
-   +5V_RAW/TTL-buffer solution, then place LED1-LED4 with local C603-C606.
-3. Finish the paused U15/AUX5 repack for shorter R123 ILIM and R127 EN paths.
-4. Regenerate the tracked schematic/design JSON, netlisted board, L2/L3 plane
-   board and matching project/rule copies; rerun ERC/DRC before autorouting.
-5. Resume guarded routing only after the three placement items above are
-   closed. USB, GNSS RF, NFC, clocks, switch nodes and power remain manual.
-
-This checkpoint intentionally stops before autorouting. The tracked main PCB
-now mirrors the validated placement staging board so opening
-`hardware/PocketLab-Card.kicad_pro` shows the real hardware rather than the old
-21-footprint mechanical study.
-
 ## Saved state
 
-- Schematic: 241 symbols, 234 assigned footprints and 168 named nets.
-- KiCad ERC: 0 violations.
-- Placement: 234 footprints (112 front, 122 back), 0 tracks and 0 zones.
-- Board: 85.60 x 53.98 mm, four layers, nominal 1.6 mm.
-- Encoded stack target: JLC04161H-7628, 35-um outer / 15.2-um inner copper,
-  0.2104-mm 7628 prepregs, 1.065-mm core and ENIG.
-- The complete AE1 NFC reservation and the board-intersecting ESP32 antenna
-  keepout are empty on both sides.
-- Placement audit found no shorts, forbidden-item/antenna-keepout violations,
-  or through-hole/thermal-via projection through an opposite-side component.
-- Firmware builds successfully. GNSS UART now stays high-impedance while
-  `GNSS_3V3` is off and is disconnected before power-off.
+- Generated schematic: 273 symbols, 266 footprints, 183 named logical nets
+  and 231 physical PCB nets; ERC is 0 errors / 0 warnings.
+- GNSS hardware has been removed. U4 is now HTRC110 125-kHz LF RFID with
+  switched 5 V, level translation, external 4-MHz clock and removable coil.
+- ATECC608C-SSHDA-T, decoupling and the dedicated SW6 PAIR button are captured.
+- U24/U25 add low-capacitance shunt protection to every exposed J5 I2C/SPI
+  line. Direct GPIO and expander pins retain their existing series protection.
+- TP601 and TP701-TP703 were removed: the last RGB output is intentionally NC.
+  BMI270 retains both interrupt lines; BMP390 pin 7 is intentionally NC and
+  pressure data remains available by I2C polling.
+- R736/RT701 add a 10-kohm B3950 board-temperature divider on GPIO9 in the
+  former 4 x 4 mm back-side pocket. J5 pin 7 is now probe-only through R714;
+  eleven direct expansion GPIOs remain.
+- Stale GNSS DNP rules were removed from the manufacturing exporter; its safety
+  defaults now match the NFC, Sub-GHz and LF tuning footprints in this design.
+- The placement builder fits all 266 footprints (132 front, 134 back) without
+  unapproved courtyard, keepout or board-inset collision.
+- The routed checkpoint retains 128 front and 138 back footprints from its
+  validated staging allocation. The builder/checkpoint side-count difference
+  consists only of generic unrouted packing slots; all 266 references exist.
+- LF resonance/current-limit/RX parts are fixed around U4/J3 rather than left
+  to the generic auto-packer.
+- L2 GND and L3 +3V3 staging planes regenerate successfully.
+- The PCB stack is now the nominal 1.2-mm, four-layer
+  `JLC04121H-7628` target with 1-oz outer / 0.5-oz inner copper and ENIG.
+  Confirm the live factory stack before freezing USB and RF widths.
+- Routing has started. The main PCB contains the guarded digital fanout and
+  DRC-clean local routes for U6_L1, U6_L2, U7_SW, RTC_OSCI and RTC_OSCO. U6
+  input/output power, U7 input/output power, U7 feedback and the low-current
+  5-V feedback sense branch are now also routed. The nearby IR branch was
+  rerouted around Y701, and R405 now faces U3 -> antenna. CC2 and the provisional
+  Sub-GHz feed are also complete. The board currently contains 498 track
+  segments and 29 vias.
+- Two named B.Cu rule areas limit U7's unavoidable 0.20-mm power-pin neckdowns
+  to the package exits and the reviewed Kelvin/sense corridor; the power rails
+  widen to 0.50 mm outside those areas.
+- R201/R202 are now vertical, side-by-side 0805 parts. The native USB pair is
+  fully routed from U1 through both 22-ohm resistors and U16 to all four J1
+  A6/B6/A7/B7 data pads. The MCU side is via-free; the connector bridge uses
+  five 0.50/0.30-mm vias and a local 0.15-mm fine-pitch clearance area.
+- U16 moved 0.55 mm inward and R102 is now a fixed front-side 0805 below the
+  USB data crossover. J1 B5, R102, its local ground return and the U16 pin-6
+  protection branch are routed. CC2 changes layer with two standard
+  0.50/0.30-mm through vias and has no signal trace on L2/L3. The narrowly
+  scoped 0.20-mm C103/C104 escape rule leaves every other power-pair clearance
+  at 0.25 mm. R101 remains a fixed 0805 on the back beside the right edge.
+- The Sub-GHz pi network is now routed at the provisional 0.36-mm width. C404
+  is perpendicular to the feed, `/SUBGHZ_RF_MOD` stays on B.Cu and
+  `/SUBGHZ_RF_ANT` makes exactly one 0.60/0.30-mm transition to F.Cu before the
+  spring pocket. The front trace stays outside the antenna notch. `/OLED_VCC`
+  was returned completely to the ratsnest because its old autorouter path ran
+  through C404's corrected ground-shunt position.
+- SW3/SW7/SW4 now form a compact, labeled UP/OK/DOWN row using the same
+  KMR221GLFS footprint as RESET/BOOT. R607 is the SELECT pull-up; U9/P07 is the
+  SELECT input and BMP390 INT is NC. PAIR remains a separate security button.
+- SPI_SCK, SPI_MOSI, SPI_MISO, I2C_SCL, GPIO44_MCU, NFC_DVDD, the three user
+  button nets, IR_LED_A1, GPIO43, NFC_LOADMOD, LF_DOUT_5V and OLED_VCC
+  autorouter copper was removed as complete nets where it crossed the accepted
+  USB/button placement. These nets are intentionally back in the ratsnest,
+  with no dangling copper stubs.
+- KiCad DRC has no routed-geometry or schematic-parity error. Six reviewed
+  local footprint-library comparison warnings remain and 499 connection items
+  are still open, so this is only a routing checkpoint.
+- Firmware remains at the preceding two-button checkpoint by explicit project
+  priority; no firmware file was changed for the new SELECT hardware. That
+  previous ESP32-S3 build provides LF power sequencing,
+  HTRC110 configuration/phase/antenna diagnostics, ATECC presence detection,
+  a physical 60-second pairing gate, web control, microSD, bounded NEC IR and
+  board-temperature readout/80-degree-C shutdown with 70-degree-C hysteresis.
+- Secure-element zone locking, persistent owner keys and the phone app are not
+  implemented. No irreversible eFuses or ATECC locks have been applied.
 
-Primary files:
+## Next engineering steps
 
-- `hardware/PocketLab-Card.kicad_pcb`: saved placement checkpoint opened by the
-  normal KiCad project.
-- `hardware/PocketLab-Card-netlisted.kicad_pcb`: reproducible placement staging
-  copy produced by `hardware/scripts/build_pcb.py`.
-- `hardware/PocketLab-Card.kicad_dru`: custom power, USB, GNSS, NFC and crystal
-  rules.
-- `hardware/scripts/add_planes.py`: tested staging step for filled L2 GND and
-  L3 +3V3 planes; it has not yet been applied to the final saved placement.
-- `hardware/scripts/route_pcb.py`: guarded DSN/FreeRouting/SES workflow; no
-  final SES or routed board has been produced yet.
+1. Confirm the live `JLC04121H-7628` data and recalculate the stack-dependent
+   USB and provisional 0.36-mm Sub-GHz geometry. Retune the assembled pi
+   network before treating the RF path as production-final.
+2. Resolve the LF placement/rule mismatch before routing: several sensitive LF
+   nets currently join front- and back-side SMD pads although the present rule
+   forbids vias. Re-place those parts on one side or explicitly review a small
+   controlled transition set; then route LF resonant/RX and NFC manually.
+3. Complete the remaining digital nets, including short U24/U25 clamp branches; then
+   add reviewed GND stitching, refill planes and close all 499 ratsnest items.
+4. Run full KiCad DRC, schematic/PCB parity, independent footprint review and
+   JLCPCB DFM/BOM/CPL preview.
+5. Assemble a small bring-up batch; current-limit first power-up and measure
+   every rail before fitting the external coil.
+6. Measure the real coil, choose C506/C507/C508, check HTRC phase/ANTFAIL,
+   current, voltage and read range.
+7. Keep firmware/app work deferred until the PCB routing and manufacturing
+   package are complete; then update the input map for UP/OK/DOWN before any
+   ATECC provisioning or locking work.
 
-## Known DRC work at the checkpoint
-
-The board is deliberately un-routed and **not order-ready**. The saved DRC run
-reported:
-
-- 499 unconnected ratsnest items;
-- 48 footprint-internal clearance errors caused by fine-pitch manufacturer
-  land patterns versus the generic 0.20/0.25-mm board rules;
-- 16 0.20-mm thermal-via drills versus the generic 0.30-mm board minimum;
-- two conservative U1 courtyard overlaps and two intentional J4 mounting-pad
-  edge-clearance errors;
-- 503 silkscreen/text warnings that need cleanup after routing;
-- 264 schematic-parity warnings, mainly KiCad's `/NET` hierarchical names
-  versus the generated board's `NET` names plus footprint-field differences.
-
-No exception should be added broadly. Resolve or scope each footprint-local,
-edge and parity rule before a fabrication export.
-
-## Resume sequence
-
-1. Resolve/scope the 68 placement DRC errors and the schematic-parity mapping;
-   rerun DRC with the basename-matched `.kicad_pro` and `.kicad_dru`.
-2. Generate `PocketLab-Card-planed.kicad_pcb` with `add_planes.py`; verify both
-   antenna keepouts remain free of plane copper.
-3. Run the guarded FreeRouting workflow for noncritical signals only. Fanout is
-   disabled and L2/L3 are non-routable power layers.
-4. Manually route/review USB, GNSS RF, NFC matching, converter switch nodes and
-   all power paths; then add/review outer GND pours and stitching vias.
-5. Reach zero DRC errors and zero unconnected items, clean silkscreen/parity,
-   run the manufacturing release checks and complete procurement metadata.
-6. Before ordering, independently review polarity/orientation, LiPo safety,
-   JLCPCB DFM/CPL, controlled impedance and all RF/regulatory assumptions.
-   Tune the fabricated NFC loop with a VNA; its current values are prototypes.
+This checkpoint is not an order-ready fabrication release.

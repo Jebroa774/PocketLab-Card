@@ -8,9 +8,10 @@ LiPo safety.
 ## Footprint rules
 
 - Default resistors and capacitors: 0805, non-polar where possible.
-- RF/NFC matching only: 0603. No 0402 or 0201 parts in V1.
+- RF/NFC matching and dense low-power GPIO/data protection only: 0603. No
+  0402 or 0201 parts in V1.
 - No BGA or WLCSP packages.
-- QFN, DFN, LGA, SOT-563, microSD and the board-level GNSS U.FL are always
+- QFN, DFN, LGA, SOT-563 and microSD are always
   factory assembled.
 - Prefer SOIC, TSSOP, SOT-23 and castellated modules for all replaceable parts.
 - The current dense placement is deliberately two-sided. Keep hand-reworkable
@@ -26,17 +27,17 @@ LiPo safety.
 
 | Class | Parts | Who installs them |
 |---|---|---|
-| `JLC_ONLY` | PN532, charger, DC/DCs, fuel gauge, microSD, GNSS U.FL | JLCPCB |
-| `JLC_SMT` | GNSS, IR receiver/driver, USB-C, battery connector | JLCPCB preferred, side set by final placement |
-| `JLC_OR_HAND` | ESP32 module, TSSOP expanders, SOIC RTC | JLCPCB or careful hand rework |
+| `JLC_ONLY` | PN532, charger, DC/DCs, fuel gauge and microSD | JLCPCB |
+| `JLC_SMT` | IR receiver/driver, USB-C, battery connector and small level shifters | JLCPCB preferred, side set by final placement |
+| `JLC_OR_HAND` | ESP32 module, HTRC110, ATECC608C, TSSOP expanders and SOIC RTC | JLCPCB or careful hand rework |
 | `HAND_OR_JLC_SOURCE` | Ebyte Sub-GHz module | Hand install by default |
 | `HAND_THT` | 2.54 mm headers and 5 mm IR LED | Owner after delivery |
 | `JLC_STANDARD_OPTION` | BMI270 and BMP390 | JLCPCB FULL variant only |
 
 `CORE-ECO` omits U10/U11; `FULL` populates them. Because current placement uses
 both PCB sides, neither variant is assumed to qualify for a top-only Economic
-PCBA service. Their empty footprints do not make the core board unusable: GNSS
-speed/trip logging, NFC, Sub-GHz, IR and microSD remain available.
+PCBA service. Their empty sensor footprints do not make the core board unusable:
+LF RFID, NFC, Sub-GHz, IR and microSD remain available.
 
 ## Orientation safeguards
 
@@ -44,8 +45,8 @@ speed/trip logging, NFC, Sub-GHz, IR and microSD remain available.
 - Diodes, LEDs, polarized capacitors and battery pins receive `+`, `-`, `A` and
   `K` labels as appropriate; never rely on a footprint outline alone.
 - Module outlines include the antenna/keep-out end and the readable part name.
-- The board-level U.FL is labeled `GNSS ANT`. U3 pin 6 reaches the lower-edge
-  spring through the pi network; the adjacent right-hand pad labeled `868 ANT`
+- J3 is labeled `LF COIL`. U3 pin 6 reaches the lower-edge spring through the
+  pi network; the adjacent right-hand pad labeled `868 ANT`
   is the spring's only electrical connection. After soldering and inspection,
   bond the free left end to the upper FR4 pocket wall with a small
   nonconductive epoxy or neutral-cure silicone bridge. Do not solder, ground,

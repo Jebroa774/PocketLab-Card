@@ -65,9 +65,10 @@ The safety defaults are:
   transient test shows it is required and safe.
 - `C310`, `C311`, `C312`: NFC matching options; leave open until the real PCB
   antenna has been measured and matching values have been selected.
-- `R505`, `L501`, `C504`: complete GNSS active-antenna bias branch; leave all
-  three open for the default passive-antenna build. Populate them only together
-  after checking bias voltage, antenna current, fault behavior and RF impact.
+- `C403`, `C404`: Sub-GHz pi-match shunt options; leave open until the assembled
+  RF path and spring antenna have been measured.
+- `C507`, `C508`, `C509`: LF resonance/RX trim options; leave open until the
+  actual external coil has been measured and the receive path checked.
 
 They are marked in `bom-master.csv` and removed from both `bom-jlcpcb.csv` and
 `cpl-jlcpcb.csv`. Any additional schematic part carrying a truthy `DNP` field is
@@ -97,9 +98,9 @@ stack-up and design rules:
 | --- | --- |
 | Base material | FR-4 |
 | Layer count | 4 |
-| Board thickness | 1.6 mm |
+| Board thickness | 1.2 mm |
 | Finished outline | 85.60 x 53.98 mm, including the specified corner radii |
-| Copper weight | JLC04161H-7628 target: 1 oz outer, 0.5 oz inner |
+| Copper weight | JLC04121H-7628 target: 1 oz outer, 0.5 oz inner |
 | Surface finish | ENIG recommended for the fine-pitch/QFN/LGA prototype |
 | Solder mask | Both sides; color is optional |
 | Silkscreen | Both sides if present in the reviewed Gerbers |
@@ -108,9 +109,10 @@ stack-up and design rules:
 | Assembly side | Two-sided PCBA required by the dense card layout; review both CPL sides and the added setup cost |
 | Quantity | Five boards is a sensible first characterization batch |
 
-Use JLCPCB's actual stack-up table for the selected factory option before the
+Select the exact `JLC04121H-7628` structure in the quote, then compare
+JLCPCB's live stack-up table with the board file before the
 final RF routing. Enter its dielectric heights and copper thicknesses in KiCad,
-then recalculate the 50-ohm GNSS and Sub-GHz feed geometry. The
+then recalculate the 50-ohm Sub-GHz feed geometry. The
 E07-900MM10S pin-6 antenna path uses a tuneable pi network and the inboard
 T3-868M spring; both require measurement with the assembled mechanical stack.
 If the final stack-up is
@@ -138,13 +140,11 @@ prove electrical, RF, thermal or battery safety. Before a larger build:
 - Validate the Sub-GHz antenna/feed/connector with the enclosure and intended
   antenna. Regulatory limits, permitted bands and transmit power depend on the
   country and use case.
-- Start GNSS validation with a passive antenna and `R505`, `L501`, `C504` open.
-  Before enabling an active antenna, validate the complete bias network,
-  connector ESD, current/fault behavior, acquisition and coexistence with
-  Wi-Fi/Sub-GHz/NFC. Antenna keep-outs must remain free of copper, components,
-  battery and cabling as required by each antenna/module datasheet.
+- Validate the external LF coil only after measuring its inductance and fitting
+  reviewed values for `C506`-`C509`. Check HTRC phase, current, resonant voltage,
+  ANTFAIL behavior and read range before extended operation.
 - Inspect all fine-pitch and exposed-pad devices, then exercise USB, microSD,
-  GNSS logging, IR, NFC, sensors and every expansion voltage under load.
+  LF RFID, IR, NFC, sensors and every expansion voltage under load.
 
 Only after those results are recorded should the project lose its
 `prototype_only` status. The exporter intentionally writes

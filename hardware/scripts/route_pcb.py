@@ -10,15 +10,18 @@ Typical uses with KiCad's bundled Python::
 
     python route_pcb.py --export-only
     python route_pcb.py --import-existing-ses
+    python route_pcb.py --jar C:\\path\\to\\freerouting-2.3.0.jar --java C:\\path\\to\\java.exe
 
 The first command produces a DSN for routing in the FreeRouting GUI.  After
-the GUI has written the requested SES, the second command imports it.  Headless
-FreeRouting is deliberately disabled: FreeRouting 2.3 does not apply its
-``-inc`` netclass exclusions in the headless command path.
+the GUI has written the requested SES, the second command imports it.  The
+third command is the guarded headless path: it creates a second DSN whose
+network section physically omits every manual/critical net before FreeRouting
+is started.  This avoids relying on FreeRouting 2.3's broken headless ``-inc``
+netclass exclusion.
 
 Important engineering limit: autorouting is only a staging aid.  USB routing,
 the provisional 50-ohm RF width, NFC matching/loop routing, switch nodes and
-all power paths must be excluded in the GUI and remain for manual routing.
+all power paths remain for manual routing.
 The SES importer independently rejects any newly added track or via on these
 manual nets.  Plane zones, return paths, impedance, antenna tuning and final
 KiCad DRC are not made correct merely by a successful run of this script.
@@ -87,9 +90,10 @@ MANAGED_SPECS: tuple[NetClassSpec, ...] = (
         priority=1,
     ),
     NetClassSpec(
-        "GNSS_RF",
-        0.36,
-        description="Provisional 50-ohm width only; recalculate for the ordered stackup",
+        "LF_RFID",
+        0.40,
+        clearance_mm=0.25,
+        description="HTRC110 resonant/high-voltage and analogue paths; route manually and tune",
         priority=2,
     ),
     NetClassSpec(
@@ -124,6 +128,7 @@ POWER_NETS = frozenset(
         "+3V3",
         "+5V_AUX",
         "+5V_RAW",
+        "LF_5V",
         "BAT_FET_MID",
         "CELL_NEG",
         "CELL_POS",
@@ -146,14 +151,27 @@ USB_NETS = frozenset(
 )
 USB_CONNECTOR_BRIDGE_NETS = frozenset({"USB_CONN_N", "USB_CONN_P"})
 # J1 has duplicated F.Cu-only USB data pads.  The shortest clean breakout uses
-# one tightly controlled B.Cu bridge per data net, hence exactly two through
-# vias per bridge.  Keep this exception local to the connector instead of
-# weakening the via-free rule for the MCU-side differential pair.
-USB_CONNECTOR_VIA_REGION_MM = (96.30, 100.80, 50.40, 53.00)
-USB_CONNECTOR_VIA_DIAMETER_MM = 0.60
+# one tightly controlled B.Cu bridge per data net.  N also changes layer once
+# beside U16 so it can enter the staggered bridge without crossing P.  Keep the
+# five-via exception local instead of weakening the via-free MCU-side pair.
+USB_CONNECTOR_EXPECTED_VIA_COUNTS = {"USB_CONN_N": 3, "USB_CONN_P": 2}
+USB_CONNECTOR_VIA_REGION_MM = (92.20, 97.30, 48.00, 52.70)
+USB_CONNECTOR_VIA_DIAMETER_MM = 0.50
 USB_CONNECTOR_VIA_DRILL_MM = 0.30
 USB_CONNECTOR_VIA_TOLERANCE_MM = 0.01
-RF50_NETS = frozenset({"GNSS_ANT_FEED"})
+LF_RFID_NETS = frozenset(
+    {
+        "LF_ANT_A",
+        "LF_ANT_B",
+        "LF_CEXT",
+        "LF_CLK_4M",
+        "LF_QGND",
+        "LF_RX",
+        "LF_TAP",
+        "LF_TX1",
+        "LF_TX2",
+    }
+)
 SUBGHZ_RF_NETS = frozenset({"SUBGHZ_RF_MOD", "SUBGHZ_RF_ANT"})
 NFC_MATCH_NETS = frozenset(
     {"NFC_LOOP_A", "NFC_LOOP_B", "NFC_TX1", "NFC_TX1_F", "NFC_TX2", "NFC_TX2_F"}
@@ -172,24 +190,27 @@ SENSITIVE_NETS = frozenset(
 ASSIGNMENT_GROUPS: tuple[tuple[str, frozenset[str]], ...] = (
     ("POWER", POWER_NETS),
     ("USB_DIFF", USB_NETS),
-    ("GNSS_RF", RF50_NETS),
+    ("LF_RFID", LF_RFID_NETS),
     ("SUBGHZ_RF", SUBGHZ_RF_NETS),
     ("NFC_RF", NFC_MATCH_NETS),
     ("SENSITIVE", SENSITIVE_NETS),
 )
-# These classes are intentionally left for manual routing.  FreeRouting's GUI
-# can exclude them, and the SES importer below verifies that no new copper was
-# added to the corresponding logical nets.  The headless command path is
-# disabled because FreeRouting 2.3 does not honor the exclusion there.
+# These classes are intentionally left for manual routing.  A guarded headless
+# run removes their nets from a separate autorouter-only DSN instead of relying
+# on FreeRouting 2.3's ineffective headless netclass exclusion.  The SES
+# importer independently verifies that no new copper was added to them.
 MANUAL_NETCLASSES = (
-    "POWER", "USB_DIFF", "GNSS_RF", "SUBGHZ_RF", "NFC_RF", "SENSITIVE"
+    "POWER", "USB_DIFF", "LF_RFID", "SUBGHZ_RF", "NFC_RF", "SENSITIVE"
 )
 MANUAL_LOGICAL_NETS = (
-    POWER_NETS | USB_NETS | RF50_NETS | SUBGHZ_RF_NETS | NFC_MATCH_NETS | SENSITIVE_NETS
+    POWER_NETS | USB_NETS | LF_RFID_NETS | SUBGHZ_RF_NETS | NFC_MATCH_NETS | SENSITIVE_NETS
 )
 DSN_POSITION_TOLERANCE_NM = 50
+AUTOROUTER_CLEARANCE_UNITS = 250
+AUTOROUTER_MIN_PATH_WIDTH_UNITS = 2000
 REQUIRED_FINAL_NETS = USB_NETS | {
-    "GNSS_ANT_FEED",
+    "LF_ANT_A",
+    "LF_ANT_B",
     "SUBGHZ_RF_MOD",
     "SUBGHZ_RF_ANT",
     "NFC_DVDD",
@@ -240,6 +261,15 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="published Specctra design file",
     )
     parser.add_argument(
+        "--autorouter-dsn",
+        type=Path,
+        default=hardware_dir / "PocketLab-Card-routing-digital.dsn",
+        help=(
+            "published audit copy used for guarded headless routing; critical "
+            "nets are physically absent from its network section"
+        ),
+    )
+    parser.add_argument(
         "--ses",
         type=Path,
         default=hardware_dir / "PocketLab-Card-routing.ses",
@@ -253,10 +283,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--jar",
         type=Path,
-        help=(
-            "legacy headless option; deliberately rejected because FreeRouting "
-            "2.3 ignores critical-netclass exclusions in this mode"
-        ),
+        help="FreeRouting 2.3.x JAR for a guarded digital-net-only headless run",
     )
     parser.add_argument(
         "--passes",
@@ -336,6 +363,7 @@ def validate_paths(args: argparse.Namespace, hardware_dir: Path) -> None:
     design_path = args.design.expanduser().resolve(strict=False)
     output_path = args.output.expanduser().resolve(strict=False)
     dsn_path = args.dsn.expanduser().resolve(strict=False)
+    autorouter_dsn_path = args.autorouter_dsn.expanduser().resolve(strict=False)
     ses_path = args.ses.expanduser().resolve(strict=False)
     main_path = (hardware_dir / "PocketLab-Card.kicad_pcb").resolve(strict=False)
 
@@ -351,6 +379,8 @@ def validate_paths(args: argparse.Namespace, hardware_dir: Path) -> None:
         raise RuntimeError("--output must name a .kicad_pcb file")
     if dsn_path.suffix.lower() != ".dsn":
         raise RuntimeError("--dsn must name a .dsn file")
+    if autorouter_dsn_path.suffix.lower() != ".dsn":
+        raise RuntimeError("--autorouter-dsn must name a .dsn file")
     if ses_path.suffix.lower() != ".ses":
         raise RuntimeError("--ses must name a .ses file")
     if same_path(output_path, main_path):
@@ -363,6 +393,7 @@ def validate_paths(args: argparse.Namespace, hardware_dir: Path) -> None:
         "design": design_path,
         "output": output_path,
         "dsn": dsn_path,
+        "autorouter-dsn": autorouter_dsn_path,
         "ses": ses_path,
     }
     names = list(named_paths)
@@ -798,7 +829,7 @@ def validate_no_critical_vias(board) -> None:
             (USB_NETS - USB_CONNECTOR_BRIDGE_NETS)
             | NFC_MATCH_NETS
             | SENSITIVE_NETS
-            | {"GNSS_ANT_FEED"}
+            | LF_RFID_NETS
         )
     }
     offenders = sorted(
@@ -830,18 +861,22 @@ def validate_no_critical_vias(board) -> None:
     via_count = sum(len(vias) for vias in bridge_vias.values())
     if via_count == 0:
         return
+    expected_counts = {
+        root_local_net_name(name): count
+        for name, count in USB_CONNECTOR_EXPECTED_VIA_COUNTS.items()
+    }
     invalid_counts = {
-        connector_nets[net_name]: len(vias)
+        connector_nets[net_name]: (len(vias), expected_counts[net_name])
         for net_name, vias in bridge_vias.items()
-        if len(vias) != 2
+        if len(vias) != expected_counts[net_name]
     }
     if invalid_counts:
         details = ", ".join(
-            f"{name}={count}" for name, count in sorted(invalid_counts.items())
+            f"{name}={actual} (expected {expected})"
+            for name, (actual, expected) in sorted(invalid_counts.items())
         )
         raise RuntimeError(
-            "The J1 USB bridge must use exactly two vias on each connector-side "
-            f"data net; found {details}"
+            "The reviewed J1 USB breakout via count changed; " f"found {details}"
         )
 
     x_min, x_max, y_min, y_max = USB_CONNECTOR_VIA_REGION_MM
@@ -873,7 +908,7 @@ def validate_no_critical_vias(board) -> None:
                 )
     if geometry_offenders:
         raise RuntimeError(
-            "J1 USB bridge vias must be 0.60/0.30 mm through vias inside the "
+            "J1 USB breakout vias must be 0.50/0.30 mm through vias inside the "
             "connector breakout region: "
             + "; ".join(geometry_offenders)
         )
@@ -1005,6 +1040,177 @@ def validate_exported_dsn(path: Path, layer_names: tuple[str, str, str, str]) ->
         )
 
 
+def dsn_atom(text: str, offset: int) -> tuple[str, int]:
+    """Read one bare or quoted Specctra atom without interpreting its value."""
+    length = len(text)
+    while offset < length and text[offset].isspace():
+        offset += 1
+    if offset >= length:
+        raise RuntimeError("Unexpected end of DSN while reading an atom")
+    if text[offset] == '"':
+        offset += 1
+        value: list[str] = []
+        escaped = False
+        while offset < length:
+            character = text[offset]
+            offset += 1
+            if escaped:
+                value.append(character)
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == '"':
+                return "".join(value), offset
+            else:
+                value.append(character)
+        raise RuntimeError("Unterminated quoted atom in DSN")
+    start = offset
+    while offset < length and not text[offset].isspace() and text[offset] not in "()":
+        offset += 1
+    if start == offset:
+        raise RuntimeError(f"Expected DSN atom at offset {offset}")
+    return text[start:offset], offset
+
+
+def dsn_expression_end(text: str, start: int) -> int:
+    """Return the exclusive end offset of the balanced expression at start."""
+    if start >= len(text) or text[start] != "(":
+        raise RuntimeError(f"Expected DSN expression at offset {start}")
+    depth = 0
+    quoted = False
+    escaped = False
+    for offset in range(start, len(text)):
+        character = text[offset]
+        if quoted:
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == '"':
+                quoted = False
+            continue
+        if character == '"':
+            quoted = True
+        elif character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+            if depth == 0:
+                return offset + 1
+            if depth < 0:
+                break
+    raise RuntimeError(f"Unbalanced DSN expression at offset {start}")
+
+
+def filter_autorouter_network(source: Path, destination: Path) -> tuple[int, int]:
+    """Create a DSN whose network omits every manual net and netclass.
+
+    FreeRouting 2.3's headless path ignores class exclusions.  Removing the
+    protected connections from an autorouter-only copy makes those pads
+    unroutable by construction.  The full DSN remains the publication source,
+    and the SES importer still rejects protected-net copper independently.
+    """
+    text = source.read_text(encoding="utf-8", errors="strict")
+    matches = list(re.finditer(r"(?m)^\s*\(network\b", text))
+    if len(matches) != 1:
+        raise RuntimeError(f"Expected exactly one DSN network section, found {len(matches)}")
+    network_start = text.find("(", matches[0].start())
+    network_end = dsn_expression_end(text, network_start)
+    head, cursor = dsn_atom(text, network_start + 1)
+    if head != "network":
+        raise RuntimeError(f"Expected DSN network expression, got {head!r}")
+
+    manual_physical_nets = frozenset(root_local_net_name(name) for name in MANUAL_LOGICAL_NETS)
+    seen_manual_nets: set[str] = set()
+    retained_nets = 0
+    pieces = [text[:cursor]]
+    copy_from = cursor
+    while cursor < network_end - 1:
+        while cursor < network_end - 1 and text[cursor].isspace():
+            cursor += 1
+        if cursor >= network_end - 1:
+            break
+        if text[cursor] != "(":
+            raise RuntimeError(f"Unexpected token in DSN network section at offset {cursor}")
+        child_start = cursor
+        child_end = dsn_expression_end(text, child_start)
+        child_head, atom_offset = dsn_atom(text, child_start + 1)
+        child_name, _ = dsn_atom(text, atom_offset)
+        remove = False
+        if child_head == "net":
+            if child_name in manual_physical_nets:
+                seen_manual_nets.add(child_name)
+                remove = True
+            else:
+                retained_nets += 1
+        elif child_head == "class" and child_name in MANUAL_NETCLASSES:
+            remove = True
+
+        if remove:
+            pieces.append(text[copy_from:child_start])
+            copy_from = child_end
+        cursor = child_end
+
+    pieces.append(text[copy_from:])
+    filtered = "".join(pieces)
+    expected_manual_nets = manual_physical_nets & {
+        root_local_net_name(name)
+        for name in MANUAL_LOGICAL_NETS
+        if f"(net {root_local_net_name(name)}" in text
+    }
+    if seen_manual_nets != expected_manual_nets:
+        raise RuntimeError(
+            "Autorouter DSN filter did not remove the exact protected-net set; missing="
+            + repr(sorted(expected_manual_nets - seen_manual_nets))
+            + ", unexpected="
+            + repr(sorted(seen_manual_nets - expected_manual_nets))
+        )
+    if retained_nets < 1:
+        raise RuntimeError("Autorouter DSN filter left no routable nets")
+    for net_name in seen_manual_nets:
+        if f"(net {net_name}" in filtered:
+            raise RuntimeError(f"Protected net survived autorouter DSN filtering: {net_name}")
+    if "(resolution um 10)" not in filtered:
+        raise RuntimeError("Guarded autorouter requires the expected 10-unit-per-um DSN resolution")
+    filtered, clearance_replacements = re.subn(
+        r"\(clearance 200\)",
+        f"(clearance {AUTOROUTER_CLEARANCE_UNITS})",
+        filtered,
+    )
+    if clearance_replacements != 2:
+        raise RuntimeError(
+            "Expected to strengthen exactly the global and default-class DSN clearances; "
+            f"changed {clearance_replacements}"
+        )
+    destination.write_text(filtered, encoding="utf-8", newline="\n")
+    return len(seen_manual_nets), retained_nets
+
+
+SES_PATH_WIDTH_RE = re.compile(r"(\(path\s+(?:F\.Cu|B\.Cu)\s+)(\d+)")
+
+
+def normalize_freerouting_session(path: Path) -> int:
+    """Reject inner routing and promote FreeRouting pin-neckdowns to 0.20 mm."""
+    text = path.read_text(encoding="utf-8", errors="strict")
+    if "(resolution um 10)" not in text:
+        raise RuntimeError("FreeRouting SES does not use the expected 10-unit-per-um resolution")
+    if re.search(r"\(path\s+(?:GND|PWR)\s+", text):
+        raise RuntimeError("FreeRouting SES contains a forbidden path on L2/L3")
+    promoted = 0
+
+    def promote(match: re.Match[str]) -> str:
+        nonlocal promoted
+        width = int(match.group(2))
+        if width >= AUTOROUTER_MIN_PATH_WIDTH_UNITS:
+            return match.group(0)
+        promoted += 1
+        return match.group(1) + str(AUTOROUTER_MIN_PATH_WIDTH_UNITS)
+
+    normalized = SES_PATH_WIDTH_RE.sub(promote, text)
+    path.write_text(normalized, encoding="utf-8", newline="\n")
+    return promoted
+
+
 def resolve_java(java_argument: str) -> str:
     candidate = Path(java_argument).expanduser()
     if candidate.is_file():
@@ -1047,13 +1253,30 @@ def run_freerouting(
     passes: int,
     threads: int,
 ) -> None:
-    del java, jar, dsn, ses, passes, threads
-    raise RuntimeError(
-        "Headless FreeRouting is disabled because FreeRouting 2.3 ignores the "
-        "critical-netclass exclusions in this mode. Export a DSN, route only "
-        "noncritical nets in the GUI, review the result, and import that SES with "
-        "--import-existing-ses."
+    command = (
+        java,
+        "-jar",
+        str(jar),
+        "-de",
+        str(dsn),
+        "-do",
+        str(ses),
+        "-mp",
+        str(passes),
+        "-mt",
+        str(threads),
+        "-l",
+        "en",
     )
+    print(
+        f"Starting guarded FreeRouting run: {passes} passes, {threads} threads, "
+        f"input={dsn.name}"
+    )
+    completed = subprocess.run(command, check=False)
+    if completed.returncode != 0:
+        raise RuntimeError(f"FreeRouting failed with exit code {completed.returncode}")
+    if not ses.is_file() or ses.stat().st_size < 100:
+        raise RuntimeError(f"FreeRouting did not create a usable SES: {ses}")
 
 
 def validate_round_trip(
@@ -1176,16 +1399,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     design_path = args.design.expanduser().resolve()
     output_path = args.output.expanduser().resolve(strict=False)
     dsn_path = args.dsn.expanduser().resolve(strict=False)
+    autorouter_dsn_path = args.autorouter_dsn.expanduser().resolve(strict=False)
     ses_path = args.ses.expanduser().resolve(strict=False)
     export_only = args.export_only or (args.jar is None and not args.import_existing_ses)
     companion_pairs = project_companions(hardware_dir, output_path)
-
-    if args.jar is not None and not export_only:
-        raise RuntimeError(
-            "Headless FreeRouting is disabled because FreeRouting 2.3 ignores "
-            "critical-netclass exclusions in this mode. Use --export-only and "
-            "import a reviewed GUI-generated SES with --import-existing-ses."
-        )
 
     if export_only:
         require_destination_available(dsn_path, args.force)
@@ -1204,6 +1421,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             require_destination_available(destination, args.force)
     else:
         require_destination_available(dsn_path, args.force)
+        require_destination_available(autorouter_dsn_path, args.force)
         require_destination_available(ses_path, args.force)
         for destination in (output_path,) + tuple(
             destination for _source, destination in companion_pairs
@@ -1274,14 +1492,27 @@ def main(argv: Sequence[str] | None = None) -> int:
             java = resolve_java(args.java)
             jar = args.jar.expanduser().resolve()
             validate_freerouting_jar(java, jar)
+            scratch_autorouter_dsn = scratch / "PocketLab-Card-routing-digital.dsn"
+            removed_count, retained_count = filter_autorouter_network(
+                scratch_dsn, scratch_autorouter_dsn
+            )
+            print(
+                f"Guarded autorouter DSN: removed {removed_count} protected nets; "
+                f"retained {retained_count} routable nets"
+            )
             scratch_ses = scratch / "PocketLab-Card-routing.ses"
             run_freerouting(
                 java,
                 jar,
-                scratch_dsn,
+                scratch_autorouter_dsn,
                 scratch_ses,
                 args.passes,
                 args.threads,
+            )
+            promoted_paths = normalize_freerouting_session(scratch_ses)
+            print(
+                f"SES width audit: promoted {promoted_paths} autorouter neckdowns "
+                "to the 0.20-mm project minimum"
             )
             import_ses = scratch_ses
 
@@ -1316,6 +1547,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         # save/reload round trip.  The main project PCB is protected above.
         if not args.import_existing_ses:
             publish_file(scratch_dsn, dsn_path, args.force)
+            publish_file(scratch_autorouter_dsn, autorouter_dsn_path, args.force)
             publish_file(import_ses, ses_path, args.force)
         publish_board_bundle(
             candidate_board,
