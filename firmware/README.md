@@ -12,16 +12,18 @@ Arduino-ESP32 3.x and PlatformIO.
 - checksum-validated NMEA RMC/GGA parser on the GNSS UART
 - CSV trip logging with UTC, coordinates, speed, course, altitude, satellites
   and HDOP; live distance and point counters are shown in the web UI
-- safe boot states for CC1101, microSD, IR, buzzer, RGB and all exposed GPIOs
+- safe boot states for CC1101, microSD, IR, RGB and all exposed GPIOs
 - read-only CC1101 identity probe, PN532 I2C presence probe, TCA9535 status
   inputs and TCA9534 control/button status
 - GNSS power control through the dedicated TCA9534 control expander, explicit
   conflict checks around an active trip, and UART high-impedance sequencing so
   an unpowered MAX-M10S is not driven through GPIO35
+- authenticated NEC IR transmission through the three shared emitters, with a
+  38.5 kHz software carrier, a 150 ms request interval and at most two repeats
 
 The implementation is intentionally a bring-up baseline. It does not yet
 contain PN532 transactions, CC1101 receive/decoding, IR decoding, sensor
-drivers, battery telemetry or any transmit implementation.
+drivers, battery telemetry or Sub-GHz transmission.
 
 ## Build and upload
 
@@ -49,18 +51,19 @@ not a replacement for a user-set secret in a production device.
 
 ## Safety policy
 
-`platformio.ini` compiles all transmit/output feature flags as zero:
+`platformio.ini` enables only the bounded IR remote-control path:
 
 ```ini
 -DPOCKETLAB_ALLOW_SUBGHZ_TX=0
--DPOCKETLAB_ALLOW_IR_TX=0
+-DPOCKETLAB_ALLOW_IR_TX=1
 -DPOCKETLAB_ALLOW_GPIO_OUTPUT=0
 ```
 
-There is no transmit implementation behind those flags. The corresponding
-REST routes always return HTTP 403, WebSocket input is read-only, the 5 V boost
-starts disabled, IR stays low, and the twelve direct expansion GPIOs start and
-remain inputs. Enabling a build flag alone therefore cannot activate TX.
+Sub-GHz transmission and arbitrary GPIO output have no implementation and
+remain locked. WebSocket input is read-only, the 5 V boost starts disabled,
+IR starts low, and the twelve direct expansion GPIOs remain inputs. The IR
+endpoint accepts only an 8-bit NEC address, an 8-bit command and zero to two
+repeats; it temporarily enables the 5 V rail and restores its prior state.
 
 Future radio work must add an explicit physical/user authorization flow,
 regional frequency and duty-cycle limits, bounded power, and tests before a TX
@@ -88,6 +91,7 @@ origin web UI obtains it from `/api/config`; it changes on every boot.
 | `POST` | `/api/trip/start` | Enable GNSS if possible and start CSV logging |
 | `POST` | `/api/trip/stop` | Flush and close the current CSV file |
 | `POST` | `/api/gnss/power?enabled=1` | Switch GNSS power through TCA9534 |
+| `POST` | `/api/ir/tx?address=0&command=0&repeats=0` | Send one bounded NEC IR frame |
 | `POST` | `/api/sd/remount` | Remount the card while no trip is active |
 | `POST` | `/api/upload?path=/uploads/name` | Multipart file upload |
 | `DELETE` | `/api/file?path=/uploads/name` | Delete a file or empty directory |

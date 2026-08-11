@@ -8,15 +8,16 @@
 | 01_USB_POWER | USB-C, ESD, charger, battery, 3.3 V and 5 V conversion |
 | 02_MCU | ESP32-S3-WROOM-1 module, boot/reset and native USB |
 | 03_NFC | PN532, clock, matching/RX networks and four-turn PCB loop |
-| 04_SUBGHZ | E07-900M10S IPEX CC1101 module; pin 21 NC |
+| 04_SUBGHZ | E07-900MM10S CC1101 module, tuneable pi network and inboard spring antenna |
 | 05_GNSS_SD | MAX-M10S, GNSS antenna and microSD |
-| 06_IR_UI | IR transmitter/receiver, RGB LEDs, buzzer and buttons |
+| 06_IR_UI | IR transmitter/receiver, RGB LEDs, buttons and bare OLED |
 | 07_SENSORS_IO | IMU, barometer, RTC, fuel gauge, U9/U18 and headers |
 
 KiCad 10 is installed locally. `PocketLab-Card.kicad_pro` is the project entry
 point and the PCB scaffold contains the exact credit-card outline. The current
-generated schematic comprises 241 symbols, 234 assigned footprints and 168
-named nets; `erc-current.rpt` reports zero errors and zero warnings.
+generated schematic comprises 259 symbols, 252 assigned footprints and 179
+named logical nets (220 physical PCB nets); `erc-current.rpt` reports zero
+errors and zero warnings.
 
 The schematic and its machine-readable net description are reproducible with
 KiCad's bundled Python:
@@ -34,8 +35,10 @@ battery using a VNA or suitable NFC fixture.
 
 `PocketLab-Card-netlisted.kicad_pcb` is the reproducible placement work file.
 The tracked `PocketLab-Card.kicad_pcb` currently mirrors that saved placement
-checkpoint so the normal project opens all 234 footprints. Routing and DRC are
-still being developed; neither file is an order-ready fabrication release.
+checkpoint so the normal project opens all 252 footprints. The placement DRC
+has no geometry violation; seven local-library comparison warnings remain and
+499 connections are intentionally still open. Neither file is an order-ready
+fabrication release.
 
 ## Required layout, sourcing and bring-up checks
 
@@ -45,12 +48,16 @@ still being developed; neither file is an order-ready fabrication release.
 - Stable 3.3 V and 5 V converter compensation/layout per reference designs
 - 5 V header current limiting and output discharge
 - PN532 DVDD-derived AVDD/TVDD supplies, RX network and measured antenna tuning
-- E07-900M10S IPEX variant, with pin 21 NC and no second board-level RF connector
+- E07-900MM10S pin map, short 50-ohm feed, tuneable pi network and measured 868 MHz spring match
+- 18.8 x 6.58 mm spring pocket, 0.6 mm PCB bridge to the sole electrical antenna pad, and a second nonconductive adhesive anchor at the free end
 - GNSS 50 ohm feed, passive U.FL default and DNP active-antenna bias option
 - microSD pull-ups, 47 uF write-transient bulk capacitance and U19 ESD array
 - 100 ohm series protection on 12 direct GPIOs and the exposed I2C/SPI buses
 - 220 ohm series protection on all eight expander GPIOs
-- optional J7 external 10-kohm NTC input, selected by cutting SJ1
+- optional external 10-kohm NTC on J5 pins 28/30, selected by cutting SJ1
+- ER-OLED0.42-1W FPC pinout, fold direction and seven local 0805 capacitors
+- SW5 low-current main switch on the TPS63070 enable path
+- three independent TSAL6200 current-limit branches and fully inboard formed leads/lenses
 - VBUS_USB, VBUS_FUSED, VSYS, +3V3, +5V_RAW and +5V_AUX test points
 
 See `docs/assembly-strategy.md` before selecting or placing any footprint.

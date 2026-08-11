@@ -96,7 +96,7 @@ void WebPortal::configureRoutes() {
   server_.on(F("/api/subghz/tx"), HTTP_POST,
              [this]() { handleLockedTransmit(F("subghz_tx")); });
   server_.on(F("/api/ir/tx"), HTTP_POST,
-             [this]() { handleLockedTransmit(F("ir_tx")); });
+             [this]() { handleIrTransmit(); });
   server_.on(F("/api/gpio/output"), HTTP_POST,
              [this]() { handleLockedTransmit(F("gpio_output")); });
   server_.onNotFound([this]() { sendError(404, F("not_found")); });
@@ -383,6 +383,48 @@ void WebPortal::handleSdRemount() {
     return;
   }
   sendJson(200, F("{\"ok\":true,\"message\":\"sd_mounted\"}"));
+}
+
+void WebPortal::handleIrTransmit() {
+  if (!authorizeMutation()) return;
+  if (!config::IR_TX_COMPILED) {
+    String payload = F("{\"ok\":false,\"error\":\"capability_locked\",\"capability\":\"ir_tx\"}");
+    sendJson(403, payload);
+    return;
+  }
+  if (!server_.hasArg(F("address")) || !server_.hasArg(F("command"))) {
+    sendError(400, F("address_and_command_required"));
+    return;
+  }
+
+  const String addressText = server_.arg(F("address"));
+  const String commandText = server_.arg(F("command"));
+  const String repeatsText = server_.hasArg(F("repeats"))
+                                 ? server_.arg(F("repeats"))
+                                 : String(F("0"));
+  char *end = nullptr;
+  const long address = strtol(addressText.c_str(), &end, 0);
+  if (end == addressText.c_str() || *end != '\0' || address < 0 || address > 255) {
+    sendError(400, F("invalid_address"));
+    return;
+  }
+  const long command = strtol(commandText.c_str(), &end, 0);
+  if (end == commandText.c_str() || *end != '\0' || command < 0 || command > 255) {
+    sendError(400, F("invalid_command"));
+    return;
+  }
+  const long repeats = strtol(repeatsText.c_str(), &end, 0);
+  if (end == repeatsText.c_str() || *end != '\0' || repeats < 0 || repeats > 2) {
+    sendError(400, F("invalid_repeats"));
+    return;
+  }
+  if (!hardware_.sendIrNec(static_cast<uint8_t>(address),
+                           static_cast<uint8_t>(command),
+                           static_cast<uint8_t>(repeats))) {
+    sendError(429, F("ir_busy_or_power_unavailable"));
+    return;
+  }
+  sendJson(200, F("{\"ok\":true,\"message\":\"ir_nec_sent\"}"));
 }
 
 void WebPortal::handleLockedTransmit(const __FlashStringHelper *capability) {

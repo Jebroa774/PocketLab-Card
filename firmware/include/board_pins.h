@@ -15,9 +15,8 @@ inline constexpr uint8_t SPI_MISO = 13;
 // NFC
 inline constexpr uint8_t NFC_IRQ_N = 7;
 
-// LEDs and sound
+// LEDs
 inline constexpr uint8_t RGB_DATA = 10;
-inline constexpr uint8_t BUZZER_PWM = 38;
 
 // Sub-GHz
 inline constexpr uint8_t SUBGHZ_CS_N = 14;
@@ -45,7 +44,7 @@ inline constexpr uint8_t IR_RX = 37;
 
 // Direct expansion GPIOs
 inline constexpr uint8_t DIRECT_EXPANSION[] = {
-    1, 2, 4, 8, 9, 40, 41, 42, 43, 44, 47, 48,
+    1, 2, 4, 8, 9, 38, 40, 41, 42, 43, 44, 47, 48,
 };
 
 // U9 / TCA9535 at 0x20. Both ports remain inputs; P10-P17 are EX0-EX7.

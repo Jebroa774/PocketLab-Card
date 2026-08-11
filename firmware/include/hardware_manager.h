@@ -41,6 +41,7 @@ class HardwareManager {
 
   bool setGnssPower(bool enabled);
   bool setBoost5(bool enabled);
+  bool sendIrNec(uint8_t address, uint8_t command, uint8_t repeats = 0);
   bool readDirectGpio(uint8_t gpio, bool &level) const;
 
   const HardwareStatus &status() const { return status_; }
@@ -58,10 +59,14 @@ class HardwareManager {
   void probeSubGhz();
   void updateStatusExpanderInputs();
   void updateControlExpanderInputs();
+  static void sendIrMark(uint32_t durationUs);
+  static void sendIrSpace(uint32_t durationUs);
+  static void sendIrByteLsb(uint8_t value);
 
   HardwareStatus status_;
   uint8_t controlOutputs_ = 0;
   uint32_t lastPollMs_ = 0;
+  uint32_t lastIrTxMs_ = 0;
 };
 
 }  // namespace pocketlab

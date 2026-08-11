@@ -29,6 +29,9 @@ inline constexpr uint32_t I2C_FREQUENCY_HZ = 400000;
 inline constexpr uint8_t TCA9535_STATUS_ADDRESS = 0x20;
 inline constexpr uint8_t TCA9534_CONTROL_ADDRESS = 0x21;
 inline constexpr uint8_t PN532_I2C_ADDRESS = 0x24;
+inline constexpr uint8_t OLED_I2C_ADDRESS = 0x3C;
+inline constexpr uint8_t OLED_WIDTH = 72;
+inline constexpr uint8_t OLED_HEIGHT = 40;
 
 inline constexpr uint32_t SPI_FREQUENCY_HZ = 8000000;
 inline constexpr uint32_t SD_FREQUENCY_HZ = 20000000;

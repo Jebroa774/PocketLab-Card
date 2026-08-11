@@ -39,6 +39,7 @@ class WebPortal {
   void handleTripStop();
   void handleGnssPower();
   void handleSdRemount();
+  void handleIrTransmit();
   void handleLockedTransmit(const __FlashStringHelper *capability);
 
   HardwareManager &hardware_;

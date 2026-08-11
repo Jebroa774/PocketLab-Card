@@ -45,7 +45,6 @@ void HardwareManager::begin() {
   setSafeOutput(pins::SUBGHZ_CS_N, HIGH);
   setSafeOutput(pins::SD_CS_N, HIGH);
   setSafeOutput(pins::IR_TX, LOW);
-  setSafeOutput(pins::BUZZER_PWM, LOW);
   setSafeOutput(pins::RGB_DATA, LOW);
 
   pinMode(pins::NFC_IRQ_N, INPUT_PULLUP);
@@ -207,6 +206,69 @@ bool HardwareManager::setBoost5(bool enabled) {
   if (!setControlOutput(static_cast<uint8_t>(pins::ControlExpanderPin::Boost5Enable),
                         enabled)) {
     return false;
+  }
+  return true;
+}
+
+void HardwareManager::sendIrMark(uint32_t durationUs) {
+  // A bounded software carrier avoids another dependency and is adequate for
+  // NEC bring-up. The 13 us half-period is approximately 38.5 kHz.
+  const uint32_t started = micros();
+  while (static_cast<uint32_t>(micros() - started) < durationUs) {
+    digitalWrite(pins::IR_TX, HIGH);
+    delayMicroseconds(13);
+    digitalWrite(pins::IR_TX, LOW);
+    delayMicroseconds(13);
+  }
+  digitalWrite(pins::IR_TX, LOW);
+}
+
+void HardwareManager::sendIrSpace(uint32_t durationUs) {
+  digitalWrite(pins::IR_TX, LOW);
+  delayMicroseconds(durationUs);
+}
+
+void HardwareManager::sendIrByteLsb(uint8_t value) {
+  for (uint8_t bit = 0; bit < 8; ++bit) {
+    sendIrMark(560);
+    sendIrSpace((value & (1U << bit)) != 0 ? 1690 : 560);
+  }
+}
+
+bool HardwareManager::sendIrNec(uint8_t address, uint8_t command, uint8_t repeats) {
+  if (!config::IR_TX_COMPILED || repeats > 2) return false;
+
+  const uint32_t now = millis();
+  if (lastIrTxMs_ != 0 && static_cast<uint32_t>(now - lastIrTxMs_) < 150) {
+    return false;
+  }
+
+  const bool restoreBoostOff = !status_.boost5Enabled;
+  if (restoreBoostOff) {
+    if (!setBoost5(true)) return false;
+    delay(3);
+  }
+
+  sendIrMark(9000);
+  sendIrSpace(4500);
+  sendIrByteLsb(address);
+  sendIrByteLsb(static_cast<uint8_t>(~address));
+  sendIrByteLsb(command);
+  sendIrByteLsb(static_cast<uint8_t>(~command));
+  sendIrMark(560);
+
+  for (uint8_t repeat = 0; repeat < repeats; ++repeat) {
+    delay(40);
+    sendIrMark(9000);
+    sendIrSpace(2250);
+    sendIrMark(560);
+  }
+  digitalWrite(pins::IR_TX, LOW);
+  lastIrTxMs_ = millis();
+
+  if (restoreBoostOff) {
+    delay(1);
+    if (!setBoost5(false)) return false;
   }
   return true;
 }

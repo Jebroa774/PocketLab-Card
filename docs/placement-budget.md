@@ -9,13 +9,15 @@ two-sided placement rather than a mostly empty development board.
 | Zone | Working envelope | Placement intent |
 |---|---:|---|
 | ESP32-S3-WROOM body / embedded antenna keep-out | 19 x 26 mm / 48 x 21 mm | Short edge; most of the antenna keep-out extends outside the PCB, while its board-intersecting part stays empty on both sides |
-| E07-900M10S IPEX module and access | 24 x 18 mm | Separate edge; integrated IPEX kept accessible |
+| E07-900MM10S and antenna match | 10 x 10 mm module plus three 0805 matching sites | Back side beside the lower-edge spring feed |
+| T3-868M spring pocket | 18.8 x 6.58 mm recess plus adjacent solder pad | Complete spring stays inside the original card envelope |
 | MAX-M10S, antenna bias and U.FL | 20 x 15 mm | Quiet corner away from switchers |
 | NFC loop and tuning reservation | 36 x 29 mm | 35 x 27 mm four-turn copper loop; full all-layer keep-out |
 | microSD and card insertion path | 17 x 15 mm | Edge-accessible |
+| Bare OLED glass / final folded envelope | 12 x 11 mm | Front side; direct 16-way FPC plus adjacent 0805 charge-pump bank |
 | USB, charger, 3.3 V and 5 V power | 30 x 22 mm | Compact power island with thermal copper |
-| 2 x 15 expansion header | 40 x 7 mm | Through-hole strip, top or bottom header installation |
-| IR, RGB, buttons, RTC and optional sensors | 25 x 15 mm | Distributed in remaining pockets |
+| 6 x 5 expansion matrix | 15 x 12.5 mm | Thirty 2.54-mm through holes; individual Dupont leads or breakaway strips |
+| Three flat IR emitters, RGB, buttons, RTC and optional sensors | 25 x 19 mm | Distributed in remaining pockets |
 
 The NFC footprint itself enforces a 36 x 29 mm keep-out against foreign tracks,
 vias, pads, pours and footprints on all copper layers, with only local relief
@@ -34,12 +36,15 @@ VNA measurement.
 
 - Bare board: 1.6 mm.
 - ESP32-S3-WROOM module: approximately 3.1 mm above its mounting surface.
+- Bare OLED: approximately 1.25 mm panel thickness; no carrier PCB or pin header.
+- E07-900MM10S module: verify its received maximum height and solder fillets;
+  the current layout uses its 10 x 10 mm castellated body on the back.
 - The E07 module and microSD socket are on the opposite side, while the JST
   battery connector can exceed the ESP32 height. The complete unheadered card
   therefore needs a provisional 8-9 mm overall envelope before enclosure
   clearance; confirm it in the final 3D model and against received parts.
-- The optional 5 mm THT IR LED is edge-facing and does not define the flat
-  board thickness, but it protrudes beyond the outline.
+- The three 5 mm THT IR LEDs lie flat and remain inboard. They still set a
+  local height of roughly 5 mm above the front surface and require hand forming.
 
 The design is credit-card-shaped, not ISO wallet-card-thin. Keeping the battery
 external avoids adding several millimetres across the whole board.

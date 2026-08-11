@@ -12,15 +12,17 @@ flowchart LR
 
     REG33 --> MCU[ESP32-S3-WROOM-1-N8R2]
     REG33 --> NFC[PN532 + NFC loop]
-    REG33 --> SUB[E07-900M10S IPEX CC1101 module]
+    REG33 --> SUB[E07-900MM10S CC1101 module + spring antenna]
     REG33 --> GPS[MAX-M10S + GNSS U.FL]
     REG33 --> SD[microSD]
     REG33 --> SENS[IMU + barometer + RTC + fuel gauge]
     REG33 --> IOX[TCA9535 status/expansion I/O]
     REG33 --> CTL[TCA9534 internal control I/O]
+    REG33 --> OLED[0.42-inch OLED]
 
     REG5 --> RAW[+5V_RAW]
     RAW --> IR[940 nm IR driver]
+    RAW --> RGB[RGB LEDs via AHCT data buffer]
     RAW --> LIM[TPS2553 current-limited switch]
     LIM --> AUX[+5V_AUX expansion output]
 
@@ -28,6 +30,7 @@ flowchart LR
     MCU <-->|I2C| SENS
     MCU <-->|I2C| IOX
     MCU <-->|I2C| CTL
+    MCU -->|I2C| OLED
     MCU <-->|Shared SPI| SUB
     MCU <-->|Shared SPI| SD
     MCU <-->|UART + PPS| GPS
@@ -42,22 +45,34 @@ flowchart LR
 | VBAT | 3.0-4.2 V | External 1S LiPo | Charger/power path |
 | VSYS | 3.0-4.4 V | BQ24074 power path | DC/DC inputs |
 | +3V3 | 3.3 V | TPS63070 | MCU, radios, storage, sensors |
-| +5V_RAW | 5.0 V switchable | TPS61023 | IR driver and TPS2553 input |
+| +5V_RAW | 5.0 V switchable | TPS61023 | IR driver, RGB LEDs and TPS2553 input |
 | +5V_AUX | 5.0 V protected | TPS2553 from +5V_RAW | J5 pin 29 only |
 | GNSS_3V3 | 3.3 V switched | TPS22919 from +3V3 | MAX-M10S VCC and V_IO |
 
-The 5 V converter is disabled by default. Firmware enables it only for IR or
-an explicitly requested auxiliary load. IR is connected directly to
-`+5V_RAW`; only the external `+5V_AUX` header pin is downstream of the TPS2553
+The 5 V converter is disabled by default. Firmware enables it only for IR,
+RGB illumination or an explicitly requested auxiliary load. IR and the RGB
+LED supply are connected directly to `+5V_RAW`; only the external `+5V_AUX`
+header pin is downstream of the TPS2553
 current-limited switch and targeted at 500 mA maximum. Firmware must arbitrate
 the combined boost load, while the hardware header current limit remains
 independent of firmware.
+
+`RGB_DATA` passes through a 5-V SN74AHCT1G126 before the first LED. The
+buffer's active-high output enable is tied to `BOOST5_EN`; the output is
+high-impedance whenever the boost is off, avoiding back-power through the LED
+data input.
+
+SW5 is the main user power switch, but it does not carry battery or USB charge
+current. It switches the TPS63070 enable node between `PWR_SW_ON` and GND;
+R735 holds that node low while off. The BQ24074 charger, protection circuit and
+USB power path therefore remain available for safe charging while the 3.3-V
+system rail and all dependent functions are off.
 
 ## Digital buses
 
 | Bus | Devices | Notes |
 |---|---|---|
-| I2C | PN532, TCA9535, TCA9534, optional BMI270/BMP390, PCF8563, MAX17048 | 3.3 V, one 3.3-kohm pull-up pair, 400 kHz target |
+| I2C | PN532, OLED, TCA9535, TCA9534, optional BMI270/BMP390, PCF8563, MAX17048 | 3.3 V, one 3.3-kohm pull-up pair, 400 kHz target |
 | SPI | E07 CC1101 module, microSD | Shared SCK/MOSI/MISO, dedicated chip selects |
 | UART1 | MAX-M10S | GNSS UBX/NMEA control and data |
 | USB | ESP32-S3 native USB | Firmware upload, CDC and optional HID |
@@ -68,16 +83,17 @@ independent of firmware.
    all-layer keep-out.
 2. Keep the GNSS module beside its U.FL connector with a very short 50 ohm
    trace; keep the 5 V switching converter away from this corner.
-3. Allocate one edge to the 868 MHz E07-900M10S IPEX module. Its own IPEX
-   connector is the only Sub-GHz antenna path; pin 21 stays NC and there is no
-   separate board-level J6 connector.
+3. Keep the E07-900MM10S module close to the lower-edge matching network. Pin 6
+   feeds the C403/R405/C404 pi network and the hand-soldered T3-868M spring;
+   the complete spring lies inside the milled pocket and card envelope.
 4. Use a smaller NFC loop around the opposite half of the card instead of a
    full-board loop, avoiding the Wi-Fi and Sub-GHz antenna zones.
 5. Provide an NFC matching-network population option on the first prototype.
    The 35 x 27 mm, four-turn loop and its 36 x 29 mm keep-out are preliminary;
    tune the assembled board with a VNA. The E07 module contains its own CC1101
-   crystal and match.
-6. The selected E07-900M10S IPEX variant is the EU 868 MHz build. A different
+   crystal and internal module-level network, while the external pi remains a
+   board/antenna tuning provision.
+6. The selected E07-900MM10S is populated for the EU 868 MHz build. A different
    regional variant is a separately reviewed assembly choice, not an automatic
    substitution; antenna, firmware limits and local rules must match it.
 

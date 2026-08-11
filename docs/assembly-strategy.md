@@ -44,8 +44,13 @@ speed/trip logging, NFC, Sub-GHz, IR and microSD remain available.
 - Diodes, LEDs, polarized capacitors and battery pins receive `+`, `-`, `A` and
   `K` labels as appropriate; never rely on a footprint outline alone.
 - Module outlines include the antenna/keep-out end and the readable part name.
-- The board-level U.FL is labeled `GNSS ANT`. U3 uses its own integrated IPEX
-  connector labeled `SUB-GHz IPEX`; pin 21 is NC and no separate J6 is fitted.
+- The board-level U.FL is labeled `GNSS ANT`. U3 pin 6 reaches the lower-edge
+  spring through the pi network; the adjacent right-hand pad labeled `868 ANT`
+  is the spring's only electrical connection. After soldering and inspection,
+  bond the free left end to the upper FR4 pocket wall with a small
+  nonconductive epoxy or neutral-cure silicone bridge. Do not solder, ground,
+  or add copper at that second mechanical anchor. Perform the final RF tuning
+  only after the adhesive has cured and with the enclosure and battery fitted.
 - The battery connector is labeled from the wire side as well as the PCB side.
 - JLCPCB CPL rotations must be checked visually in its 2D assembly viewer.
 

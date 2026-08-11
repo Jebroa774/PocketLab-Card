@@ -231,8 +231,8 @@ Der gewählte 2-polige JST-Stecker hat keinen Temperaturkontakt. Daher:
 
 - R108 (`10 kOhm TS fixed`, 0805) und den gebrückten Lötjumper SJ1
   standardmäßig bestücken.
-- J7 stellt zwei unbestückte THT-Pads im 2.54-mm-Raster für `CHG_TS` und GND
-  bereit.
+- J5 stellt an Pin 28 `CHG_TS` und an Pin 30 GND im 2.54-mm-Raster für einen
+  optionalen externen NTC bereit.
 - Bei Verwendung eines echten 10-kOhm-NTC SJ1 auftrennen. Dadurch wird R108
   von `CHG_TS` getrennt; R108 muss nicht ausgelötet werden.
 
@@ -268,6 +268,10 @@ J4: JST `S2B-PH-SM4-TB`, PH-Serie, 2.0-mm-Raster, Side-Entry. Pin 1 wird
 im Projekt als `CELL_POS`, Pin 2 als `CELL_NEG` festgelegt. Das ist eine
 Boarddefinition; fertig konfektionierte JST-Akkukabel haben keine universell
 garantierte Polarität.
+
+J4 wird auf der Rückseite bestückt und gegenüber der früheren Vorderansicht um
+90 Grad nach links gedreht. Der Kabelabgang sowie `BAT +`/`BAT -` müssen in der
+Unterseitenansicht des Bestückers geprüft werden.
 
 ### 4.2 Schutz-IC U14
 

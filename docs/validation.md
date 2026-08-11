@@ -9,8 +9,12 @@
 - U9/TCA9535 P10-P17 provide eight additional low-speed digital I/Os through
   220-ohm series resistors; U18/TCA9534 handles the internal control outputs.
 - J5 contains 30 positions at 2.54 mm pitch and its documented pin count balances.
-- U3 is the E07-900M10S IPEX 868 MHz variant. Its integrated IPEX connector is
-  the only Sub-GHz antenna path, module pin 21 is NC, and no board J6 is fitted.
+- U3 is the 10 x 10 mm E07-900MM10S. Pin 6 feeds a DNP/0-ohm/DNP pi network and
+  the T3-868M spring. The spring body, 18.8 x 6.58 mm pocket and adjacent pad
+  remain inside the original card envelope. Only the right end is electrically
+  connected; the marked left anchor is nonconductive and mechanical. Final
+  tuning still requires S11 measurement with the received module, adhesive,
+  enclosure and battery.
 - 5 V auxiliary output is switchable and requires a 500 mA hardware current limit.
 
 ## 2026-08-09 assembly-oriented revision
@@ -41,7 +45,7 @@
 ## 2026-08-09 complete schematic checkpoint
 
 - Tool: KiCad CLI 10.0.5
-- Generated schematic: 241 symbols, 234 assigned footprints and 168 named nets.
+- Generated schematic: 259 symbols, 252 assigned footprints and 179 named logical nets.
 - Current schematic ERC: 0 errors and 0 warnings.
 - PN532 pin 39 DVDD is the internal-LDO output and directly feeds AVDD/TVDD;
   each supply has local decoupling. RX uses the implemented 2.7-kohm loop tap,
@@ -51,7 +55,9 @@
 - GNSS V_BCKP is NC. The passive U.FL path is the default; R505/L501/C504 are
   DNP active-antenna bias options, and R507/R508 are fixed 1-kohm UART limits.
 - microSD has C512 47-uF local bulk capacitance and U19/SRV05-4 signal ESD.
-- J7 and SJ1 implement the optional external 10-kohm battery NTC connection.
+- J8 is the 12 x 11 mm ER-OLED0.42-1W bare panel. Its 16 FPC pads and all seven
+  required 0805 support capacitors pass the generated pad and placement audit.
+- J5 pins 28/30 and SJ1 implement the optional external 10-kohm battery NTC connection.
 - Direct GPIOs, expander GPIOs and exposed I2C/SPI buses all have populated
   series-resistor stages. The one shared I2C pull-up pair is 3.3 kohm.
 - TP105-TP110 expose VBUS_USB, VBUS_FUSED, VSYS, +3V3, +5V_RAW and +5V_AUX;

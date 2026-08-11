@@ -1,4 +1,50 @@
-# Work checkpoint — 2026-08-09
+# Work checkpoint — 2026-08-11
+
+## Current inboard-antenna and three-IR checkpoint — 2026-08-11
+
+- The active PCB and reproducible staging PCB now contain 252 footprints: 113
+  front, 139 back and 220 physical nets; the placement file has no tracks.
+- U3 is the 10 x 10 mm E07-900MM10S. Its pin-6 pi network reaches a T3-868M
+  spring in an 18.8 x 6.58 mm open-bottom pocket. The pad follows after the
+  required 0.6-mm PCB bridge; the complete spring stays inside the card envelope.
+  The pad is the only electrical connection, while a marked nonconductive bond
+  to the upper pocket wall mechanically secures the free end.
+- D1-D3 are flat TSAL6200 emitters along the left short edge. All three bodies
+  remain inside the outline and D3 clears the lower corner radius.
+- J5 keeps all 30 connections and 2.54-mm pitch in a compact row-major 6 x 5
+  matrix. Individual Dupont leads or breakaway strips fit; a 2 x 15 housing does not.
+- ERC reports zero violations. Placement DRC has seven reviewed
+  library-comparison warnings and 499 open connections; no copper-edge,
+  silkscreen-edge or courtyard geometry violation remains.
+- The firmware builds successfully with bounded authenticated NEC IR output;
+  Sub-GHz TX and arbitrary GPIO output remain disabled.
+- Routing is still the release blocker. This checkpoint is not order-ready.
+
+## Compact-display checkpoint — 2026-08-10
+
+- SW1 `RESET` and SW2 `BOOT` now use adjacent, front-side C&K KMR221GLFS
+  service switches with explicit silkscreen labels. The larger SW3/SW4 user
+  buttons remain unchanged for comfortable operation.
+- LED1-LED4 now use compact 2-mm WS2812B-2020 packages with the existing 5-V
+  logic-buffered chain and local C603-C606 decoupling.
+- The protected LiPo connector J4 is on the back side and turned 90 degrees
+  counter-clockwise relative to its former front-side orientation. Mirrored
+  polarity marks are provided on the bottom silkscreen.
+- Replaced the rejected 15.5 x 13 mm OLED carrier module with a bare
+  EastRising ER-OLED0.42-1W panel (12 x 11 x 1.25 mm, 72 x 40 pixels).
+- J8 now has the complete 16-way 0.65-mm FPC pinout and seven local 0805
+  charge-pump/decoupling capacitors. The FPC is soldered before the glass is
+  folded and bonded; it is not a plug-in module.
+- Added SW5 as a low-current main switch on the TPS63070 enable path and
+  exposed the freed GPIO38 through R606 on the separate 2.54-mm J9 pad.
+- Generated design at that checkpoint: 250 symbols, 243 populated footprints, 175 named
+  schematic nets. ERC is clean. The placement builder reports no unapproved
+  component, edge, NFC, ESP antenna or Sub-GHz service-keepout collision.
+- `PocketLab-Card.kicad_pcb` mirrors the new 243-footprint placement;
+  `PocketLab-Card-planed.kicad_pcb` has regenerated L2 GND/L3 +3V3 planes.
+- Routing is still open. The placement DRC has seven known footprint-library
+  mismatch warnings and 499 expected unconnected items, so the project remains
+  explicitly not order-ready.
 
 ## Pause checkpoint — 2026-08-10
 

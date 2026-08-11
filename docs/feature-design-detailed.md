@@ -126,43 +126,45 @@ enclosure, tune the complete differential network at 13.56 MHz with a VNA or
 NFC tuning fixture, then verify field strength, load modulation, detuning by a
 card/phone, and PN532 TVDD current below its 150 mA maximum.
 
-## U3 E07-900M10S Sub-GHz module
+## U3 E07-900MM10S Sub-GHz module
 
 Official references:
 
-- [E07-900M10S product page](https://www.cdebyte.com/products/E07-900M10S/1)
-- [E07-900M10S user manual](https://www.cdebyte.com/pdf-down.aspx?id=1332)
+- [E07-900MM10S product page](https://www.ebyte.com/product/1959.html)
 
-The module is 20 x 14 x 2.8 mm, uses 1.27 mm castellated-pad pitch, operates
-from 3.0 V to 3.6 V, and contains the CC1101 crystal and RF matching network.
+The module is 10 x 10 mm, uses 1.27 mm castellated-pad pitch, operates from
+2.5 V to 3.6 V, and contains the CC1101 crystal and internal RF network.
 
 | Pin(s) | Function | Connection |
 |---:|---|---|
-| 1-5 | GND | GND, all pads connected and via stitched |
-| 6-8 | NC | NC |
-| 9 | VCC | `+3V3`; 4.7 uF + 100 nF directly at module |
-| 10 | NC | NC |
-| 11-12 | GND | GND |
-| 13 | NC | NC |
-| 14 | GDO2 | `SUBGHZ_GDO2` / GPIO16 |
-| 15 | GDO0 | `SUBGHZ_GDO0` / GPIO15 |
-| 16 | MISO/GDO1 | `SUB_MISO`, then R403 22 ohm to `SPI_MISO` |
-| 17 | MOSI | `SPI_MOSI` through R402 22 ohm |
-| 18 | SCK | `SPI_SCK` through R401 22 ohm |
-| 19 | CSN | `SUB_CS_N`; R404 22 ohm from GPIO14 and R406 100-kohm pull-up |
-| 20 | GND | GND |
-| 21 | ANT | Default NC when the module's built-in IPEX/U.FL is used |
-| 22 | GND | GND |
+| 1 | VCC | `+3V3`; local 4.7 uF + 100 nF |
+| 2, 7, 16 | GND | GND with short stitching vias |
+| 3-5, 8-11, 17, 19 | NC | Leave unconnected as specified |
+| 6 | ANT | `SUBGHZ_RF_MOD` into C403/R405/C404 and A1 |
+| 12 | MISO/GDO1 | `SUB_MISO`, then R403 22 ohm to `SPI_MISO` |
+| 13 | MOSI | `SPI_MOSI` through R402 22 ohm |
+| 14 | CSN | `SUB_CS_N`; R404 22 ohm and R406 100-kohm pull-up |
+| 15 | SCK | `SPI_SCK` through R401 22 ohm |
+| 18 | GDO0 | `SUBGHZ_GDO0` / GPIO15 |
+| 20 | GDO2 | `SUBGHZ_GDO2` / GPIO16 |
 
-The selected U3 is explicitly the `E07-900M10S IPEX 868MHz` variant. Its
-integrated IPEX connector is the sole Sub-GHz antenna route and pin 21 is NC.
-There is no board-level J6, RF trace or selection network. Adding another
-antenna path later is a schematic/layout revision, not a population option.
+Pin 6 reaches the antenna through a tuneable pi network: C403 and C404 are DNP
+shunt sites and R405 is the initial 0-ohm series element. A1 is a hand-soldered
+T3-868M spring. Its 17.3-mm body lies in an 18.8 x 6.58 mm open-bottom pocket;
+a 0.6-mm PCB bridge provides the required copper-to-edge clearance before the
+adjacent pad. That right-hand pad is the only electrical connection. After
+soldering and inspection, bond the free left end to the upper FR4 pocket wall
+with a small amount of nonconductive epoxy or neutral-cure silicone. This gives
+two-point mechanical support without shorting the monopole or deliberately
+adding a capacitive second copper pad. Perform final S11 tuning after the bond
+has cured and with the enclosure and battery fitted.
 
-Keep a solid GND reference below the module, stitch every ground pad, and keep
-switch nodes, the 5 V boost, USB, SD clock, and NFC matching parts away from it.
-The module's IPEX connector needs edge and mating-tool access. Frequency,
-power, antenna, and duty cycle must be configured for the legal regional band;
+Keep a solid GND reference below the module and up to the controlled RF launch,
+then keep copper, vias, fast digital routes, switch nodes, the battery and
+enclosure metal out of the spring volume. The external match is a prototype
+starting point: measure S11 with the final PCB stack, enclosure and battery,
+then populate C403/R405/C404 from measured evidence.
+Frequency, power, antenna, and duty cycle must be configured for the legal regional band;
 the 868 MHz build is not a universal-frequency transmitter, and successful
 prototype operation is not proof of regulatory compliance.
 
@@ -297,6 +299,20 @@ off by default, enforce burst/envelope duty limits, prevent a stuck-on output,
 and block simultaneous unrestricted 5 V header load. Perform an IEC 62471
 optical safety review and do not view the emitter directly at close range.
 
+## Compact OLED
+
+J8 is a bare EastRising `ER-OLED0.42-1W` white OLED with an SSD1306B,
+72 x 40 pixels and a 12 x 11 x 1.25 mm glass envelope. It uses I2C address
+`0x3C` on the shared 3.3-V bus. The 16-way solder FPC has 0.65-mm pitch; it is
+soldered to the PCB first and the glass is then folded and bonded over the land
+pattern. It is not a removable daughterboard.
+
+C610/C611 are the 1-uF charge-pump flying capacitors. C612/C613 decouple VDD
+and C614-C616 support VCOMH/VCC. All seven parts are 0805 for hand rework.
+`ESP_EN` resets the display at power-up, while BS1, CS and D/C strap the panel
+for I2C. Inspect FPC pin 1, exposed-contact side and every solder joint before
+folding because a reversed panel cannot be corrected in firmware.
+
 ## U9/U18 I/O expanders
 
 Official references: [TI TCA9535 data sheet](https://www.ti.com/lit/ds/symlink/tca9535.pdf)
@@ -362,7 +378,7 @@ Official reference: [Bosch BMI270 data sheet](https://www.bosch-sensortec.com/me
 | 14 | SDX | `I2C_SDA` |
 
 Place the IMU in a mechanically quiet region near the card center, away from
-mounting holes, edge connectors, the buzzer, and board-flex hotspots. Add a
+mounting holes, edge connectors, the OLED flex area, and board-flex hotspots. Add a
 clear X/Y axis marker to silkscreen. It is factory-assembled only.
 
 ### U11 BMP390
@@ -382,7 +398,7 @@ Official reference: [Bosch BMP390 data sheet](https://www.bosch-sensortec.com/me
 
 Do not put copper, via holes, paste, adhesive, conformal coating, or cleaning
 residue under the central pressure port. Keep it away from heat sources,
-boost/buck inductors, direct airflow, the buzzer, and flexible edges. The
+boost/buck inductors, direct airflow, the OLED flex area, and flexible edges. The
 enclosure needs a protected pressure vent and at least 0.1 mm lid clearance.
 This LGA is factory-assembled only.
 

@@ -2,24 +2,25 @@
 
 This script deliberately never writes the project's main PCB.  It applies a
 small, deterministic set of KiCad netclasses in memory, exports Specctra DSN,
-optionally runs FreeRouting 2.3 headlessly, imports the resulting SES into the
+optionally imports a reviewed FreeRouting 2.3 SES into the
 same in-memory board, validates the round trip, and only then publishes a
 separate routed board.
 
 Typical uses with KiCad's bundled Python::
 
     python route_pcb.py --export-only
-    python route_pcb.py --jar /path/to/freerouting-2.3.0.jar
     python route_pcb.py --import-existing-ses
 
 The first command produces a DSN for routing in the FreeRouting GUI.  After
-the GUI has written the requested SES, the third command imports it.  Supplying
-``--jar`` performs both operations in one headless run.
+the GUI has written the requested SES, the second command imports it.  Headless
+FreeRouting is deliberately disabled: FreeRouting 2.3 does not apply its
+``-inc`` netclass exclusions in the headless command path.
 
 Important engineering limit: autorouting is only a staging aid.  USB routing,
 the provisional 50-ohm RF width, NFC matching/loop routing, switch nodes and
-all power paths are excluded from the headless autorouter and remain for
-manual routing.  Plane zones, return paths, impedance, antenna tuning and final
+all power paths must be excluded in the GUI and remain for manual routing.
+The SES importer independently rejects any newly added track or via on these
+manual nets.  Plane zones, return paths, impedance, antenna tuning and final
 KiCad DRC are not made correct merely by a successful run of this script.
 """
 
@@ -92,6 +93,12 @@ MANAGED_SPECS: tuple[NetClassSpec, ...] = (
         priority=2,
     ),
     NetClassSpec(
+        "SUBGHZ_RF",
+        0.36,
+        description="868-MHz 50-ohm feed and pi match; recalculate and tune on the assembled board",
+        priority=3,
+    ),
+    NetClassSpec(
         "NFC_RF",
         0.40,
         clearance_mm=0.25,
@@ -147,6 +154,7 @@ USB_CONNECTOR_VIA_DIAMETER_MM = 0.60
 USB_CONNECTOR_VIA_DRILL_MM = 0.30
 USB_CONNECTOR_VIA_TOLERANCE_MM = 0.01
 RF50_NETS = frozenset({"GNSS_ANT_FEED"})
+SUBGHZ_RF_NETS = frozenset({"SUBGHZ_RF_MOD", "SUBGHZ_RF_ANT"})
 NFC_MATCH_NETS = frozenset(
     {"NFC_LOOP_A", "NFC_LOOP_B", "NFC_TX1", "NFC_TX1_F", "NFC_TX2", "NFC_TX2_F"}
 )
@@ -165,16 +173,25 @@ ASSIGNMENT_GROUPS: tuple[tuple[str, frozenset[str]], ...] = (
     ("POWER", POWER_NETS),
     ("USB_DIFF", USB_NETS),
     ("GNSS_RF", RF50_NETS),
+    ("SUBGHZ_RF", SUBGHZ_RF_NETS),
     ("NFC_RF", NFC_MATCH_NETS),
     ("SENSITIVE", SENSITIVE_NETS),
 )
-# These classes are intentionally left for manual routing.  FreeRouting's
-# documented -inc option means "ignore net classes", despite the potentially
-# confusing flag name.  This prevents an autorouter from deciding USB, RF,
-# NFC, plane and switch-current topology before the human review.
-MANUAL_NETCLASSES = ("POWER", "USB_DIFF", "GNSS_RF", "NFC_RF", "SENSITIVE")
+# These classes are intentionally left for manual routing.  FreeRouting's GUI
+# can exclude them, and the SES importer below verifies that no new copper was
+# added to the corresponding logical nets.  The headless command path is
+# disabled because FreeRouting 2.3 does not honor the exclusion there.
+MANUAL_NETCLASSES = (
+    "POWER", "USB_DIFF", "GNSS_RF", "SUBGHZ_RF", "NFC_RF", "SENSITIVE"
+)
+MANUAL_LOGICAL_NETS = (
+    POWER_NETS | USB_NETS | RF50_NETS | SUBGHZ_RF_NETS | NFC_MATCH_NETS | SENSITIVE_NETS
+)
+DSN_POSITION_TOLERANCE_NM = 50
 REQUIRED_FINAL_NETS = USB_NETS | {
     "GNSS_ANT_FEED",
+    "SUBGHZ_RF_MOD",
+    "SUBGHZ_RF_ANT",
     "NFC_DVDD",
     "NFC_LOOP_A",
     "NFC_LOOP_B",
@@ -236,7 +253,10 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--jar",
         type=Path,
-        help="FreeRouting 2.3.x executable JAR; omit for DSN-only export",
+        help=(
+            "legacy headless option; deliberately rejected because FreeRouting "
+            "2.3 ignores critical-netclass exclusions in this mode"
+        ),
     )
     parser.add_argument(
         "--passes",
@@ -600,6 +620,51 @@ def footprint_snapshot(board) -> dict[str, tuple[object, ...]]:
     return result
 
 
+def footprint_signatures_equivalent(
+    before: tuple[object, ...], after: tuple[object, ...]
+) -> bool:
+    """Accept only the unavoidable 100 nm Specctra position quantization."""
+    if len(before) != len(after):
+        return False
+    if before[0:2] != after[0:2] or before[4:] != after[4:]:
+        return False
+    return all(
+        abs(int(before[index]) - int(after[index])) <= DSN_POSITION_TOLERANCE_NM
+        for index in (2, 3)
+    )
+
+
+FOOTPRINT_SIGNATURE_FIELDS = (
+    "library_id",
+    "layer",
+    "x_nm",
+    "y_nm",
+    "orientation_deg",
+    "dnp",
+    "excluded_from_bom",
+    "fields",
+    "pads",
+)
+
+
+def describe_footprint_signature_change(
+    reference: str,
+    before: tuple[object, ...],
+    after: tuple[object, ...],
+) -> str:
+    changes: list[str] = []
+    for name, original, imported in zip(
+        FOOTPRINT_SIGNATURE_FIELDS, before, after, strict=True
+    ):
+        if original == imported:
+            continue
+        if name in {"fields", "pads"}:
+            changes.append(name)
+        else:
+            changes.append(f"{name} {original!r}->{imported!r}")
+    return f"{reference}({'; '.join(changes)})"
+
+
 def point_tuple(point) -> tuple[int, int]:
     return int(point.x), int(point.y)
 
@@ -614,7 +679,9 @@ def track_signature(item) -> tuple[object, ...]:
             "via",
             item.GetNetname(),
             point_tuple(item.GetPosition()),
-            int(item.GetWidth()),
+            # KiCad 10 asserts when PCB_VIA.GetWidth() is called without the
+            # layer overload, even for an ordinary through via.
+            int(item.GetWidth(pcbnew.F_Cu)),
             int(item.GetDrillValue()),
             int(item.GetViaType()),
             layer_tuple(item),
@@ -980,41 +1047,13 @@ def run_freerouting(
     passes: int,
     threads: int,
 ) -> None:
-    command = [
-        java,
-        "-Djava.awt.headless=true",
-        "-jar",
-        str(jar),
-        "--gui.enabled=false",
-        "--api_server.enabled=false",
-        # FreeRouting 2.3's fanout stage otherwise touches every SMD pin,
-        # including classes ignored with -inc, and can add forbidden critical
-        # vias before normal autorouting begins.
-        "--router.fanout.enabled=false",
-        "--router.layers.routable=true,false,false,true",
-        "-de",
-        str(dsn),
-        "-do",
-        str(ses),
-        "-mp",
-        str(passes),
-        "-mt",
-        str(threads),
-        "-inc",
-        ",".join(MANUAL_NETCLASSES),
-        "-l",
-        "en",
-    ]
-    print("Running FreeRouting:", subprocess.list2cmdline(command))
-    print(
-        "Manual netclasses excluded from autorouting (-inc): "
-        + ", ".join(MANUAL_NETCLASSES)
+    del java, jar, dsn, ses, passes, threads
+    raise RuntimeError(
+        "Headless FreeRouting is disabled because FreeRouting 2.3 ignores the "
+        "critical-netclass exclusions in this mode. Export a DSN, route only "
+        "noncritical nets in the GUI, review the result, and import that SES with "
+        "--import-existing-ses."
     )
-    result = subprocess.run(command, check=False)
-    if result.returncode != 0:
-        raise RuntimeError(f"FreeRouting failed with exit code {result.returncode}")
-    if not ses.is_file() or ses.stat().st_size < 100:
-        raise RuntimeError("FreeRouting exited without creating a usable SES")
 
 
 def validate_round_trip(
@@ -1036,12 +1075,22 @@ def validate_round_trip(
     changed_footprints = [
         reference
         for reference in original_footprints
-        if original_footprints[reference] != actual_footprints[reference]
+        if not footprint_signatures_equivalent(
+            original_footprints[reference], actual_footprints[reference]
+        )
     ]
     if changed_footprints:
+        details = [
+            describe_footprint_signature_change(
+                reference,
+                original_footprints[reference],
+                actual_footprints[reference],
+            )
+            for reference in changed_footprints[:12]
+        ]
         raise RuntimeError(
             "SES import changed footprint identity/placement/DNP/pads: "
-            + ", ".join(changed_footprints[:12])
+            + ", ".join(details)
         )
     if "AE1" not in actual_footprints:
         raise RuntimeError("AE1 NFC loop footprint was lost")
@@ -1064,6 +1113,23 @@ def validate_round_trip(
     if lost_tracks:
         raise RuntimeError(
             f"SES import replaced or changed {sum(lost_tracks.values())} existing tracks"
+        )
+    added_tracks = actual_tracks - original_tracks
+    forbidden_added_tracks = Counter(
+        {
+            signature: count
+            for signature, count in added_tracks.items()
+            if str(signature[1]).lstrip("/") in MANUAL_LOGICAL_NETS
+        }
+    )
+    if forbidden_added_tracks:
+        examples = ", ".join(
+            f"{signature[0]}:{signature[1]} x{count}"
+            for signature, count in list(forbidden_added_tracks.items())[:12]
+        )
+        raise RuntimeError(
+            "SES import added tracks/vias on nets reserved for manual routing: "
+            + examples
         )
     validate_no_inner_tracks(board)
     validate_no_critical_vias(board)
@@ -1113,6 +1179,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     ses_path = args.ses.expanduser().resolve(strict=False)
     export_only = args.export_only or (args.jar is None and not args.import_existing_ses)
     companion_pairs = project_companions(hardware_dir, output_path)
+
+    if args.jar is not None and not export_only:
+        raise RuntimeError(
+            "Headless FreeRouting is disabled because FreeRouting 2.3 ignores "
+            "critical-netclass exclusions in this mode. Use --export-only and "
+            "import a reviewed GUI-generated SES with --import-existing-ses."
+        )
 
     if export_only:
         require_destination_available(dsn_path, args.force)
@@ -1190,7 +1263,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 print(f"DSN exported: {dsn_path}")
                 print(
                     "No SES was imported. Route this DSN in FreeRouting and then run "
-                    "with --import-existing-ses, or supply --jar for a headless run."
+                    "with --import-existing-ses."
                 )
                 print(
                     "L2/L3 are exported as type 'power'; no explicit cross-router "
@@ -1214,6 +1287,11 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         if not pcbnew.ImportSpecctraSES(board, str(import_ses)):
             raise RuntimeError(f"KiCad failed to import Specctra SES: {import_ses}")
+        # The imported tracks and vias invalidate the serialized plane fill.
+        # Refill before validation/publication so signal vias receive their
+        # real antipads instead of producing zero-clearance stale-zone errors.
+        if not pcbnew.ZONE_FILLER(board).Fill(board.Zones()):
+            raise RuntimeError("KiCad failed to refill plane zones after SES import")
         validate_round_trip(
             board,
             original_footprints,

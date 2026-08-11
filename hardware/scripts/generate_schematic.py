@@ -153,9 +153,9 @@ def build_power() -> None:
         "Jumper:SolderJumper-2_P1.3mm_Bridged_RoundedPad1.0x1.5mm", 165.1, 127.0,
         {"1": "CHG_TS", "2": "CHG_TS_FIXED"})
     passive(b, "R108", "10k TS fixed", R0805, 177.8, 127.0, "CHG_TS_FIXED", "GND")
-    add(b, "Connector_Generic:Conn_01x02", "J7", "OPTIONAL 10k NTC - CUT SJ1",
-        "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical", 177.8, 139.7,
-        {"1": "CHG_TS", "2": "GND"})
+    add(b, "Connector_Generic:Conn_01x01", "J9", "GPIO38 2.54mm DUPONT",
+        "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical", 177.8, 139.7,
+        {"1": "GPIO38"})
     passive(b, "R109", "100k", R0805, 190.5, 127.0, "CHARGER_PGOOD_N", "+3V3")
     passive(b, "R110", "100k", R0805, 203.2, 127.0, "CHARGER_CHG_N", "+3V3")
     passive(b, "R111", "3.48k 1%", R0805, 215.9, 127.0, "CHG_ILIM", "GND")
@@ -179,7 +179,13 @@ def build_power() -> None:
                         "14": "U6_PS_SYNC", "15": "GND"}, Manufacturer="TI", MPN="TPS63070RNMR", LCSC="C109322")
     add(b, "Device:L", "L6", "1.5uH XFL4020-152ME", "PocketLab_Custom:Coilcraft_XFL4020", 101.6, 203.2,
         {"1": "U6_L1", "2": "U6_L2"})
-    passive(b, "R116", "10k", R0805, 114.3, 203.2, "VSYS", "U6_PS_SYNC")
+    passive(b, "R116", "10k", R0805, 114.3, 203.2, "VSYS", "PWR_SW_ON")
+    add(b, "Switch:SW_SPDT", "SW5", "MAIN POWER OFF / ON",
+        "Button_Switch_SMD:SW_SPDT_Shouhan_MSK12C02", 127.0, 190.5,
+        {"1": "GND", "2": "U6_PS_SYNC", "3": "PWR_SW_ON"},
+        Manufacturer="SHOUHAN", MPN="MSK12C02", LCSC="C431540")
+    passive(b, "R735", "100k EN pull-down", R0805, 139.7, 190.5,
+            "U6_PS_SYNC", "GND")
     passive(b, "R117", "470k 1%", R0805, 127.0, 203.2, "+3V3", "U6_FB")
     passive(b, "R118", "150k 1%", R0805, 139.7, 203.2, "U6_FB", "GND")
     passive(b, "R119", "10k", R0805, 152.4, 203.2, "PWR_3V3_PG", "+3V3")
@@ -243,7 +249,7 @@ def build_mcu() -> None:
          "18": "RGB_DATA", "19": "SPI_MOSI", "20": "SPI_SCK", "21": "SPI_MISO",
          "22": "SUBGHZ_CS_N", "23": "GNSS_RX_FROM_MODULE", "24": "GPIO47_MCU",
          "25": "GPIO48_MCU", "26": "STRAP_VDD_SPI_TP", "27": "BOOT_N",
-         "28": "GNSS_TX_TO_MODULE", "29": "IR_TX", "30": "IR_RX", "31": "BUZZER_PWM",
+         "28": "GNSS_TX_TO_MODULE", "29": "IR_TX", "30": "IR_RX", "31": "GPIO38_MCU",
          "32": "IOEXP_INT_N", "33": "GPIO40_MCU", "34": "GPIO41_MCU", "35": "GPIO42_MCU",
          "36": "GPIO44_MCU", "37": "GPIO43_MCU", "38": "GPIO2_MCU", "39": "GPIO1_MCU",
          "40": "GND", "41": "GND"}, Manufacturer="Espressif", MPN="ESP32-S3-WROOM-1-N8R2", LCSC="C2913204")
@@ -254,10 +260,10 @@ def build_mcu() -> None:
     passive(b, "C201", "1uF", C0805, 368.3, 177.8, "ESP_EN", "GND")
     passive(b, "C202", "10uF", C0805, 381.0, 177.8, "+3V3", "GND")
     passive(b, "C203", "100nF", C0805, 393.7, 177.8, "+3V3", "GND")
-    add(b, "Switch:SW_Push", "SW1", "RESET", "Button_Switch_SMD:SW_SPST_TL3305A", 342.9, 203.2,
-        {"1": "ESP_EN", "2": "GND"})
-    add(b, "Switch:SW_Push", "SW2", "BOOT", "Button_Switch_SMD:SW_SPST_TL3305A", 368.3, 203.2,
-        {"1": "BOOT_N", "2": "GND"})
+    add(b, "Switch:SW_Push", "SW1", "RESET", "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KMR2", 342.9, 203.2,
+        {"1": "ESP_EN", "2": "GND"}, Manufacturer="C&K", MPN="KMR221GLFS", LCSC="C72443")
+    add(b, "Switch:SW_Push", "SW2", "BOOT", "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KMR2", 368.3, 203.2,
+        {"1": "BOOT_N", "2": "GND"}, Manufacturer="C&K", MPN="KMR221GLFS", LCSC="C72443")
     for index, net in enumerate(("JTAG_STRAP_TP", "STRAP_BOOT_TP", "STRAP_VDD_SPI_TP"), start=201):
         add(b, "Connector:TestPoint", f"TP{index}", net, "TestPoint:TestPoint_Pad_D1.0mm", 317.5 + (index - 201) * 25.4,
             228.6, {"1": net})
@@ -315,13 +321,17 @@ def build_nfc() -> None:
 
 def build_subghz() -> None:
     b = "04 E07 CC1101 SUB-GHZ"
-    pinmap = {str(i): "GND" for i in (1, 2, 3, 4, 5, 11, 12, 20, 22)}
-    pinmap.update({"6": NC, "7": NC, "8": NC, "9": "+3V3", "10": NC, "13": NC,
-                   "14": "SUBGHZ_GDO2", "15": "SUBGHZ_GDO0", "16": "SUB_MISO",
-                   "17": "SUB_MOSI", "18": "SUB_SCK", "19": "SUB_CS_N", "21": NC})
-    add(b, "Connector_Generic:Conn_02x11_Odd_Even", "U3", "E07-900M10S IPEX 868MHz",
-        "PocketLab_Custom:E07-900M10S", 698.5, 101.6, pinmap,
-        Manufacturer="Ebyte", MPN="E07-900M10S")
+    # The 10 x 10 mm MM variant exposes a dimensioned 50-ohm ANT castellated
+    # pad.  This removes the former module's undimensioned I-PEX position and
+    # lets the board carry a short, controlled feed to the edge antenna.
+    pinmap = {str(i): NC for i in (3, 4, 5, 8, 9, 10, 11, 17, 19)}
+    pinmap.update({"1": "+3V3", "2": "GND", "6": "SUBGHZ_RF_MOD", "7": "GND",
+                   "12": "SUB_MISO", "13": "SUB_MOSI", "14": "SUB_CS_N",
+                   "15": "SUB_SCK", "16": "GND", "18": "SUBGHZ_GDO0",
+                   "20": "SUBGHZ_GDO2"})
+    add(b, "Connector_Generic:Conn_02x10_Odd_Even", "U3", "E07-900MM10S 855-925MHz",
+        "PocketLab_Custom:E07-900MM10S", 698.5, 101.6, pinmap,
+        Manufacturer="Ebyte", MPN="E07-900MM10S", LCSC="C5844212")
     passive(b, "C401", "100nF", C0805, 660.4, 165.1, "+3V3", "GND")
     passive(b, "C402", "4.7uF", C0805, 673.1, 165.1, "+3V3", "GND")
     passive(b, "R401", "22R", R0805, 685.8, 165.1, "SPI_SCK", "SUB_SCK")
@@ -329,6 +339,19 @@ def build_subghz() -> None:
     passive(b, "R403", "22R", R0805, 711.2, 165.1, "SPI_MISO", "SUB_MISO")
     passive(b, "R404", "22R", R0805, 723.9, 165.1, "SUBGHZ_CS_N", "SUB_CS_N")
     passive(b, "R406", "100k CS SAFE-HIGH", R0805, 736.6, 165.1, "SUB_CS_N", "+3V3")
+    # Populate R405 as the series element of a tuneable pi network.  C403 and
+    # C404 remain open until the assembled board/antenna combination has been
+    # measured.  0805 is intentional for straightforward hand tuning.
+    passive(b, "C403", "DNP SUBGHZ MATCH", C0805, 660.4, 190.5,
+            "SUBGHZ_RF_MOD", "GND", DNP="true")
+    passive(b, "R405", "0R SUBGHZ MATCH", R0805, 685.8, 190.5,
+            "SUBGHZ_RF_MOD", "SUBGHZ_RF_ANT")
+    passive(b, "C404", "DNP SUBGHZ MATCH", C0805, 711.2, 190.5,
+            "SUBGHZ_RF_ANT", "GND", DNP="true")
+    add(b, "Device:Antenna", "A1", "T3-868M SPRING ANTENNA",
+        "PocketLab_Custom:T3-868M_Edge_Solder", 736.6, 190.5,
+        {"1": "SUBGHZ_RF_ANT"}, Manufacturer="DreamLNK", MPN="T3-868M",
+        LCSC="C381193", Assembly="MANUAL_EDGE_SOLDER")
 
 
 def build_gnss_sd() -> None:
@@ -392,13 +415,26 @@ def build_gnss_sd() -> None:
 
 
 def build_ir_ui() -> None:
-    b = "06 IR / RGB / BUTTONS / BUZZER"
+    b = "06 IR / RGB / BUTTONS / OLED"
     passive(b, "C607", "22uF 10V X5R IR BUFFER", "Capacitor_SMD:C_1206_3216Metric",
             63.5, 381.0, "+5V_RAW", "GND")
+    passive(b, "C617", "22uF 10V X5R IR BUFFER", "Capacitor_SMD:C_1206_3216Metric",
+            76.2, 381.0, "+5V_RAW", "GND")
     passive(b, "C608", "100nF IR HF", C0805, 63.5, 406.4, "+5V_RAW", "GND")
-    passive(b, "R601", "39R 1W pulse-rated", "Resistor_SMD:R_2512_6332Metric", 76.2, 393.7, "+5V_RAW", "IR_LED_A")
-    add(b, "Device:LED", "D1", "TSAL6200 940nm", "LED_THT:LED_D5.0mm", 101.6, 393.7,
-        {"1": "IR_LED_K", "2": "IR_LED_A"}, Manufacturer="Vishay", MPN="TSAL6200")
+    # Each parallel emitter has its own ballast resistor.  At 5 V and the
+    # TSAL6200's typical 1.35 V forward voltage, 39 ohm gives about 94 mA per
+    # LED while keeping the resistor pulse stress comfortably conservative.
+    for reference, led_reference, y, anode_net in (
+        ("R601", "D1", 393.7, "IR_LED_A1"),
+        ("R610", "D2", 406.4, "IR_LED_A2"),
+        ("R611", "D3", 419.1, "IR_LED_A3"),
+    ):
+        passive(b, reference, "39R 0.5W pulse-rated", "Resistor_SMD:R_1210_3225Metric",
+                88.9, y, "+5V_RAW", anode_net)
+        add(b, "Device:LED", led_reference, "TSAL6200 940nm", "PocketLab_Custom:TSAL6200_LayFlat_Inboard",
+            114.3, y, {"1": "IR_LED_K", "2": anode_net},
+            Manufacturer="Vishay", MPN="TSAL6200", LCSC="C55528",
+            Assembly="MANUAL_EDGE_BEND")
     add(b, "Transistor_FET:AO3400A", "Q1", "AO3400A IR DRIVER", "Package_TO_SOT_SMD:SOT-23", 127.0, 393.7,
         {"1": "IR_GATE", "2": "GND", "3": "IR_LED_K"}, Manufacturer="AOS", MPN="AO3400A", LCSC="C20917")
     passive(b, "R602", "100R", R0805, 152.4, 381.0, "IR_TX", "IR_GATE")
@@ -410,23 +446,53 @@ def build_ir_ui() -> None:
     passive(b, "C601", "100nF", C0805, 228.6, 393.7, "IR_RX_VS", "GND")
     passive(b, "C602", "4.7uF", C0805, 228.6, 406.4, "IR_RX_VS", "GND")
 
+    # The compact WS2812B-2020 chain runs from the switchable 5-V boost. The
+    # 2.0-mm package saves visible front-side area but is assigned to factory
+    # SMT assembly; its local bypass capacitors remain hand-friendly 0805.
+    # The AHCT buffer accepts the ESP32's 3.3-V logic level and is enabled by
+    # the same active-high control as the boost; when 5 V is off its output is
+    # high impedance.  SOT-23-5 and 0805 keep this stage hand-reworkable.
+    add(b, "74xGxx:74AHCT1G126", "U20", "SN74AHCT1G126DBVR RGB LEVEL SHIFT",
+        "Package_TO_SOT_SMD:SOT-23-5", 50.8, 457.2,
+        {"1": "BOOST5_EN", "2": "RGB_DATA", "3": "GND",
+         "4": "RGB_BUF_5V", "5": "+5V_RAW"},
+        Manufacturer="Texas Instruments", MPN="SN74AHCT1G126DBVR", LCSC="C163712")
+    passive(b, "C609", "100nF X7R", C0805, 50.8, 482.6, "+5V_RAW", "GND")
+
     for index, x in enumerate((76.2, 114.3, 152.4, 190.5), start=1):
         din = "RGB_DIN1" if index == 1 else f"RGB_D{index-1}_{index}"
         dout = "RGB_DOUT4" if index == 4 else f"RGB_D{index}_{index+1}"
-        add(b, "LED:WS2812B", f"LED{index}", "WS2812B-MINI-V3",
-            "LED_SMD:LED_WS2812B-Mini_PLCC4_3.5x3.5mm", x, 457.2,
-            {"1": "+3V3", "2": dout, "3": "GND", "4": din})
-        passive(b, f"C{602 + index}", "100nF", C0805, x, 482.6, "+3V3", "GND")
-    passive(b, "R605", "330R", R0805, 63.5, 457.2, "RGB_DATA", "RGB_DIN1")
+        add(b, "LED:WS2812B", f"LED{index}", "WS2812B-2020",
+            "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm", x, 457.2,
+            {"1": "+5V_RAW", "2": dout, "3": "GND", "4": din},
+            Manufacturer="Worldsemi", MPN="WS2812B-2020", LCSC="C965555")
+        passive(b, f"C{602 + index}", "100nF", C0805, x, 482.6, "+5V_RAW", "GND")
+    passive(b, "R605", "68R", R0805, 63.5, 457.2, "RGB_BUF_5V", "RGB_DIN1")
     add(b, "Connector:TestPoint", "TP601", "RGB DOUT", "TestPoint:TestPoint_Pad_D1.0mm", 215.9, 457.2,
         {"1": "RGB_DOUT4"})
 
-    add(b, "Device:Buzzer", "BZ1", "PKMCS0909E", "Buzzer_Beeper:Buzzer_Murata_PKMCS0909E", 76.2, 533.4,
-        {"1": "+3V3", "2": "BUZZER_NEG"})
-    add(b, "Transistor_FET:AO3400A", "Q4", "AO3400A BUZZER", "Package_TO_SOT_SMD:SOT-23", 101.6, 533.4,
-        {"1": "BUZZER_GATE", "2": "GND", "3": "BUZZER_NEG"})
-    passive(b, "R606", "100R", R0805, 127.0, 520.7, "BUZZER_PWM", "BUZZER_GATE")
-    passive(b, "R607", "100k", R0805, 127.0, 546.1, "BUZZER_GATE", "GND")
+    # The bare 0.42-inch panel is soldered by its 16-way, 0.65-mm-pitch FPC
+    # and then folded over the land pattern.  This is substantially smaller
+    # than a carrier module while the supporting charge-pump capacitors stay
+    # in hand-reworkable 0805 packages.  SSD1306B I2C mode uses BS1=VDD,
+    # CS=D/C=GND and ties D2 to SDA.  ESP_EN supplies the required power-on
+    # reset without consuming another GPIO.
+    add(b, "Connector_Generic:Conn_01x16", "J8", "ER-OLED0.42-1W 72x40 SSD1306B",
+        "PocketLab_Custom:EastRising_ER-OLED0.42-1W_SolderFPC", 76.2, 533.4,
+        {"1": "OLED_C2P", "2": "OLED_C2N", "3": "OLED_C1P", "4": "OLED_C1N",
+         "5": "+3V3", "6": "GND", "7": "+3V3", "8": "+3V3",
+         "9": "GND", "10": "ESP_EN", "11": "GND", "12": "I2C_SCL",
+         "13": "I2C_SDA", "14": "I2C_SDA", "15": "OLED_VCOMH", "16": "OLED_VCC"},
+        Manufacturer="EastRising", MPN="ER-OLED0.42-1W", Assembly="MANUAL_SOLDER_FPC_FOLD")
+    passive(b, "C610", "1uF X7R", C0805, 63.5, 520.7, "OLED_C2P", "OLED_C2N")
+    passive(b, "C611", "1uF X7R", C0805, 76.2, 520.7, "OLED_C1P", "OLED_C1N")
+    passive(b, "C612", "100nF X7R", C0805, 88.9, 520.7, "+3V3", "GND")
+    passive(b, "C613", "4.7uF X5R", C0805, 101.6, 520.7, "+3V3", "GND")
+    passive(b, "C614", "2.2uF X7R", C0805, 63.5, 546.1, "OLED_VCOMH", "GND")
+    passive(b, "C615", "4.7uF X5R", C0805, 76.2, 546.1, "OLED_VCC", "GND")
+    passive(b, "C616", "100nF X7R", C0805, 88.9, 546.1, "OLED_VCC", "GND")
+    passive(b, "R606", "100R GPIO38 PROTECTION", R0805, 127.0, 520.7,
+            "GPIO38_MCU", "GPIO38")
     add(b, "Switch:SW_Push", "SW3", "USER A", "Button_Switch_SMD:SW_SPST_TL3305A", 177.8, 533.4,
         {"1": "USER_BUTTON_A_N", "2": "GND"})
     add(b, "Switch:SW_Push", "SW4", "USER B", "Button_Switch_SMD:SW_SPST_TL3305A", 203.2, 533.4,
@@ -516,10 +582,10 @@ def build_sensors_io() -> None:
         "12": "GPIO44", "13": "GPIO47", "14": "GPIO48", "15": "EX0", "16": "EX1",
         "17": "EX2", "18": "EX3", "19": "EX4", "20": "EX5", "21": "EX6", "22": "EX7",
         "23": "I2C_SDA_HDR", "24": "I2C_SCL_HDR", "25": "SPI_SCK_HDR", "26": "SPI_MOSI_HDR",
-        "27": "SPI_MISO_HDR", "28": "GND", "29": "+5V_AUX", "30": "GND",
+        "27": "SPI_MISO_HDR", "28": "CHG_TS", "29": "+5V_AUX", "30": "GND",
     }
-    add(b, "Connector_Generic:Conn_02x15_Odd_Even", "J5", "2x15 2.54mm DUPONT EXPANSION",
-        "Connector_PinHeader_2.54mm:PinHeader_2x15_P2.54mm_Vertical", 736.6, 457.2, header)
+    add(b, "Connector_Generic:Conn_02x15_Odd_Even", "J5", "30-PIN 2.54mm DUPONT GRID",
+        "PocketLab_Custom:Dupont_Grid_6x5_P2.54mm", 736.6, 457.2, header)
 
 
 def apply_serialized_dnp_flags(output: Path, dnp_references: set[str]) -> None:
@@ -601,7 +667,7 @@ def emit_schematic(output: Path, design_json: Path, allow_isolated: bool = False
         "03 PN532 NFC / TUNABLE LOOP": (482.6, 38.1),
         "04 E07 CC1101 SUB-GHZ": (660.4, 38.1),
         "05 GNSS / ANTENNA / MICROSD": (812.8, 38.1),
-        "06 IR / RGB / BUTTONS / BUZZER": (50.8, 355.6),
+        "06 IR / RGB / BUTTONS / OLED": (50.8, 355.6),
         "07 SENSORS / RTC / IO EXPANSION": (317.5, 355.6),
     }
     for title, pos in titles.items():

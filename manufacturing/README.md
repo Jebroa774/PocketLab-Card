@@ -110,8 +110,9 @@ stack-up and design rules:
 
 Use JLCPCB's actual stack-up table for the selected factory option before the
 final RF routing. Enter its dielectric heights and copper thicknesses in KiCad,
-then recalculate the 50-ohm GNSS feed geometry. The Sub-GHz E07-900M10S module
-uses its own integrated IPEX connector and therefore has no board-level RF feed.
+then recalculate the 50-ohm GNSS and Sub-GHz feed geometry. The
+E07-900MM10S pin-6 antenna path uses a tuneable pi network and the inboard
+T3-868M spring; both require measurement with the assembled mechanical stack.
 If the final stack-up is
 not represented in the board file, the fabrication ZIP must not be released.
 
