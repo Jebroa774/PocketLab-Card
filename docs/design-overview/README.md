@@ -1,17 +1,22 @@
 # PocketLab Card design overview
 
-These renders show the current routing checkpoint, not the final fabrication
-appearance. The IR bodies and spring antenna use approximate mechanical preview
+These KiCad renders show the current 2026-08-11 routing checkpoint, not the
+final fabrication appearance. Placement is complete, but 499 connection items
+remain open. The IR bodies and spring antenna use approximate mechanical preview
 models; the footprint courtyards and board outline remain the manufacturing
-references. Most traces, RF stitching and enclosure clearances are still open.
+references. RF stitching, several sensitive routes and final enclosure
+clearances are still open.
 
 ## Current views
 
-![Current top view](card-top.png)
-
-![Current bottom view](card-bottom.png)
-
 ![Current isometric view](card-isometric.png)
+
+| Top | Bottom |
+|---|---|
+| ![Current top view](card-top.png) | ![Current bottom view](card-bottom.png) |
+
+The ESP32-S3-WROOM-1-N8R2 shown here remains the V1 controller. ESP32-S31 is a
+future V2 candidate and is not part of this PCB revision.
 
 ## Visible front-side areas
 

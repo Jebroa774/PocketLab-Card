@@ -2,6 +2,10 @@
 
 ## Saved state
 
+- ESP32-S3-WROOM-1-N8R2 remains the V1 controller. ESP32-S31 was reviewed as a
+  possible future V2 option but is not being introduced into this revision;
+  changing to its larger, preliminary WROOM ecosystem would restart placement,
+  routing and firmware validation without improving a current V1 requirement.
 - Generated schematic: 273 symbols, 266 footprints, 183 named logical nets
   and 231 physical PCB nets; ERC is 0 errors / 0 warnings.
 - GNSS hardware has been removed. U4 is now HTRC110 125-kHz LF RFID with
