@@ -10,6 +10,13 @@ small local user interface. The hardware is designed around a four-layer PCB,
 a single-cell LiPo supply and parts that can be assembled by JLCPCB or fitted by
 hand where practical.
 
+> [!NOTE]
+> **Proudly vibe-coded.** The project grows through hands-on experimentation,
+> rapid idea-driven iteration and AI-assisted engineering. Here, vibe coding
+> does not mean blindly trusting generated output: the hardware remains an
+> engineering prototype until its schematic, PCB, DRC/DFM results and physical
+> measurements have been independently checked.
+
 > [!WARNING]
 > **Engineering prototype — not ready to order.** Placement is complete and
 > critical routing has started, but 499 connection items remain open. RF/LF
@@ -75,21 +82,22 @@ height and enclosure clearances must be verified against received components.
 | Physical PCB nets | 231 |
 | ERC | 0 errors / 0 warnings |
 | Placed footprints | 266 / 266 |
-| Routed checkpoint | 498 track segments / 29 vias |
+| Routed checkpoint | 396 track segments / 23 vias |
 | Remaining connection items | 499 |
 | Current routed-geometry/parity errors | 0 |
 | Reviewed footprint-library warnings | 6 |
 
 Completed design work includes the full schematic, mechanical placement,
 four-layer stack definition, native USB pair, local converter routes, RTC
-crystal routes and the provisional Sub-GHz feed/pi network. Sensitive digital
-nets that conflicted with the accepted USB and button placement were cleanly
-returned to the ratsnest instead of leaving partial copper behind.
+crystal routes, the provisional Sub-GHz feed/pi network and the via-free
+back-side LF RFID analog island. Sensitive digital nets that conflicted with
+the accepted USB, button and LF placement were cleanly returned to the ratsnest
+instead of leaving partial copper behind.
 
 ### Before the first PCB order
 
 - Confirm the live JLCPCB stack and recalculate USB/Sub-GHz geometry.
-- Resolve the LF front/back placement transition and route LF/NFC manually.
+- Complete the remaining LF support connections and route NFC manually.
 - Complete digital routing, protection branches, ground stitching and planes.
 - Close the remaining connection items and run final KiCad DRC/parity checks.
 - Review every footprint, BOM and placement entry against current supplier data.
