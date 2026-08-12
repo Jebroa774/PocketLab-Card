@@ -1,7 +1,6 @@
 #include <Arduino.h>
 
 #include "firmware_config.h"
-#include "gnss_trip_logger.h"
 #include "hardware_manager.h"
 #include "storage_manager.h"
 #include "web_portal.h"
@@ -10,8 +9,7 @@ namespace {
 
 pocketlab::HardwareManager hardware;
 pocketlab::StorageManager storage;
-pocketlab::GnssTripLogger gnss(storage);
-pocketlab::WebPortal web(hardware, storage, gnss);
+pocketlab::WebPortal web(hardware, storage);
 
 }  // namespace
 
@@ -27,7 +25,6 @@ void setup() {
 
   hardware.begin();
   const bool sdMounted = storage.begin();
-  gnss.begin();
   const bool webStarted = web.begin();
 
   Serial.printf("microSD: %s\n", sdMounted ? "mounted" : "not detected");
@@ -45,7 +42,6 @@ void setup() {
 
 void loop() {
   hardware.poll();
-  gnss.poll();
   web.poll();
   delay(1);
 }

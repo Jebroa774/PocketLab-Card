@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -28,11 +29,16 @@ import kicad_sch_api as ksa  # noqa: E402
 
 NC = None
 R0805 = "Resistor_SMD:R_0805_2012Metric"
+R0603 = "Resistor_SMD:R_0603_1608Metric"
 C0805 = "Capacitor_SMD:C_0805_2012Metric"
 C0603 = "Capacitor_SMD:C_0603_1608Metric"
 L0805 = "Inductor_SMD:L_0805_2012Metric"
 FB0805 = "Inductor_SMD:L_0805_2012Metric"
 SOT23_6 = "Package_TO_SOT_SMD:SOT-23-6"
+NFC_LOOP_DESCRIPTION = (
+    "Prototype PN532 PCB antenna; 4T, 35x27 mm, 0.5/0.5 mm; "
+    "tune assembled board with VNA"
+)
 
 
 @dataclass(frozen=True)
@@ -46,6 +52,8 @@ class Part:
     y: float
     pins: Dict[str, Optional[str]]
     fields: Dict[str, str] = field(default_factory=dict)
+    dnp: bool = False
+    in_bom: bool = True
 
 
 PARTS: list[Part] = []
@@ -62,26 +70,43 @@ def add(
     pins: Dict[str, Optional[str]],
     **fields: str,
 ) -> None:
-    PARTS.append(Part(block, lib_id, reference, value, footprint, x, y, pins, fields))
+    dnp = str(fields.get("DNP", "")).strip().lower() in {"1", "true", "yes"}
+    # Test pads, the solder bridge and the etched PCB antenna are board
+    # structures, not purchasable line items.  Their stock footprints already
+    # carry the matching exclude-from-BOM attribute.
+    in_bom = not (reference.startswith("TP") or reference in {"AE1", "SJ1"})
+    PARTS.append(
+        Part(block, lib_id, reference, value, footprint, x, y, pins, fields, dnp, in_bom)
+    )
 
 
-def passive(block: str, reference: str, value: str, footprint: str, x: float, y: float, a: str, b: str) -> None:
+def passive(
+    block: str,
+    reference: str,
+    value: str,
+    footprint: str,
+    x: float,
+    y: float,
+    a: str,
+    b: str,
+    **fields: str,
+) -> None:
     symbol = "Device:C" if reference.startswith("C") else "Device:R"
     if reference.startswith("L"):
         symbol = "Device:L"
     elif reference.startswith("FB"):
         symbol = "Device:FerriteBead"
-    add(block, symbol, reference, value, footprint, x, y, {"1": a, "2": b})
+    add(block, symbol, reference, value, footprint, x, y, {"1": a, "2": b}, **fields)
 
 
 def build_power() -> None:
     b = "01 USB / BATTERY / POWER"
     add(b, "Connector:USB_C_Receptacle_USB2.0_14P", "J1", "USB-C DATA/POWER",
         "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12", 63.5, 76.2,
-        {"A1": "GND", "A4": "VBUS_USB", "A5": "USB_CC1", "A6": "USB_DP_CONN",
-         "A7": "USB_DM_CONN", "A9": "VBUS_USB", "A12": "GND", "B1": "GND",
-         "B4": "VBUS_USB", "B5": "USB_CC2", "B6": "USB_DP_CONN",
-         "B7": "USB_DM_CONN", "B9": "VBUS_USB", "B12": "GND", "SH": "USB_SHIELD"},
+        {"A1": "GND", "A4": "VBUS_USB", "A5": "USB_CC1", "A6": "USB_CONN_P",
+         "A7": "USB_CONN_N", "A9": "VBUS_USB", "A12": "GND", "B1": "GND",
+         "B4": "VBUS_USB", "B5": "USB_CC2", "B6": "USB_CONN_P",
+         "B7": "USB_CONN_N", "B9": "VBUS_USB", "B12": "GND", "SH": "USB_SHIELD"},
         Manufacturer="HRO", MPN="TYPE-C-31-M-12", LCSC="C165948")
     passive(b, "R101", "5.1k 1%", R0805, 101.6, 50.8, "USB_CC1", "GND")
     passive(b, "R102", "5.1k 1%", R0805, 114.3, 50.8, "USB_CC2", "GND")
@@ -89,10 +114,10 @@ def build_power() -> None:
     passive(b, "C101", "4.7nF 1kV", C0805, 139.7, 50.8, "USB_SHIELD", "GND")
     add(b, "Device:Polyfuse", "F1", "Littelfuse 1206L075/13.2", "Fuse:Fuse_1206_3216Metric", 101.6, 76.2,
         {"1": "VBUS_USB", "2": "VBUS_FUSED"})
-    add(b, "Device:D_TVS", "D101", "SMF5.0A", "Diode_SMD:D_SOD-123F", 114.3, 76.2,
-        {"1": "GND", "2": "VBUS_FUSED"})
+    add(b, "Device:D_Zener", "D101", "SMF5.0A", "Diode_SMD:D_SOD-123F", 114.3, 76.2,
+        {"1": "VBUS_FUSED", "2": "GND"}, Manufacturer="Littelfuse", MPN="SMF5.0A")
     add(b, "Power_Protection:USBLC6-4SC6", "U16", "USBLC6-4SC6Y", SOT23_6, 139.7, 76.2,
-        {"1": "USB_DP_CONN", "2": "GND", "3": "USB_DM_CONN", "4": "USB_CC1",
+        {"1": "USB_CONN_P", "2": "GND", "3": "USB_CONN_N", "4": "USB_CC1",
          "5": "VBUS_FUSED", "6": "USB_CC2"}, Manufacturer="ST", MPN="USBLC6-4SC6Y")
 
     add(b, "Connector_Generic:Conn_01x02", "J4", "PROTECTED 1S LiPo 3.7V",
@@ -105,11 +130,11 @@ def build_power() -> None:
     passive(b, "C102", "100nF", C0805, 139.7, 114.3, "BAT_SENSE", "CELL_NEG")
     passive(b, "R105", "2.2k", R0805, 152.4, 114.3, "BAT_VMINUS", "GND")
     add(b, "Connector_Generic:Conn_01x05", "Q2", "CSD16406Q3 DISCHARGE",
-        "Package_SON:VSON-8_3.3x3.3mm_P0.65mm_NexFET", 127.0, 139.7,
+        "PocketLab_Custom:CSD16406Q3_VSON-8_3.3x3.3mm_P0.65mm_JLC", 127.0, 139.7,
         {"1": "CELL_NEG", "2": "CELL_NEG", "3": "CELL_NEG", "4": "BAT_DOUT", "5": "BAT_FET_MID"},
         Manufacturer="TI", MPN="CSD16406Q3")
     add(b, "Connector_Generic:Conn_01x05", "Q3", "CSD16406Q3 CHARGE",
-        "Package_SON:VSON-8_3.3x3.3mm_P0.65mm_NexFET", 152.4, 139.7,
+        "PocketLab_Custom:CSD16406Q3_VSON-8_3.3x3.3mm_P0.65mm_JLC", 152.4, 139.7,
         {"1": "GND", "2": "GND", "3": "GND", "4": "BAT_COUT", "5": "BAT_FET_MID"},
         Manufacturer="TI", MPN="CSD16406Q3")
     passive(b, "R106", "5.1M", R0805, 127.0, 165.1, "BAT_DOUT", "CELL_NEG")
@@ -125,7 +150,10 @@ def build_power() -> None:
          "10": "VSYS", "11": "VSYS", "12": "CHG_ILIM", "13": "VBUS_FUSED",
          "14": "CHG_TMR", "15": "CHG_ITERM", "16": "CHG_ISET", "17": "GND"},
         Manufacturer="TI", MPN="BQ24074RGTR", LCSC="C54313")
-    passive(b, "R108", "10k TS fixed", R0805, 177.8, 127.0, "CHG_TS", "GND")
+    add(b, "Jumper:SolderJumper_2_Bridged", "SJ1", "TS FIXED / CUT FOR EXT NTC",
+        "Jumper:SolderJumper-2_P1.3mm_Bridged_RoundedPad1.0x1.5mm", 165.1, 127.0,
+        {"1": "CHG_TS", "2": "CHG_TS_FIXED"})
+    passive(b, "R108", "10k TS fixed", R0805, 177.8, 127.0, "CHG_TS_FIXED", "GND")
     passive(b, "R109", "100k", R0805, 190.5, 127.0, "CHARGER_PGOOD_N", "+3V3")
     passive(b, "R110", "100k", R0805, 203.2, 127.0, "CHARGER_CHG_N", "+3V3")
     passive(b, "R111", "3.48k 1%", R0805, 215.9, 127.0, "CHG_ILIM", "GND")
@@ -146,16 +174,23 @@ def build_power() -> None:
         63.5, 215.9, {"1": "U6_PS_SYNC", "2": "PWR_3V3_PG", "3": "U6_VAUX", "4": "GND",
                         "5": "U6_FB", "6": NC, "7": "+3V3", "8": "+3V3", "9": "U6_L2",
                         "10": "GND", "11": "U6_L1", "12": "VSYS", "13": "VSYS",
-                        "14": "VSYS", "15": "GND"}, Manufacturer="TI", MPN="TPS63070RNMR", LCSC="C109322")
+                        "14": "U6_PS_SYNC", "15": "GND"}, Manufacturer="TI", MPN="TPS63070RNMR", LCSC="C109322")
     add(b, "Device:L", "L6", "1.5uH XFL4020-152ME", "PocketLab_Custom:Coilcraft_XFL4020", 101.6, 203.2,
         {"1": "U6_L1", "2": "U6_L2"})
-    passive(b, "R116", "10k", R0805, 114.3, 203.2, "VSYS", "U6_PS_SYNC")
+    passive(b, "R116", "10k", R0805, 114.3, 203.2, "VSYS", "PWR_SW_ON")
+    add(b, "Switch:SW_SPDT", "SW5", "MAIN POWER OFF / ON",
+        "Button_Switch_SMD:SW_SPDT_Shouhan_MSK12C02", 127.0, 190.5,
+        {"1": "GND", "2": "U6_PS_SYNC", "3": "PWR_SW_ON"},
+        Manufacturer="SHOUHAN", MPN="MSK12C02", LCSC="C431540")
+    passive(b, "R735", "100k EN pull-down", R0805, 139.7, 190.5,
+            "U6_PS_SYNC", "GND")
     passive(b, "R117", "470k 1%", R0805, 127.0, 203.2, "+3V3", "U6_FB")
     passive(b, "R118", "150k 1%", R0805, 139.7, 203.2, "U6_FB", "GND")
     passive(b, "R119", "10k", R0805, 152.4, 203.2, "PWR_3V3_PG", "+3V3")
     passive(b, "C107", "100nF", C0805, 101.6, 228.6, "U6_VAUX", "GND")
     passive(b, "C108", "10uF", C0805, 114.3, 228.6, "VSYS", "GND")
-    passive(b, "C109", "10uF DNP - populate only after VSYS stability test", C0805, 127.0, 228.6, "VSYS", "GND")
+    passive(b, "C109", "10uF DNP - populate only after VSYS stability test", C0805, 127.0, 228.6,
+            "VSYS", "GND", DNP="true")
     for i in range(110, 113):
         passive(b, f"C{i}", "22uF", C0805, 114.3 + (i - 108) * 12.7, 228.6, "+3V3", "GND")
     passive(b, "C123", "10uF 25V X5R HF", C0603, 177.8, 228.6, "VSYS", "GND")
@@ -193,36 +228,40 @@ def build_power() -> None:
     passive(b, "R125", "10k", R0805, 127.0, 266.7, "FG_ALERT_N", "+3V3")
     passive(b, "C120", "100nF", C0805, 139.7, 266.7, "CELL_POS", "GND")
 
-    for index, net in enumerate(("GND", "VBUS_FUSED", "CELL_NEG", "+3V3", "+5V_RAW", "+5V_AUX", "NFC_AVDD", "GNSS_3V3", "GNSS_BACKUP"), start=101):
+    for index, net in enumerate(("GND", "VBUS_FUSED", "CELL_NEG", "+3V3", "+5V_RAW", "+5V_AUX", "LF_5V"), start=101):
         add(b, "power:PWR_FLAG", f"#FLG{index}", "PWR_FLAG", "", 165.1 + (index - 101) * 12.7, 279.4, {"1": net})
+
+    for index, net in enumerate(("VBUS_USB", "VBUS_FUSED", "VSYS", "+3V3", "+5V_RAW", "+5V_AUX"), start=105):
+        add(b, "Connector:TestPoint", f"TP{index}", f"POWER {net}",
+            "TestPoint:TestPoint_Pad_D1.0mm", 177.8 + (index - 105) * 17.78, 292.1, {"1": net})
 
 
 def build_mcu() -> None:
     b = "02 ESP32-S3 MCU / USB"
     add(b, "RF_Module:ESP32-S3-WROOM-1", "U1", "ESP32-S3-WROOM-1-N8R2",
-        "RF_Module:ESP32-S3-WROOM-1", 355.6, 114.3,
+        "PocketLab_Card:ESP32-S3-WROOM-1_PhysicalCourtyard", 355.6, 114.3,
         {"1": "GND", "2": "+3V3", "3": "ESP_EN", "4": "GPIO4_MCU", "5": "I2C_SDA",
          "6": "I2C_SCL", "7": "NFC_IRQ_N", "8": "SUBGHZ_GDO0", "9": "SUBGHZ_GDO2",
-         "10": "SD_CS_N", "11": "GNSS_TIMEPULSE", "12": "GPIO8_MCU", "13": "USB_D_N",
-         "14": "USB_D_P", "15": "JTAG_STRAP_TP", "16": "STRAP_BOOT_TP", "17": "GPIO9_MCU",
+         "10": "SD_CS_N", "11": "LF_SCLK_3V3", "12": "GPIO8_MCU", "13": "USB_D_N",
+         "14": "USB_D_P", "15": "JTAG_STRAP_TP", "16": "STRAP_BOOT_TP", "17": "BOARD_TEMP_ADC",
          "18": "RGB_DATA", "19": "SPI_MOSI", "20": "SPI_SCK", "21": "SPI_MISO",
-         "22": "SUBGHZ_CS_N", "23": "GNSS_RX_FROM_MODULE", "24": "GPIO47_MCU",
+         "22": "SUBGHZ_CS_N", "23": "LF_DOUT_3V3", "24": "GPIO47_MCU",
          "25": "GPIO48_MCU", "26": "STRAP_VDD_SPI_TP", "27": "BOOT_N",
-         "28": "GNSS_TX_TO_MODULE", "29": "IR_TX", "30": "IR_RX", "31": "BUZZER_PWM",
+         "28": "LF_DIN_3V3", "29": "IR_TX", "30": "IR_RX", "31": "GPIO38_MCU",
          "32": "IOEXP_INT_N", "33": "GPIO40_MCU", "34": "GPIO41_MCU", "35": "GPIO42_MCU",
          "36": "GPIO44_MCU", "37": "GPIO43_MCU", "38": "GPIO2_MCU", "39": "GPIO1_MCU",
          "40": "GND", "41": "GND"}, Manufacturer="Espressif", MPN="ESP32-S3-WROOM-1-N8R2", LCSC="C2913204")
-    passive(b, "R201", "22R", R0805, 317.5, 177.8, "USB_DM_CONN", "USB_D_N")
-    passive(b, "R202", "22R", R0805, 330.2, 177.8, "USB_DP_CONN", "USB_D_P")
+    passive(b, "R201", "22R", R0805, 317.5, 177.8, "USB_CONN_N", "USB_D_N")
+    passive(b, "R202", "22R", R0805, 330.2, 177.8, "USB_CONN_P", "USB_D_P")
     passive(b, "R203", "10k", R0805, 342.9, 177.8, "ESP_EN", "+3V3")
     passive(b, "R204", "10k", R0805, 355.6, 177.8, "BOOT_N", "+3V3")
     passive(b, "C201", "1uF", C0805, 368.3, 177.8, "ESP_EN", "GND")
     passive(b, "C202", "10uF", C0805, 381.0, 177.8, "+3V3", "GND")
     passive(b, "C203", "100nF", C0805, 393.7, 177.8, "+3V3", "GND")
-    add(b, "Switch:SW_Push", "SW1", "RESET", "Button_Switch_SMD:SW_SPST_TL3305A", 342.9, 203.2,
-        {"1": "ESP_EN", "2": "GND"})
-    add(b, "Switch:SW_Push", "SW2", "BOOT", "Button_Switch_SMD:SW_SPST_TL3305A", 368.3, 203.2,
-        {"1": "BOOT_N", "2": "GND"})
+    add(b, "Switch:SW_Push", "SW1", "RESET", "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KMR2", 342.9, 203.2,
+        {"1": "ESP_EN", "2": "GND"}, Manufacturer="C&K", MPN="KMR221GLFS", LCSC="C72443")
+    add(b, "Switch:SW_Push", "SW2", "BOOT", "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KMR2", 368.3, 203.2,
+        {"1": "BOOT_N", "2": "GND"}, Manufacturer="C&K", MPN="KMR221GLFS", LCSC="C72443")
     for index, net in enumerate(("JTAG_STRAP_TP", "STRAP_BOOT_TP", "STRAP_VDD_SPI_TP"), start=201):
         add(b, "Connector:TestPoint", f"TP{index}", net, "TestPoint:TestPoint_Pad_D1.0mm", 317.5 + (index - 201) * 25.4,
             228.6, {"1": net})
@@ -232,8 +271,8 @@ def build_nfc() -> None:
     b = "03 PN532 NFC / TUNABLE LOOP"
     add(b, "RF_NFC:PN5321A3HN_C1xx", "U2", "PN5321A3HN/C106",
         "Package_DFN_QFN:HVQFN-40-1EP_6x6mm_P0.5mm_EP4.1x4.1mm", 520.7, 114.3,
-        {"1": "GND", "2": "NFC_LOADMOD", "3": "GND", "4": "NFC_TX1", "5": "+3V3",
-         "6": "NFC_TX2", "7": "GND", "8": "NFC_AVDD", "9": "NFC_VMID", "10": "NFC_RX",
+        {"1": "GND", "2": "NFC_LOADMOD", "3": "GND", "4": "NFC_TX1", "5": "NFC_DVDD",
+         "6": "NFC_TX2", "7": "GND", "8": "NFC_DVDD", "9": "NFC_VMID", "10": "NFC_RX",
          "11": "GND", "12": NC, "13": NC, "14": "NFC_OSCIN", "15": "NFC_OSCOUT",
          "16": "NFC_I0", "17": "GND", "18": "GND", "19": NC, "20": NC, "21": NC,
          "22": NC, "23": "+3V3", "24": NC, "25": "NFC_IRQ_N", "26": NC,
@@ -241,14 +280,17 @@ def build_nfc() -> None:
          "33": NC, "34": NC, "35": NC, "36": NC, "37": "NFC_SVDD", "38": "NFC_RESET_N",
          "39": "NFC_DVDD", "40": "+3V3", "41": "GND"}, Manufacturer="NXP", MPN="PN5321A3HN/C106", LCSC="C880904")
     passive(b, "R301", "10k", R0805, 482.6, 177.8, "NFC_I0", "NFC_DVDD")
-    passive(b, "R302", "10k", R0805, 495.3, 177.8, "NFC_RESET_N", "+3V3")
+    passive(b, "R302", "10k RESET default asserted", R0805, 495.3, 177.8, "NFC_RESET_N", "GND")
     passive(b, "C301", "100nF", C0805, 508.0, 177.8, "NFC_VMID", "GND")
-    passive(b, "C302", "100nF", C0805, 520.7, 177.8, "NFC_AVDD", "GND")
-    passive(b, "C303", "4.7uF", C0805, 533.4, 177.8, "+3V3", "GND")
+    passive(b, "C302", "100nF AVDD", C0805, 520.7, 177.8, "NFC_DVDD", "GND")
+    passive(b, "C303", "4.7uF VBAT bulk", C0805, 533.4, 177.8, "+3V3", "GND")
     passive(b, "C304", "100nF", C0805, 546.1, 177.8, "NFC_DVDD", "GND")
     passive(b, "C305", "100nF", C0805, 558.8, 177.8, "NFC_SVDD", "GND")
-    add(b, "Device:FerriteBead", "FB301", "600R@100MHz", FB0805, 571.5, 177.8,
-        {"1": "+3V3", "2": "NFC_AVDD"})
+    passive(b, "C313", "10uF DVDD bulk", C0805, 596.9, 177.8, "NFC_DVDD", "GND")
+    passive(b, "C314", "100nF TVDD", C0805, 609.6, 177.8, "NFC_DVDD", "GND")
+    passive(b, "C315", "4.7uF TVDD bulk", C0805, 622.3, 177.8, "NFC_DVDD", "GND")
+    passive(b, "C316", "100nF PVDD", C0805, 635.0, 177.8, "+3V3", "GND")
+    passive(b, "C317", "100nF VBAT", C0805, 647.7, 177.8, "+3V3", "GND")
     # kicad-sch-api 0.5.x serializes Device:Crystal_GND24 incorrectly.  The
     # four-pad connector symbol preserves the exact electrical pin mapping;
     # the PCB still receives the real shielded-crystal footprint.
@@ -262,69 +304,157 @@ def build_nfc() -> None:
     passive(b, "C309", "220pF C0G", C0603, 520.7, 241.3, "NFC_TX2_F", "GND")
     passive(b, "R303", "0R MATCH", R0805, 533.4, 241.3, "NFC_TX1_F", "NFC_LOOP_A")
     passive(b, "R304", "0R MATCH", R0805, 546.1, 241.3, "NFC_TX2_F", "NFC_LOOP_B")
-    passive(b, "C310", "DNP MATCH", C0603, 558.8, 241.3, "NFC_LOOP_A", "NFC_LOOP_B")
-    passive(b, "C311", "DNP MATCH", C0603, 571.5, 241.3, "NFC_LOOP_A", "GND")
-    passive(b, "C312", "DNP MATCH", C0603, 584.2, 241.3, "NFC_LOOP_B", "GND")
-    passive(b, "R305", "1k RX TAP", R0805, 533.4, 266.7, "NFC_LOOP_A", "NFC_RX")
-    add(b, "Device:Antenna_Loop", "AE1", "PCB NFC LOOP - TUNE ON V1", "", 571.5, 266.7,
-        {"1": "NFC_LOOP_A", "2": "NFC_LOOP_B"})
+    passive(b, "C310", "DNP MATCH", C0603, 558.8, 241.3, "NFC_LOOP_A", "NFC_LOOP_B", DNP="true")
+    passive(b, "C311", "DNP MATCH", C0603, 571.5, 241.3, "NFC_LOOP_A", "GND", DNP="true")
+    passive(b, "C312", "DNP MATCH", C0603, 584.2, 241.3, "NFC_LOOP_B", "GND", DNP="true")
+    passive(b, "R305", "2.7k RX TAP", R0805, 533.4, 266.7, "NFC_LOOP_A", "NFC_RX_AC")
+    passive(b, "C318", "1nF C0G RX COUPLING", C0603, 546.1, 266.7, "NFC_RX_AC", "NFC_RX")
+    passive(b, "R306", "1k VMID BIAS", R0805, 558.8, 266.7, "NFC_VMID", "NFC_RX")
+    add(b, "Device:Antenna_Loop", "AE1", "PCB NFC LOOP - TUNE ON V1",
+        "PocketLab_Custom:NFC_Loop_35x27mm_4T_TUNE", 571.5, 266.7,
+        {"1": "NFC_LOOP_A", "2": "NFC_LOOP_B"}, Description=NFC_LOOP_DESCRIPTION)
     add(b, "Connector:TestPoint", "TP301", "NFC_LOADMOD TEST", "TestPoint:TestPoint_Pad_D1.0mm", 584.2, 203.2,
         {"1": "NFC_LOADMOD"})
 
 
 def build_subghz() -> None:
     b = "04 E07 CC1101 SUB-GHZ"
-    pinmap = {str(i): "GND" for i in (1, 2, 3, 4, 5, 11, 12, 20, 22)}
-    pinmap.update({"6": NC, "7": NC, "8": NC, "9": "+3V3", "10": NC, "13": NC,
-                   "14": "SUBGHZ_GDO2", "15": "SUBGHZ_GDO0", "16": "SUB_MISO",
-                   "17": "SUB_MOSI", "18": "SUB_SCK", "19": "SUB_CS_N", "21": "SUBGHZ_RF"})
-    add(b, "Connector_Generic:Conn_02x11_Odd_Even", "U3", "E07-900M10S 868MHz",
-        "PocketLab_Custom:E07-900M10S", 698.5, 101.6, pinmap,
-        Manufacturer="Ebyte", MPN="E07-900M10S")
+    # The 10 x 10 mm MM variant exposes a dimensioned 50-ohm ANT castellated
+    # pad.  This removes the former module's undimensioned I-PEX position and
+    # lets the board carry a short, controlled feed to the edge antenna.
+    pinmap = {str(i): NC for i in (3, 4, 5, 8, 9, 10, 11, 17, 19)}
+    pinmap.update({"1": "+3V3", "2": "GND", "6": "SUBGHZ_RF_MOD", "7": "GND",
+                   "12": "SUB_MISO", "13": "SUB_MOSI", "14": "SUB_CS_N",
+                   "15": "SUB_SCK", "16": "GND", "18": "SUBGHZ_GDO0",
+                   "20": "SUBGHZ_GDO2"})
+    add(b, "Connector_Generic:Conn_02x10_Odd_Even", "U3", "E07-900MM10S 855-925MHz",
+        "PocketLab_Custom:E07-900MM10S", 698.5, 101.6, pinmap,
+        Manufacturer="Ebyte", MPN="E07-900MM10S", LCSC="C5844212")
     passive(b, "C401", "100nF", C0805, 660.4, 165.1, "+3V3", "GND")
     passive(b, "C402", "4.7uF", C0805, 673.1, 165.1, "+3V3", "GND")
     passive(b, "R401", "22R", R0805, 685.8, 165.1, "SPI_SCK", "SUB_SCK")
     passive(b, "R402", "22R", R0805, 698.5, 165.1, "SPI_MOSI", "SUB_MOSI")
     passive(b, "R403", "22R", R0805, 711.2, 165.1, "SPI_MISO", "SUB_MISO")
     passive(b, "R404", "22R", R0805, 723.9, 165.1, "SUBGHZ_CS_N", "SUB_CS_N")
-    passive(b, "R405", "0R ANT SELECT", R0805, 736.6, 165.1, "SUBGHZ_RF", "SUBGHZ_ANT")
-    add(b, "Connector:Conn_Coaxial", "J6", "SUB-GHz ANT U.FL",
-        "Connector_Coaxial:U.FL_Hirose_U.FL-R-SMT-1_Vertical", 698.5, 203.2,
-        {"1": "SUBGHZ_ANT", "2": "GND"})
+    passive(b, "R406", "100k CS SAFE-HIGH", R0805, 736.6, 165.1, "SUB_CS_N", "+3V3")
+    # Populate R405 as the series element of a tuneable pi network.  C403 and
+    # C404 remain open until the assembled board/antenna combination has been
+    # measured.  0805 is intentional for straightforward hand tuning.
+    passive(b, "C403", "DNP SUBGHZ MATCH", C0805, 660.4, 190.5,
+            "SUBGHZ_RF_MOD", "GND", DNP="true")
+    passive(b, "R405", "0R SUBGHZ MATCH", R0805, 685.8, 190.5,
+            "SUBGHZ_RF_MOD", "SUBGHZ_RF_ANT")
+    passive(b, "C404", "DNP SUBGHZ MATCH", C0805, 711.2, 190.5,
+            "SUBGHZ_RF_ANT", "GND", DNP="true")
+    add(b, "Device:Antenna", "A1", "T3-868M SPRING ANTENNA",
+        "PocketLab_Custom:T3-868M_Edge_Solder", 736.6, 190.5,
+        {"1": "SUBGHZ_RF_ANT"}, Manufacturer="DreamLNK", MPN="T3-868M",
+        LCSC="C381193", Assembly="MANUAL_EDGE_SOLDER")
 
 
-def build_gnss_sd() -> None:
-    b = "05 GNSS / ANTENNA / MICROSD"
-    add(b, "RF_GPS:MAX-M10S", "U4", "MAX-M10S-00B", "RF_GPS:ublox_MAX", 863.6, 101.6,
-        {"1": "GND", "2": "GNSS_RX_FROM_MODULE", "3": "GNSS_TX_TO_MODULE",
-         "4": "GNSS_TIMEPULSE", "5": NC, "6": "GNSS_BACKUP", "7": "GNSS_3V3",
-         "8": "GNSS_3V3", "9": "GNSS_RESET_N", "10": "GND", "11": "GNSS_RF",
-         "12": "GND", "13": "GNSS_LNA_EN", "14": "GNSS_VCC_RF", "15": NC,
-         "16": NC, "17": NC, "18": NC}, Manufacturer="u-blox", MPN="MAX-M10S-00B", LCSC="C4153167")
-    add(b, "Connector_Generic:Conn_01x06", "U17", "TPS22919DCKR GNSS LOAD SWITCH",
+def build_lf_rfid_sd() -> None:
+    b = "05 LF RFID / SECURITY / MICROSD"
+
+    # The HTRC110 is a 5-V analogue front end.  A dedicated load switch keeps
+    # the complete LF island unpowered until both the 5-V boost and LF enable
+    # have been deliberately asserted.  The /03EE reel part is NXP's current
+    # replacement for the obsolete /02EE tube variant and keeps the same SO14
+    # pinout.  The 4-MHz CMOS oscillator is permitted by the HTRC110 data sheet
+    # and avoids a difficult-to-source low-frequency crystal/load network.
+    add(b, "RF_RFID:HTRC11001T", "U4", "HTRC11001T/03EE,11 125kHz",
+        "Package_SO:SO-14_3.9x8.65mm_P1.27mm", 863.6, 101.6,
+        {"1": "GND", "2": "LF_TX2", "3": "LF_5V", "4": "LF_TX1",
+         "5": "GND", "6": "LF_CLK_4M", "7": NC, "8": "LF_SCLK_5V",
+         "9": "LF_DIN_5V", "10": "LF_DOUT_5V",
+         "12": "LF_CEXT", "13": "LF_QGND", "14": "LF_RX"},
+        Manufacturer="NXP", MPN="HTRC11001T/03EE,11", LCSC="C501317")
+    add(b, "Connector_Generic:Conn_01x06", "U17", "TPS22919DCKR LF 5V LOAD SWITCH",
         "Package_TO_SOT_SMD:SOT-363_SC-70-6", 812.8, 165.1,
-        {"1": "+3V3", "2": "GND", "3": "GNSS_POWER_EN", "4": NC,
-         "5": "GNSS_QOD", "6": "GNSS_3V3"},
-        Manufacturer="TI", MPN="TPS22919DCKR")
-    passive(b, "R501", "100R QOD discharge", R0805, 838.2, 165.1, "GNSS_QOD", "GNSS_3V3")
-    passive(b, "R502", "10k", R0805, 850.9, 165.1, "GNSS_RESET_N", "GNSS_3V3")
-    passive(b, "C501", "100nF", C0805, 863.6, 165.1, "GNSS_3V3", "GND")
-    passive(b, "C502", "10uF", C0805, 876.3, 165.1, "GNSS_3V3", "GND")
-    passive(b, "R503", "100R", R0805, 889.0, 165.1, "GNSS_3V3", "GNSS_BACKUP")
-    passive(b, "C503", "100uF low-leak", "Capacitor_SMD:C_1210_3225Metric", 901.7, 165.1, "GNSS_BACKUP", "GND")
-    passive(b, "R504", "0R RF", R0805, 812.8, 203.2, "GNSS_RF", "GNSS_ANT_FEED")
-    passive(b, "R505", "10R 0.25W", R0805, 825.5, 203.2, "GNSS_VCC_RF", "GNSS_BIAS")
-    passive(b, "L501", "27nH high-Q", L0805, 838.2, 203.2, "GNSS_BIAS", "GNSS_ANT_FEED")
-    passive(b, "C504", "10nF", C0603, 850.9, 203.2, "GNSS_BIAS", "GND")
-    add(b, "Device:D_TVS", "D501", "Low-cap RF ESD", "Diode_SMD:D_SOD-523", 863.6, 203.2,
-        {"1": "GND", "2": "GNSS_ANT_FEED"})
-    add(b, "Connector:Conn_Coaxial", "J3", "GNSS ANT U.FL",
-        "Connector_Coaxial:U.FL_Hirose_U.FL-R-SMT-1_Vertical", 889.0, 203.2,
-        {"1": "GNSS_ANT_FEED", "2": "GND"})
-    add(b, "Connector:TestPoint", "TP501", "GNSS RF TEST", "TestPoint:TestPoint_Pad_D1.0mm", 914.4, 203.2,
-        {"1": "GNSS_ANT_FEED"})
-    add(b, "Connector:TestPoint", "TP502", "LNA ENABLE", "TestPoint:TestPoint_Pad_D1.0mm", 939.8, 203.2,
-        {"1": "GNSS_LNA_EN"})
+        {"1": "+5V_RAW", "2": "GND", "3": "LF_RFID_EN", "4": NC,
+         "5": "LF_QOD", "6": "LF_5V"}, Manufacturer="TI",
+        MPN="TPS22919DCKR", LCSC="C2149796")
+    passive(b, "R501", "100R QOD discharge", R0805, 825.5, 165.1,
+            "LF_QOD", "LF_5V")
+    passive(b, "R506", "100k SAFE-OFF", R0805, 838.2, 165.1,
+            "LF_RFID_EN", "GND")
+    passive(b, "C501", "100nF HTRC supply", C0805, 850.9, 165.1,
+            "LF_5V", "GND")
+    passive(b, "C502", "10uF HTRC pulse reservoir", C0805, 863.6, 165.1,
+            "LF_5V", "GND")
+    add(b, "Connector_Generic:Conn_01x04", "Y501", "4MHz 5V CMOS OSCILLATOR",
+        "Oscillator:Oscillator_SMD_EuroQuartz_XO32-4Pin_3.2x2.5mm_RotB_HandSoldering",
+        876.3, 165.1, {"1": "LF_5V", "2": "GND", "3": "LF_CLK_4M", "4": "LF_5V"},
+        Manufacturer="YXC", MPN="OH2EL89CFI-111YLC-4M", LCSC="C42448900")
+    passive(b, "C513", "100nF OSC supply", C0805, 889.0, 165.1,
+            "LF_5V", "GND")
+    passive(b, "C503", "100nF CEXT", C0805, 901.7, 165.1,
+            "LF_CEXT", "GND")
+    passive(b, "C504", "100nF QGND", C0805, 914.4, 165.1,
+            "LF_QGND", "GND")
+
+    # External 400-uH LF coil connector.  C505 and the split resonant
+    # capacitance protect both HTRC driver pins if the removable coil cable is
+    # shorted.  3.9 nF is the conservative starting population; C507/C508 are
+    # hand-tune sites and must be selected after measuring the actual coil in
+    # its final enclosure at 125 kHz.  R504 belongs directly at U4.RX.
+    passive(b, "C505", "100nF C0G COIL ISOLATION", C0805, 812.8, 203.2,
+            "LF_TX1", "LF_ANT_A")
+    passive(b, "R503", "1k LF EMI RETURN", R0805, 825.5, 203.2,
+            "LF_ANT_A", "GND")
+    add(b, "Connector_Generic:Conn_01x02", "J3", "EXTERNAL 400uH LF COIL",
+        "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical", 838.2, 203.2,
+        {"1": "LF_ANT_A", "2": "LF_ANT_B"}, Assembly="MANUAL_COIL_CONNECTOR")
+    passive(b, "R502", "47R 0.5W ANTENNA CURRENT LIMIT",
+            "Resistor_SMD:R_1210_3225Metric", 850.9, 203.2,
+            "LF_ANT_B", "LF_TAP")
+    passive(b, "C506", "3.9nF C0G LF RESONANCE", C0805, 863.6, 203.2,
+            "LF_TAP", "LF_TX2")
+    passive(b, "C507", "100pF C0G DNP LF TUNE", C0603, 876.3, 203.2,
+            "LF_TAP", "LF_TX2", DNP="true")
+    passive(b, "C508", "220pF C0G DNP LF TUNE", C0603, 889.0, 203.2,
+            "LF_TAP", "LF_TX2", DNP="true")
+    passive(b, "R504", "150k 1% RX DIVIDER", R0805, 901.7, 203.2,
+            "LF_TAP", "LF_RX")
+    passive(b, "C509", "10pF C0G DNP RX EMI", C0603, 914.4, 203.2,
+            "LF_RX", "LF_QGND", DNP="true")
+    add(b, "Connector:TestPoint", "TP502", "LF ANTENNA TAP - HIGH VOLTAGE",
+        "TestPoint:TestPoint_Pad_D1.0mm", 927.1, 203.2, {"1": "LF_TAP"})
+
+    # HTRC inputs require 0.7*VDD high level, so 3.3-V ESP32 outputs are lifted
+    # by a TTL-compatible AHCT buffer.  HTRC DOUT is then reduced to 3.3 V by
+    # a 5.5-V-tolerant LVC Schmitt buffer.  The two unused AHCT channels are
+    # explicitly disabled instead of leaving CMOS inputs floating.
+    add(b, "Connector_Generic:Conn_02x07_Odd_Even", "U21", "SN74AHCT125PWR LF 3V3-TO-5V",
+        "Package_SO:TSSOP-14_4.4x5mm_P0.65mm", 812.8, 228.6,
+        {"1": "GND", "2": "LF_SCLK_3V3", "3": "LF_SCLK_5V",
+         "4": "GND", "5": "LF_DIN_3V3", "6": "LF_DIN_5V", "7": "GND",
+         "8": NC, "9": "GND", "10": "LF_5V", "11": NC,
+         "12": "GND", "13": "LF_5V", "14": "LF_5V"},
+        Manufacturer="TI", MPN="SN74AHCT125PWR", LCSC="C36365")
+    passive(b, "C515", "100nF AHCT supply", C0805, 838.2, 228.6,
+            "LF_5V", "GND")
+    add(b, "74xGxx:74LVC1G17", "U22", "SN74LVC1G17DBVR LF 5V-TO-3V3",
+        "Package_TO_SOT_SMD:SOT-23-5_HandSoldering", 863.6, 228.6,
+        {"1": NC, "2": "LF_DOUT_5V", "3": "GND", "4": "LF_DOUT_3V3", "5": "+3V3"},
+        Manufacturer="TI", MPN="SN74LVC1G17DBVR", LCSC="C7836")
+    passive(b, "C516", "100nF LVC supply", C0805, 889.0, 228.6,
+            "+3V3", "GND")
+
+    # ATECC608C stores the future app/device identity and owner keys.  It is
+    # intentionally left unprovisioned in development; locking its zones and
+    # burning ESP32 security eFuses are separate, irreversible release steps.
+    add(b, "Security:ATECC608A-SSHDA", "U23", "ATECC608C-SSHDA-T",
+        "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm", 914.4, 228.6,
+        {"1": NC, "2": NC, "3": NC, "4": "GND", "5": "I2C_SDA",
+         "6": "I2C_SCL", "7": NC, "8": "+3V3"},
+        Manufacturer="Microchip", MPN="ATECC608C-SSHDA-T", LCSC="C28975195")
+    passive(b, "C517", "100nF secure element", C0805, 939.8, 228.6,
+            "+3V3", "GND")
+    add(b, "Switch:SW_Push", "SW6", "PAIR", "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KMR2",
+        965.2, 228.6, {"1": "PAIR_N", "2": "GND"},
+        Manufacturer="C&K", MPN="KMR221GLFS", LCSC="C72443")
+    passive(b, "R509", "10k PAIR pull-up", R0805, 990.6, 228.6,
+            "PAIR_N", "+3V3")
 
     add(b, "Connector:Micro_SD_Card_Det2", "J2", "microSD",
         "Connector_Card:microSD_HC_Molex_104031-0811", 838.2, 266.7,
@@ -340,13 +470,36 @@ def build_gnss_sd() -> None:
                 876.3 + (index - 514) * 12.7, 279.4, net, "+3V3")
     passive(b, "C510", "100nF", C0805, 876.3, 304.8, "+3V3", "GND")
     passive(b, "C511", "10uF", C0805, 889.0, 304.8, "+3V3", "GND")
+    add(b, "Device:C", "C512", "47uF 6.3V LOW-ESR", "Capacitor_SMD:C_1210_3225Metric",
+        901.7, 304.8, {"1": "+3V3", "2": "GND"}, Manufacturer="Murata",
+        MPN="GRM32ER60J476ME20L")
+    add(b, "Power_Protection:SRV05-4", "U19", "SRV05-4MR6T1G SD ESD",
+        "Package_TO_SOT_SMD:SOT-23-6", 914.4, 304.8,
+        {"1": "SD_CS_DEV", "2": "GND", "3": "SD_MOSI", "4": "SD_SCK",
+         "5": "+3V3", "6": "SD_MISO"}, Manufacturer="onsemi", MPN="SRV05-4MR6T1G")
 
 
 def build_ir_ui() -> None:
-    b = "06 IR / RGB / BUTTONS / BUZZER"
-    passive(b, "R601", "39R 1W pulse-rated", "Resistor_SMD:R_2512_6332Metric", 76.2, 393.7, "+5V_RAW", "IR_LED_A")
-    add(b, "Device:LED", "D1", "TSAL6200 940nm", "LED_THT:LED_D5.0mm", 101.6, 393.7,
-        {"1": "IR_LED_K", "2": "IR_LED_A"}, Manufacturer="Vishay", MPN="TSAL6200")
+    b = "06 IR / RGB / BUTTONS / OLED"
+    passive(b, "C607", "22uF 10V X5R IR BUFFER", "Capacitor_SMD:C_1206_3216Metric",
+            63.5, 381.0, "+5V_RAW", "GND")
+    passive(b, "C617", "22uF 10V X5R IR BUFFER", "Capacitor_SMD:C_1206_3216Metric",
+            76.2, 381.0, "+5V_RAW", "GND")
+    passive(b, "C608", "100nF IR HF", C0805, 63.5, 406.4, "+5V_RAW", "GND")
+    # Each parallel emitter has its own ballast resistor.  At 5 V and the
+    # TSAL6200's typical 1.35 V forward voltage, 39 ohm gives about 94 mA per
+    # LED while keeping the resistor pulse stress comfortably conservative.
+    for reference, led_reference, y, anode_net in (
+        ("R601", "D1", 393.7, "IR_LED_A1"),
+        ("R610", "D2", 406.4, "IR_LED_A2"),
+        ("R611", "D3", 419.1, "IR_LED_A3"),
+    ):
+        passive(b, reference, "39R 0.5W pulse-rated", "Resistor_SMD:R_1210_3225Metric",
+                88.9, y, "+5V_RAW", anode_net)
+        add(b, "Device:LED", led_reference, "TSAL6200 940nm", "PocketLab_Custom:TSAL6200_LayFlat_Inboard",
+            114.3, y, {"1": "IR_LED_K", "2": anode_net},
+            Manufacturer="Vishay", MPN="TSAL6200", LCSC="C55528",
+            Assembly="MANUAL_EDGE_BEND")
     add(b, "Transistor_FET:AO3400A", "Q1", "AO3400A IR DRIVER", "Package_TO_SOT_SMD:SOT-23", 127.0, 393.7,
         {"1": "IR_GATE", "2": "GND", "3": "IR_LED_K"}, Manufacturer="AOS", MPN="AO3400A", LCSC="C20917")
     passive(b, "R602", "100R", R0805, 152.4, 381.0, "IR_TX", "IR_GATE")
@@ -358,29 +511,69 @@ def build_ir_ui() -> None:
     passive(b, "C601", "100nF", C0805, 228.6, 393.7, "IR_RX_VS", "GND")
     passive(b, "C602", "4.7uF", C0805, 228.6, 406.4, "IR_RX_VS", "GND")
 
+    # The compact WS2812B-2020 chain runs from the switchable 5-V boost. The
+    # 2.0-mm package saves visible front-side area but is assigned to factory
+    # SMT assembly; its local bypass capacitors remain hand-friendly 0805.
+    # The AHCT buffer accepts the ESP32's 3.3-V logic level and is enabled by
+    # the same active-high control as the boost; when 5 V is off its output is
+    # high impedance.  SOT-23-5 and 0805 keep this stage hand-reworkable.
+    add(b, "74xGxx:74AHCT1G126", "U20", "SN74AHCT1G126DBVR RGB LEVEL SHIFT",
+        "Package_TO_SOT_SMD:SOT-23-5", 50.8, 457.2,
+        {"1": "BOOST5_EN", "2": "RGB_DATA", "3": "GND",
+         "4": "RGB_BUF_5V", "5": "+5V_RAW"},
+        Manufacturer="Texas Instruments", MPN="SN74AHCT1G126DBVR", LCSC="C163712")
+    passive(b, "C609", "100nF X7R", C0805, 50.8, 482.6, "+5V_RAW", "GND")
+
     for index, x in enumerate((76.2, 114.3, 152.4, 190.5), start=1):
         din = "RGB_DIN1" if index == 1 else f"RGB_D{index-1}_{index}"
-        dout = "RGB_DOUT4" if index == 4 else f"RGB_D{index}_{index+1}"
-        add(b, "LED:WS2812B", f"LED{index}", "WS2812B-MINI-V3",
-            "LED_SMD:LED_WS2812B-Mini_PLCC4_3.5x3.5mm", x, 457.2,
-            {"1": "+3V3", "2": dout, "3": "GND", "4": din})
-        passive(b, f"C{602 + index}", "100nF", C0805, x, 482.6, "+3V3", "GND")
-    passive(b, "R605", "330R", R0805, 63.5, 457.2, "RGB_DATA", "RGB_DIN1")
-    add(b, "Connector:TestPoint", "TP601", "RGB DOUT", "TestPoint:TestPoint_Pad_D1.0mm", 215.9, 457.2,
-        {"1": "RGB_DOUT4"})
-
-    add(b, "Device:Buzzer", "BZ1", "PKMCS0909E", "Buzzer_Beeper:Buzzer_Murata_PKMCS0909E", 76.2, 533.4,
-        {"1": "+3V3", "2": "BUZZER_NEG"})
-    add(b, "Transistor_FET:AO3400A", "Q4", "AO3400A BUZZER", "Package_TO_SOT_SMD:SOT-23", 101.6, 533.4,
-        {"1": "BUZZER_GATE", "2": "GND", "3": "BUZZER_NEG"})
-    passive(b, "R606", "100R", R0805, 127.0, 520.7, "BUZZER_PWM", "BUZZER_GATE")
-    passive(b, "R607", "100k", R0805, 127.0, 546.1, "BUZZER_GATE", "GND")
-    add(b, "Switch:SW_Push", "SW3", "USER A", "Button_Switch_SMD:SW_SPST_TL3305A", 177.8, 533.4,
-        {"1": "USER_BUTTON_A_N", "2": "GND"})
-    add(b, "Switch:SW_Push", "SW4", "USER B", "Button_Switch_SMD:SW_SPST_TL3305A", 203.2, 533.4,
-        {"1": "USER_BUTTON_B_N", "2": "GND"})
-    passive(b, "R608", "10k", R0805, 177.8, 558.8, "USER_BUTTON_A_N", "+3V3")
-    passive(b, "R609", "10k", R0805, 203.2, 558.8, "USER_BUTTON_B_N", "+3V3")
+        # The final LED data output has no downstream consumer. Mark it NC
+        # instead of keeping an otherwise purposeless test pad and named net.
+        dout = NC if index == 4 else f"RGB_D{index}_{index+1}"
+        add(b, "LED:WS2812B", f"LED{index}", "WS2812B-2020",
+            "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm", x, 457.2,
+            {"1": "+5V_RAW", "2": dout, "3": "GND", "4": din},
+            Manufacturer="Worldsemi", MPN="WS2812B-2020", LCSC="C965555")
+        passive(b, f"C{602 + index}", "100nF", C0805, x, 482.6, "+5V_RAW", "GND")
+    passive(b, "R605", "68R", R0603, 63.5, 457.2, "RGB_BUF_5V", "RGB_DIN1")
+    # The bare 0.42-inch panel is soldered by its 16-way, 0.65-mm-pitch FPC
+    # and then folded over the land pattern.  This is substantially smaller
+    # than a carrier module while the supporting charge-pump capacitors stay
+    # in hand-reworkable 0805 packages.  SSD1306B I2C mode uses BS1=VDD,
+    # CS=D/C=GND and ties D2 to SDA.  ESP_EN supplies the required power-on
+    # reset without consuming another GPIO.
+    add(b, "Connector_Generic:Conn_01x16", "J8", "ER-OLED0.42-1W 72x40 SSD1306B",
+        "PocketLab_Custom:EastRising_ER-OLED0.42-1W_SolderFPC", 76.2, 533.4,
+        {"1": "OLED_C2P", "2": "OLED_C2N", "3": "OLED_C1P", "4": "OLED_C1N",
+         "5": "+3V3", "6": "GND", "7": "+3V3", "8": "+3V3",
+         "9": "GND", "10": "ESP_EN", "11": "GND", "12": "I2C_SCL",
+         "13": "I2C_SDA", "14": "I2C_SDA", "15": "OLED_VCOMH", "16": "OLED_VCC"},
+        Manufacturer="EastRising", MPN="ER-OLED0.42-1W", Assembly="MANUAL_SOLDER_FPC_FOLD")
+    passive(b, "C610", "1uF X7R", C0805, 63.5, 520.7, "OLED_C2P", "OLED_C2N")
+    passive(b, "C611", "1uF X7R", C0805, 76.2, 520.7, "OLED_C1P", "OLED_C1N")
+    passive(b, "C612", "100nF X7R", C0805, 88.9, 520.7, "+3V3", "GND")
+    passive(b, "C613", "4.7uF X5R", C0805, 101.6, 520.7, "+3V3", "GND")
+    passive(b, "C614", "2.2uF X7R", C0805, 63.5, 546.1, "OLED_VCOMH", "GND")
+    passive(b, "C615", "4.7uF X5R", C0805, 76.2, 546.1, "OLED_VCC", "GND")
+    passive(b, "C616", "100nF X7R", C0805, 88.9, 546.1, "OLED_VCC", "GND")
+    passive(b, "R606", "100R PAIR GPIO PROTECTION", R0603, 127.0, 520.7,
+            "GPIO38_MCU", "PAIR_N")
+    # Three compact, identical UI buttons provide deterministic UP/DOWN/OK
+    # navigation without borrowing RESET, BOOT or the security PAIR button.
+    # SELECT uses the former optional BMP390 interrupt input on U9; pressure
+    # data remains available by normal I2C polling.
+    for reference, value, x, net in (
+        ("SW3", "UP", 177.8, "USER_BUTTON_A_N"),
+        ("SW7", "SELECT", 203.2, "USER_BUTTON_SELECT_N"),
+        ("SW4", "DOWN", 228.6, "USER_BUTTON_B_N"),
+    ):
+        add(b, "Switch:SW_Push", reference, value,
+            "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KMR2", x, 533.4,
+            {"1": net, "2": "GND"}, Manufacturer="C&K", MPN="KMR221GLFS",
+            LCSC="C72443")
+    passive(b, "R607", "10k", R0603, 203.2, 558.8,
+            "USER_BUTTON_SELECT_N", "+3V3")
+    passive(b, "R608", "10k", R0603, 177.8, 558.8, "USER_BUTTON_A_N", "+3V3")
+    passive(b, "R609", "10k", R0603, 228.6, 558.8, "USER_BUTTON_B_N", "+3V3")
 
 
 def build_sensors_io() -> None:
@@ -389,19 +582,20 @@ def build_sensors_io() -> None:
         "Package_SO:TSSOP-24_4.4x7.8mm_P0.65mm", 355.6, 431.8,
         {"1": "IOEXP_INT_N", "2": "GND", "3": "GND", "4": "SD_DETECT_N",
          "5": "CHARGER_CHG_N", "6": "CHARGER_PGOOD_N", "7": "AUX5_FAULT_N", "8": "FG_ALERT_N",
-         "9": "BMI_INT1", "10": "BMI_INT2", "11": "BMP_INT", "12": "GND",
-         "13": "EX0", "14": "EX1", "15": "EX2", "16": "EX3", "17": "EX4", "18": "EX5",
-         "19": "EX6", "20": "EX7", "21": "GND", "22": "I2C_SCL", "23": "I2C_SDA", "24": "+3V3"},
+         "9": "BMI_INT1", "10": "BMI_INT2", "11": "USER_BUTTON_SELECT_N", "12": "GND",
+         "13": "EX0_INT", "14": "EX1_INT", "15": "EX2_INT", "16": "EX3_INT",
+         "17": "EX4_INT", "18": "EX5_INT", "19": "EX6_INT", "20": "EX7_INT",
+         "21": "GND", "22": "I2C_SCL", "23": "I2C_SDA", "24": "+3V3"},
         Manufacturer="TI", MPN="TCA9535PWR", LCSC="C130204")
-    passive(b, "R701", "4.7k", R0805, 317.5, 495.3, "I2C_SDA", "+3V3")
-    passive(b, "R702", "4.7k", R0805, 330.2, 495.3, "I2C_SCL", "+3V3")
+    passive(b, "R701", "3.3k", R0805, 317.5, 495.3, "I2C_SDA", "+3V3")
+    passive(b, "R702", "3.3k", R0805, 330.2, 495.3, "I2C_SCL", "+3V3")
     passive(b, "R703", "10k", R0805, 342.9, 495.3, "IOEXP_INT_N", "+3V3")
     passive(b, "C701", "100nF", C0805, 355.6, 495.3, "+3V3", "GND")
 
     add(b, "Interface_Expansion:TCA9534", "U18", "TCA9534PWR INTERNAL CONTROL",
         "Package_SO:TSSOP-16_4.4x5mm_P0.65mm", 647.7, 431.8,
         {"1": "+3V3", "2": "GND", "3": "GND", "4": "BQ_EN1", "5": "CHG_DISABLE",
-         "6": "AUX5_EN", "7": "NFC_RESET_N", "8": "GND", "9": "GNSS_POWER_EN",
+         "6": "AUX5_EN", "7": "NFC_RESET_N", "8": "GND", "9": "LF_RFID_EN",
          "10": "BOOST5_EN", "11": "USER_BUTTON_A_N", "12": "USER_BUTTON_B_N",
          "13": "IOEXP_INT_N", "14": "I2C_SCL", "15": "I2C_SDA", "16": "+3V3"},
         Manufacturer="TI", MPN="TCA9534PWR")
@@ -414,43 +608,146 @@ def build_sensors_io() -> None:
          "12": "+3V3", "13": "I2C_SCL", "14": "I2C_SDA"}, Manufacturer="Bosch", MPN="BMI270", LCSC="C2836813")
     passive(b, "C702", "100nF", C0603, 419.1, 482.6, "+3V3", "GND")
     passive(b, "C703", "100nF", C0603, 431.8, 482.6, "+3V3", "GND")
-    add(b, "Connector:TestPoint", "TP701", "BMI INT1", "TestPoint:TestPoint_Pad_D1.0mm", 444.5, 482.6,
-        {"1": "BMI_INT1"})
-    add(b, "Connector:TestPoint", "TP703", "BMI INT2", "TestPoint:TestPoint_Pad_D1.0mm", 457.2, 482.6,
-        {"1": "BMI_INT2"})
-
     add(b, "Connector_Generic:Conn_02x05_Odd_Even", "U11", "BMP390 (FULL OPTION)",
         "PocketLab_Custom:BMP390_LGA-10_2x2mm", 495.3, 431.8,
         {"1": "+3V3", "2": "I2C_SCL", "3": "GND", "4": "I2C_SDA", "5": "GND",
-         "6": "+3V3", "7": "BMP_INT", "8": "GND", "9": "GND", "10": "+3V3"},
+         "6": "+3V3", "7": NC, "8": "GND", "9": "GND", "10": "+3V3"},
         Manufacturer="Bosch", MPN="BMP390", LCSC="C5124834")
     passive(b, "C704", "100nF", C0603, 482.6, 482.6, "+3V3", "GND")
     passive(b, "C705", "100nF", C0603, 495.3, 482.6, "+3V3", "GND")
-    add(b, "Connector:TestPoint", "TP702", "BMP INT", "TestPoint:TestPoint_Pad_D1.0mm", 508.0, 482.6,
-        {"1": "BMP_INT"})
-
     add(b, "Timer_RTC:PCF8563T", "U12", "PCF8563T", "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm", 571.5, 431.8,
         {"1": "RTC_OSCI", "2": "RTC_OSCO", "3": NC, "4": "GND", "5": "I2C_SDA",
          "6": "I2C_SCL", "7": NC, "8": "+3V3"}, Manufacturer="NXP", MPN="PCF8563T/5,518", LCSC="C7440")
-    add(b, "Device:Crystal", "Y701", "32.768kHz 12.5pF", "Crystal:Crystal_SMD_3215-2Pin_3.2x1.5mm", 609.6, 431.8,
-        {"1": "RTC_OSCI", "2": "RTC_OSCO"})
+    add(b, "Device:Crystal", "Y701", "32.768kHz CL=7pF", "Crystal:Crystal_SMD_3215-2Pin_3.2x1.5mm", 609.6, 431.8,
+        {"1": "RTC_OSCI", "2": "RTC_OSCO"}, Manufacturer="Abracon", MPN="ABS07-32.768KHZ-7-T")
     passive(b, "C706", "100nF", C0805, 571.5, 482.6, "+3V3", "GND")
+
+    # Board-temperature monitor in the last compact back-side placement
+    # pocket.  The 10-k/10-k divider reads about half scale at 25 degC and
+    # uses GPIO9/ADC1_CH8.  R714 keeps the node observable at J5 while the
+    # firmware permanently treats that header position as input-only.
+    passive(b, "R736", "10k 1% BOARD TEMP BIAS", R0603, 622.3, 495.3,
+            "+3V3", "BOARD_TEMP_ADC", Manufacturer="UNI-ROYAL",
+            MPN="0603WAF1002T5E", LCSC="C25804")
+    add(b, "Device:Thermistor", "RT701", "10k NTC B3950 1%", R0603,
+        647.7, 495.3, {"1": "BOARD_TEMP_ADC", "2": "GND"},
+        Manufacturer="KUU", MPN="KNTC0603/10KF3950", LCSC="C2892547")
 
     direct = [1, 2, 4, 8, 9, 40, 41, 42, 43, 44, 47, 48]
     for offset, gpio in enumerate(direct):
-        passive(b, f"R{710 + offset}", "100R", R0805, 317.5 + (offset % 6) * 25.4,
-                546.1 + (offset // 6) * 25.4, f"GPIO{gpio}_MCU", f"GPIO{gpio}")
+        internal_net = "BOARD_TEMP_ADC" if gpio == 9 else f"GPIO{gpio}_MCU"
+        header_net = "BOARD_TEMP_HDR" if gpio == 9 else f"GPIO{gpio}"
+        value = "100R BOARD TEMP PROBE" if gpio == 9 else "100R"
+        passive(b, f"R{710 + offset}", value, R0603,
+                317.5 + (offset % 6) * 25.4, 546.1 + (offset // 6) * 25.4,
+                internal_net, header_net)
+
+    for offset in range(8):
+        passive(b, f"R{722 + offset}", "220R EXPANSION PROTECTION", R0603,
+                317.5 + (offset % 4) * 25.4, 596.9 + (offset // 4) * 25.4,
+                f"EX{offset}_INT", f"EX{offset}")
+
+    header_bus = (
+        (730, "I2C_SDA", "I2C_SDA_HDR", "100R"),
+        (731, "I2C_SCL", "I2C_SCL_HDR", "100R"),
+        (732, "SPI_SCK", "SPI_SCK_HDR", "100R"),
+        (733, "SPI_MOSI", "SPI_MOSI_HDR", "100R"),
+        (734, "SPI_MISO", "SPI_MISO_HDR", "100R"),
+    )
+    for offset, (number, internal_net, header_net, value) in enumerate(header_bus):
+        passive(b, f"R{number}", value, R0603, 431.8 + offset * 25.4, 622.3,
+                internal_net, header_net)
+
+    # Two low-capacitance shunt arrays protect all five shared external bus
+    # lines without consuming any GPIO. They reuse
+    # the microSD protection part already selected for U19, avoiding another
+    # package or procurement class. The remaining general-purpose and
+    # GPIO/expander pins retain their series-current limiting; fully protecting all
+    # 26 exposed signals would cost seven arrays and too much escape routing.
+    add(b, "Power_Protection:SRV05-4", "U24", "SRV05-4MR6T1G J5 BUS ESD",
+        SOT23_6, 584.2, 647.7,
+        {"1": "I2C_SDA_HDR", "2": "GND", "3": "I2C_SCL_HDR",
+         "4": NC, "5": "+3V3", "6": NC},
+        Manufacturer="onsemi", MPN="SRV05-4MR6T1G")
+    add(b, "Power_Protection:SRV05-4", "U25", "SRV05-4MR6T1G J5 SPI ESD",
+        SOT23_6, 660.4, 647.7,
+        {"1": "SPI_MISO_HDR", "2": "GND", "3": "SPI_MOSI_HDR",
+         "4": "SPI_SCK_HDR", "5": "+3V3", "6": NC},
+        Manufacturer="onsemi", MPN="SRV05-4MR6T1G")
 
     header = {
         "1": "+3V3", "2": "GND", "3": "GPIO1", "4": "GPIO2", "5": "GPIO4", "6": "GPIO8",
-        "7": "GPIO9", "8": "GPIO40", "9": "GPIO41", "10": "GPIO42", "11": "GPIO43",
+        "7": "BOARD_TEMP_HDR", "8": "GPIO40", "9": "GPIO41", "10": "GPIO42", "11": "GPIO43",
         "12": "GPIO44", "13": "GPIO47", "14": "GPIO48", "15": "EX0", "16": "EX1",
         "17": "EX2", "18": "EX3", "19": "EX4", "20": "EX5", "21": "EX6", "22": "EX7",
-        "23": "I2C_SDA", "24": "I2C_SCL", "25": "SPI_SCK", "26": "SPI_MOSI",
-        "27": "SPI_MISO", "28": "GND", "29": "+5V_AUX", "30": "GND",
+        "23": "I2C_SDA_HDR", "24": "I2C_SCL_HDR", "25": "SPI_SCK_HDR", "26": "SPI_MOSI_HDR",
+        "27": "SPI_MISO_HDR", "28": "CHG_TS", "29": "+5V_AUX", "30": "GND",
     }
-    add(b, "Connector_Generic:Conn_02x15_Odd_Even", "J5", "2x15 2.54mm DUPONT EXPANSION",
-        "Connector_PinHeader_2.54mm:PinHeader_2x15_P2.54mm_Vertical", 736.6, 457.2, header)
+    add(b, "Connector_Generic:Conn_02x15_Odd_Even", "J5", "30-PIN 2.54mm DUPONT GRID",
+        "PocketLab_Custom:Dupont_Grid_6x5_P2.54mm", 736.6, 457.2, header)
+
+
+def apply_serialized_dnp_flags(output: Path, dnp_references: set[str]) -> None:
+    """Work around kicad-sch-api 0.5.x always serializing ``(dnp no)``.
+
+    The API exposes ``in_bom`` but not the symbol DNP flag.  Limit the repair
+    to top-level placed-symbol blocks and verify that every requested reference
+    was changed exactly once.  This keeps schematic and PCB assembly state in
+    lockstep without editing generated symbols by hand.
+    """
+    lines = output.read_text(encoding="utf-8").splitlines(keepends=True)
+    rewritten: list[str] = []
+    patched: set[str] = set()
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        if not (line.startswith("\t(symbol") and line.strip() == "(symbol"):
+            rewritten.append(line)
+            index += 1
+            continue
+
+        end = index + 1
+        while end < len(lines) and not (
+            lines[end].startswith("\t)") and lines[end].strip() == ")"
+        ):
+            end += 1
+        if end >= len(lines):
+            raise RuntimeError("Unterminated top-level symbol in generated schematic")
+        block = lines[index : end + 1]
+        match = re.search(
+            r'^\s*\(property "Reference" "([^"]+)"', "".join(block), re.MULTILINE
+        )
+        if match is None:
+            raise RuntimeError("Generated top-level symbol has no Reference property")
+        reference = match.group(1)
+        if reference in dnp_references:
+            serialized = "".join(block)
+            serialized, replacements = re.subn(
+                r"\(dnp no\)", "(dnp yes)", serialized, count=1
+            )
+            if replacements != 1:
+                raise RuntimeError(f"Could not set generated DNP flag for {reference}")
+            block = serialized.splitlines(keepends=True)
+            patched.add(reference)
+        rewritten.extend(block)
+        index = end + 1
+
+    if patched != dnp_references:
+        raise RuntimeError(
+            "Generated DNP symbol set mismatch; missing="
+            + repr(sorted(dnp_references - patched))
+            + ", extra="
+            + repr(sorted(patched - dnp_references))
+        )
+    output.write_text("".join(rewritten), encoding="utf-8")
+
+
+def unconnected_net_name(reference: str, pin_number: str, pin_name: str) -> str:
+    """Mirror KiCad's stable PCB net name for a schematic no-connect pin."""
+    if not pin_name:
+        raise RuntimeError(f"No-connect pin {reference}.{pin_number} has no pin name")
+    escaped_name = pin_name.replace("/", "{slash}")
+    return f"unconnected-({reference}-{escaped_name}-Pad{pin_number})"
 
 
 def emit_schematic(output: Path, design_json: Path, allow_isolated: bool = False) -> None:
@@ -468,8 +765,8 @@ def emit_schematic(output: Path, design_json: Path, allow_isolated: bool = False
         "02 ESP32-S3 MCU / USB": (317.5, 38.1),
         "03 PN532 NFC / TUNABLE LOOP": (482.6, 38.1),
         "04 E07 CC1101 SUB-GHZ": (660.4, 38.1),
-        "05 GNSS / ANTENNA / MICROSD": (812.8, 38.1),
-        "06 IR / RGB / BUTTONS / BUZZER": (50.8, 355.6),
+        "05 LF RFID / SECURITY / MICROSD": (812.8, 38.1),
+        "06 IR / RGB / BUTTONS / OLED": (50.8, 355.6),
         "07 SENSORS / RTC / IO EXPANSION": (317.5, 355.6),
     }
     for title, pos in titles.items():
@@ -486,9 +783,11 @@ def emit_schematic(output: Path, design_json: Path, allow_isolated: bool = False
             footprint=part.footprint or None,
             **kwargs,
         )
+        component.in_bom = part.in_bom
         created[part.reference] = component
 
     net_usage: dict[str, int] = {}
+    no_connect_nets: dict[str, dict[str, str]] = {}
     for part in PARTS:
         component = created[part.reference]
         actual_pins = {pin.number for pin in component.pins}
@@ -502,11 +801,14 @@ def emit_schematic(output: Path, design_json: Path, allow_isolated: bool = False
             point = schematic.get_component_pin_position(part.reference, pin_number)
             if point is None:
                 raise RuntimeError(f"Cannot locate {part.reference}.{pin_number}")
+            pin = next(pin for pin in component.pins if pin.number == pin_number)
             if net is None:
                 schematic.no_connects.add((point.x, point.y))
+                no_connect_nets.setdefault(part.reference, {})[pin_number] = (
+                    unconnected_net_name(part.reference, pin_number, pin.name)
+                )
                 continue
 
-            pin = next(pin for pin in component.pins if pin.number == pin_number)
             rotation = round(pin.rotation) % 360
             # A 1.27 mm stub keeps labels snapped to the KiCad grid without
             # making two neighbouring vertical passives (12.7 mm centres)
@@ -532,8 +834,17 @@ def emit_schematic(output: Path, design_json: Path, allow_isolated: bool = False
 
     output.parent.mkdir(parents=True, exist_ok=True)
     schematic.save(output)
+    apply_serialized_dnp_flags(output, {part.reference for part in PARTS if part.dnp})
+    serialized_parts = []
+    for part in PARTS:
+        serialized = asdict(part)
+        serialized["no_connect_nets"] = no_connect_nets.get(part.reference, {})
+        serialized_parts.append(serialized)
     design_json.write_text(
-        json.dumps({"format": 1, "parts": [asdict(part) for part in PARTS], "net_usage": net_usage}, indent=2) + "\n",
+        json.dumps(
+            {"format": 1, "parts": serialized_parts, "net_usage": net_usage}, indent=2
+        )
+        + "\n",
         encoding="utf-8",
     )
     print(f"Generated {len(PARTS)} symbols and {len(net_usage)} named nets in {output}")
@@ -543,7 +854,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("output", type=Path)
     parser.add_argument("--design-json", type=Path, default=None)
-    parser.add_argument("--only", choices=("power", "mcu", "nfc", "subghz", "gnss_sd", "ir_ui", "sensors_io"))
+    parser.add_argument("--only", choices=("power", "mcu", "nfc", "subghz", "lf_rfid_sd", "ir_ui", "sensors_io"))
     args = parser.parse_args()
 
     builders = {
@@ -551,7 +862,7 @@ def main() -> int:
         "mcu": build_mcu,
         "nfc": build_nfc,
         "subghz": build_subghz,
-        "gnss_sd": build_gnss_sd,
+        "lf_rfid_sd": build_lf_rfid_sd,
         "ir_ui": build_ir_ui,
         "sensors_io": build_sensors_io,
     }

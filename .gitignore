@@ -1,6 +1,8 @@
 # PlatformIO build and editor state
 firmware/.pio/
 .vscode/
+__pycache__/
+*.py[cod]
 
 # KiCad generated backups and caches
 *-backups/
@@ -10,5 +12,21 @@ firmware/.pio/
 *.kicad_pcb-bak
 hardware/*.rpt
 
+# Reproducible PCB staging and autorouter artifacts
+hardware/PocketLab-Card-netlisted.*
+hardware/PocketLab-Card-planed.*
+hardware/PocketLab-Card-routed.*
+hardware/PocketLab-Card-routing-progress.*
+hardware/PocketLab-Card-routing*.dsn
+hardware/PocketLab-Card-routing*.ses
+hardware/PocketLab-Card-placement-debug.kicad_pcb
+hardware/reports/main-placement-drc.rpt
+hardware/reports/netlisted-drc.rpt
+hardware/reports/planed-drc.rpt
+hardware/reports/routed-drc.rpt
+hardware/reports/routing-progress-drc.rpt
+
 # Manufacturing outputs are generated for tagged releases
 manufacturing/*.zip
+manufacturing/*.zip.sha256
+manufacturing/build/

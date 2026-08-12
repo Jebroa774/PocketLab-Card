@@ -15,9 +15,8 @@ inline constexpr uint8_t SPI_MISO = 13;
 // NFC
 inline constexpr uint8_t NFC_IRQ_N = 7;
 
-// LEDs and sound
+// LEDs
 inline constexpr uint8_t RGB_DATA = 10;
-inline constexpr uint8_t BUZZER_PWM = 38;
 
 // Sub-GHz
 inline constexpr uint8_t SUBGHZ_CS_N = 14;
@@ -27,10 +26,13 @@ inline constexpr uint8_t SUBGHZ_GDO2 = 16;
 // Storage
 inline constexpr uint8_t SD_CS_N = 17;
 
-// GNSS
-inline constexpr uint8_t GNSS_TIMEPULSE = 18;
-inline constexpr uint8_t GNSS_RX_FROM_MODULE = 21;
-inline constexpr uint8_t GNSS_TX_TO_MODULE = 35;
+// 125-kHz LF RFID (HTRC110 through 3.3-V/5-V level translators)
+inline constexpr uint8_t LF_SCLK = 18;
+inline constexpr uint8_t LF_DOUT = 21;
+inline constexpr uint8_t LF_DIN = 35;
+
+// Dedicated physical app-pairing button
+inline constexpr uint8_t PAIR_N = 38;
 
 // Native USB
 inline constexpr uint8_t USB_D_N = 19;
@@ -43,9 +45,13 @@ inline constexpr uint8_t IOEXP_INT_N = 39;
 inline constexpr uint8_t IR_TX = 36;
 inline constexpr uint8_t IR_RX = 37;
 
+// Internal 10-k NTC divider. J5 pin 7 is only a protected, high-impedance
+// probe point for this node; GPIO9 must never be driven.
+inline constexpr uint8_t BOARD_TEMP_ADC = 9;
+
 // Direct expansion GPIOs
 inline constexpr uint8_t DIRECT_EXPANSION[] = {
-    1, 2, 4, 8, 9, 40, 41, 42, 43, 44, 47, 48,
+    1, 2, 4, 8, 40, 41, 42, 43, 44, 47, 48,
 };
 
 // U9 / TCA9535 at 0x20. Both ports remain inputs; P10-P17 are EX0-EX7.
@@ -74,7 +80,7 @@ enum class ControlExpanderPin : uint8_t {
   ChargerDisable = 1,
   Aux5Enable = 2,
   NfcResetN = 3,
-  GnssPowerEnable = 4,
+  LfRfidPowerEnable = 4,
   Boost5Enable = 5,
   UserButtonAN = 6,
   UserButtonBN = 7,

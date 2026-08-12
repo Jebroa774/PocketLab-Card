@@ -10,11 +10,9 @@
 
 namespace pocketlab {
 
-WebPortal::WebPortal(HardwareManager &hardware, StorageManager &storage,
-                     GnssTripLogger &gnss)
+WebPortal::WebPortal(HardwareManager &hardware, StorageManager &storage)
     : hardware_(hardware),
       storage_(storage),
-      gnss_(gnss),
       server_(config::HTTP_PORT),
       webSocket_(config::WEBSOCKET_PORT) {}
 
@@ -89,14 +87,15 @@ void WebPortal::configureRoutes() {
   server_.on(F("/api/upload"), HTTP_POST,
              [this]() { handleUploadComplete(); },
              [this]() { handleUploadChunk(); });
-  server_.on(F("/api/trip/start"), HTTP_POST, [this]() { handleTripStart(); });
-  server_.on(F("/api/trip/stop"), HTTP_POST, [this]() { handleTripStop(); });
-  server_.on(F("/api/gnss/power"), HTTP_POST, [this]() { handleGnssPower(); });
+  server_.on(F("/api/lf/power"), HTTP_POST, [this]() { handleLfPower(); });
+  server_.on(F("/api/lf/diagnose"), HTTP_POST, [this]() { handleLfDiagnose(); });
+  server_.on(F("/api/security/pairing-window"), HTTP_POST,
+             [this]() { handlePairingArm(); });
   server_.on(F("/api/sd/remount"), HTTP_POST, [this]() { handleSdRemount(); });
   server_.on(F("/api/subghz/tx"), HTTP_POST,
              [this]() { handleLockedTransmit(F("subghz_tx")); });
   server_.on(F("/api/ir/tx"), HTTP_POST,
-             [this]() { handleLockedTransmit(F("ir_tx")); });
+             [this]() { handleIrTransmit(); });
   server_.on(F("/api/gpio/output"), HTTP_POST,
              [this]() { handleLockedTransmit(F("gpio_output")); });
   server_.onNotFound([this]() { sendError(404, F("not_found")); });
@@ -158,8 +157,6 @@ String WebPortal::buildStatusJson() const {
   result += hardware_.statusJson();
   result += F(",\"storage\":");
   result += storage_.statusJson();
-  result += F(",\"gnss\":");
-  result += gnss_.statusJson();
   result += '}';
   return result;
 }
@@ -254,10 +251,6 @@ void WebPortal::handleFileDownload() {
 
 void WebPortal::handleFileDelete() {
   if (!authorizeMutation()) return;
-  if (gnss_.tripActive()) {
-    sendError(409, F("stop_trip_before_file_changes"));
-    return;
-  }
   String path;
   if (!storage_.normalizePath(server_.arg(F("path")), path, false)) {
     sendError(400, F("invalid_path"));
@@ -279,10 +272,6 @@ void WebPortal::handleUploadChunk() {
     uploadError_ = String();
     if (!uploadAuthorized_) {
       uploadError_ = F("invalid_session_token");
-      return;
-    }
-    if (gnss_.tripActive()) {
-      uploadError_ = F("stop_trip_before_file_changes");
       return;
     }
 
@@ -329,55 +318,89 @@ void WebPortal::handleUploadComplete() {
   }
 }
 
-void WebPortal::handleTripStart() {
-  if (!authorizeMutation()) return;
-  if (!hardware_.status().gnssPowerEnabled && !hardware_.setGnssPower(true)) {
-    sendError(503, F("gnss_power_enable_failed"));
-    return;
-  }
-  String error;
-  if (!gnss_.startTrip(error)) {
-    String payload = F("{\"ok\":false,\"error\":\"");
-    payload += json::escape(error);
-    payload += F("\"}");
-    sendJson(409, payload);
-    return;
-  }
-  sendJson(200, F("{\"ok\":true,\"message\":\"trip_started\"}"));
-}
-
-void WebPortal::handleTripStop() {
-  if (!authorizeMutation()) return;
-  gnss_.stopTrip();
-  sendJson(200, F("{\"ok\":true,\"message\":\"trip_stopped\"}"));
-}
-
-void WebPortal::handleGnssPower() {
+void WebPortal::handleLfPower() {
   if (!authorizeMutation()) return;
   const bool enabled = server_.arg(F("enabled")) == F("1") ||
                        server_.arg(F("enabled")) == F("true");
-  if (!enabled && gnss_.tripActive()) {
-    sendError(409, F("stop_trip_before_gnss_power_off"));
+  if (!hardware_.setLfRfidPower(enabled)) {
+    sendError(503, enabled ? F("lf_rfid_self_test_failed")
+                           : F("control_expander_unavailable"));
     return;
   }
-  if (!hardware_.setGnssPower(enabled)) {
-    sendError(503, F("control_expander_unavailable"));
+  sendJson(200, F("{\"ok\":true,\"message\":\"lf_rfid_power_changed\"}"));
+}
+
+void WebPortal::handleLfDiagnose() {
+  if (!authorizeMutation()) return;
+  if (!hardware_.status().lfRfidPowerEnabled) {
+    sendError(409, F("lf_rfid_power_off"));
     return;
   }
-  sendJson(200, F("{\"ok\":true,\"message\":\"gnss_power_changed\"}"));
+  if (!hardware_.diagnoseLfRfid()) {
+    sendError(503, F("lf_rfid_self_test_failed"));
+    return;
+  }
+  sendJson(200, F("{\"ok\":true,\"message\":\"lf_rfid_diagnosis_complete\"}"));
+}
+
+void WebPortal::handlePairingArm() {
+  if (!authorizeMutation()) return;
+  if (!hardware_.armPairingWindow()) {
+    sendError(409, F("hold_pair_button_and_check_secure_element"));
+    return;
+  }
+  sendJson(200, F("{\"ok\":true,\"message\":\"pairing_window_open_60s\"}"));
 }
 
 void WebPortal::handleSdRemount() {
   if (!authorizeMutation()) return;
-  if (gnss_.tripActive()) {
-    sendError(409, F("stop_trip_before_sd_remount"));
-    return;
-  }
   if (!storage_.remount()) {
     sendError(503, F("sd_mount_failed"));
     return;
   }
   sendJson(200, F("{\"ok\":true,\"message\":\"sd_mounted\"}"));
+}
+
+void WebPortal::handleIrTransmit() {
+  if (!authorizeMutation()) return;
+  if (!config::IR_TX_COMPILED) {
+    String payload = F("{\"ok\":false,\"error\":\"capability_locked\",\"capability\":\"ir_tx\"}");
+    sendJson(403, payload);
+    return;
+  }
+  if (!server_.hasArg(F("address")) || !server_.hasArg(F("command"))) {
+    sendError(400, F("address_and_command_required"));
+    return;
+  }
+
+  const String addressText = server_.arg(F("address"));
+  const String commandText = server_.arg(F("command"));
+  const String repeatsText = server_.hasArg(F("repeats"))
+                                 ? server_.arg(F("repeats"))
+                                 : String(F("0"));
+  char *end = nullptr;
+  const long address = strtol(addressText.c_str(), &end, 0);
+  if (end == addressText.c_str() || *end != '\0' || address < 0 || address > 255) {
+    sendError(400, F("invalid_address"));
+    return;
+  }
+  const long command = strtol(commandText.c_str(), &end, 0);
+  if (end == commandText.c_str() || *end != '\0' || command < 0 || command > 255) {
+    sendError(400, F("invalid_command"));
+    return;
+  }
+  const long repeats = strtol(repeatsText.c_str(), &end, 0);
+  if (end == repeatsText.c_str() || *end != '\0' || repeats < 0 || repeats > 2) {
+    sendError(400, F("invalid_repeats"));
+    return;
+  }
+  if (!hardware_.sendIrNec(static_cast<uint8_t>(address),
+                           static_cast<uint8_t>(command),
+                           static_cast<uint8_t>(repeats))) {
+    sendError(429, F("ir_busy_or_power_unavailable"));
+    return;
+  }
+  sendJson(200, F("{\"ok\":true,\"message\":\"ir_nec_sent\"}"));
 }
 
 void WebPortal::handleLockedTransmit(const __FlashStringHelper *capability) {

@@ -1,0 +1,34 @@
+#VRML V2.0 utf8
+# Mechanical preview only: 12.00 x 11.00 x 1.25 mm glass and
+# 9.196 x 5.18 mm active window. KiCad WRL coordinates use 0.1 inch units.
+Transform {
+  translation 0 0 0.246063
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.055 0.055 0.065
+          specularColor 0.25 0.25 0.28
+          shininess 0.45
+        }
+      }
+      geometry Box { size 4.724409 4.330709 0.492126 }
+    }
+  ]
+}
+Transform {
+  translation 0 0 0.497047
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.015 0.025 0.035
+          emissiveColor 0.010 0.018 0.025
+          specularColor 0.18 0.24 0.28
+          shininess 0.6
+        }
+      }
+      geometry Box { size 3.620472 2.039370 0.009843 }
+    }
+  ]
+}

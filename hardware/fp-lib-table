@@ -7,4 +7,11 @@
 		(options "")
 		(descr "Project-local verified and manufacturer-converted footprints")
 	)
+	(lib
+		(name "PocketLab_Card")
+		(type "KiCad")
+		(uri "${KIPRJMOD}/footprints/PocketLab_Card.pretty")
+		(options "")
+		(descr "PocketLab Card variants of audited upstream footprints")
+	)
 )

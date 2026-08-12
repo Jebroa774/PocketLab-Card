@@ -1,29 +1,61 @@
-Ref,Manufacturer,MPN,Supplier_part,Package,Function,Assembly_class,Status_or_note
-U1,Espressif,ESP32-S3-WROOM-1-N8R2,C2913204,Module_25.5x18mm_P1.27mm,Wi-Fi/BLE MCU,JLC_TOP_OR_HAND,Selected; castellated edge pads; 8MB flash and 2MB PSRAM
-U2,NXP,PN5321A3HN/C106,C880904,QFN-40_6x6mm,NFC controller,JLC_ONLY,Selected; hidden joints; X-ray/fixture review required
-U3,Ebyte,E07-900M10S,Source_before_order,Module_20x14mm_P1.27mm,868MHz CC1101 radio,HAND_OR_JLC_SOURCE,Default EU build; module includes crystal and RF match
-U3_ALT,Ebyte,E07-400M10S,Source_before_order,Module_20x14mm_P1.27mm,433MHz CC1101 radio,DNP_ALTERNATIVE,Pin-compatible alternative; never fit together with U3
-U4,u-blox,MAX-M10S-00B,C4153167,LCC-18_10.1x9.7mm,GNSS receiver,JLC_TOP,Selected; external antenna; verify stock before order
-U5,Texas Instruments,BQ24074RGTR,C54313,QFN-16-EP_3x3mm,1-cell charger and power path,JLC_ONLY,Selected; thermal-pad part; never hand place
-U6,Texas Instruments,TPS63070RNMR,C109322,VQFN-15-HR_2.5x3mm,3.3V buck-boost,JLC_ONLY,Selected; follow TI layout exactly
-U7,Texas Instruments,TPS61023DRLR,C919459,SOT-563,Switchable 5V boost,JLC_ONLY,Selected; tiny but factory placed
-U8,Analog Devices,MAX17048G+T10,C2682616,DFN-8-EP_2x2mm,LiPo fuel gauge,JLC_ONLY,Selected; optional cost-down DNP possible
-U9,Texas Instruments,TCA9535PWR,C130204,TSSOP-24,16-bit I2C I/O expander,JLC_TOP_OR_HAND,Selected hand-reworkable package
-U10,Bosch Sensortec,BMI270,C2836813,LGA-14_2.5x3mm,6-axis IMU,JLC_STANDARD_OPTION,Optional FULL variant; Standard PCBA/X-ray only
-U11,Bosch Sensortec,BMP390,C5124834,LGA-10_2x2mm,Barometric pressure sensor,JLC_STANDARD_OPTION,Optional FULL variant; Standard PCBA/high difficulty
-U12,NXP,PCF8563T/5_518,C7440,SOIC-8,Low-power RTC,JLC_TOP_OR_HAND,Selected hand-reworkable replacement for tiny RV-3028
-U13,Vishay,TSOP75338WTR,Verify_before_order,MiniCast-3,38kHz IR receiver,JLC_TOP,Keep clear optical window and polarity marker
-D_IR,Vishay,TSAL6200,Source_before_order,THT_LED_D5.0mm,940nm high-power IR emitter,HAND_THT,Selected edge-facing hand-installed part
-Q_IR,AOS,AO3400A,C20917,SOT-23,Logic-level IR power MOSFET,JLC_TOP,Selected; large pin-1 dot on silkscreen
-LED1-LED4,Worldsemi,WS2812B-MINI-V3,Verify_before_order,LED_3535,Addressable RGB LEDs,JLC_TOP,Optional; clear corner/pin-1 marks
-J_USB,HRO,TYPE-C-31-M-12,C165948,USB-C_Hybrid_THT,USB-C USB2 receptacle,JLC_TOP,Selected; through-hole shell for mechanical strength
-J_SD,To_be_selected,Low-profile_push-push,Verify_before_order,microSD_SMD,microSD connector,JLC_ONLY,Select by exact footprint and current stock
-J_GNSS,Hirose,U.FL-R-SMT-1(10),Verify_before_order,U.FL_SMD,GNSS antenna connector,JLC_ONLY,Selected or compatible exact-footprint alternate
-J_BAT,JST,S2B-PH-SM4-TB,Verify_before_order,JST_PH_2.0mm_side-entry,External protected 1S LiPo,JLC_TOP_OR_HAND,Selected mechanical family; verify exact polarity before footprint freeze
-U_BATPROT,To_be_selected,1S_protection_pair,Verify_before_order,SOT-23-6_plus_SO-8,On-board battery fault protection,JLC_TOP,Select during power-sheet review; protected pack still recommended
-U_5VLIMIT,To_be_selected,Adjustable_load_switch,Verify_before_order,SOT-23-5_or_larger,500mA auxiliary current limiter,JLC_TOP,Select during power-sheet design
-BZ1,To_be_selected,Low-profile_piezo,Verify_before_order,SMD_9mm_or_larger,Piezo buzzer,JLC_TOP_OR_HAND,Choose low-profile part with obvious polarity marks
-J_EXT,Generic,2x15_breakaway_header,N/A,THT_P2.54mm_D1.0mm,Expansion connector,HAND_THT,Ships unpopulated; accepts Dupont-compatible header
-R_GENERAL,Multiple,1percent_resistors,JLC_basic_preferred,0805,General resistors,JLC_TOP_OR_HAND,Default passive size; non-polar
-C_GENERAL,Multiple,X7R_X5R_MLCC,JLC_basic_preferred,0805,General capacitors,JLC_TOP_OR_HAND,Default passive size; non-polar
-RF_PASSIVES,Multiple,C0G_high-Q,JLC_stock_before_order,0603,NFC and RF matching,JLC_TOP,Only permitted passive size below 0805
+Ref,Manufacturer,MPN,LCSC_or_gap,Package_or_footprint,Function,Assembly_class,Status_or_note
+U1,Espressif,ESP32-S3-WROOM-1-N8R2,C2913204,RF_Module:ESP32-S3-WROOM-1,Wi-Fi/BLE MCU,PCBA_FACTORY,Selected; preserve module antenna keepout
+U2,NXP,PN5321A3HN/C106,C880904,HVQFN-40-EP_6x6mm,NFC controller,PCBA_FACTORY,Selected NRND part; prototype and sourcing review required
+AE1,PCB,etched_loop,N/A,PocketLab_Custom:NFC_Loop_35x27mm_4T_TUNE,NFC antenna,PCB_FEATURE,VNA tuning mandatory on fabricated board
+U3,Ebyte,E07-900MM10S,C5844212,PocketLab_Custom:E07-900MM10S,855-925MHz CC1101 module with direct 50ohm antenna pad,PCBA_FACTORY,Selected 10x10mm module; 3.3V only; EU 868MHz configuration required
+A1,DreamLNK,T3-868M,C381193,PocketLab_Custom:T3-868M_Edge_Solder,868MHz 50ohm spring antenna,MANUAL_EDGE_SOLDER,Hand-solder horizontally into the 18.8x6.58mm inboard pocket across the 0.6mm PCB bridge to the adjacent pad and add nonconductive strain relief; complete antenna remains inside card outline
+U4,NXP,"HTRC11001T/03EE,11",C501317,SOIC-14_3.9x8.7mm_P1.27mm,125kHz LF-RFID analogue front end,PCBA_FACTORY_OR_HAND,Use current /03EE revision; tune only with the actual external coil
+U5,Texas Instruments,BQ24074RGTR,C54313,VQFN-16-EP_3x3mm,1-cell charger and power path,PCBA_FACTORY,Selected; thermal-pad placement
+U6,Texas Instruments,TPS63070RNMR,C109322,PocketLab_Custom:TPS63070_RNM0015A,3.3V buck-boost,PCBA_FACTORY,Selected; custom asymmetric power footprint
+U7,Texas Instruments,TPS61023DRLR,C919459,SOT-563,Switchable 5V boost,PCBA_FACTORY,Selected; factory placement only
+U8,Analog Devices,MAX17048G+T10,C2682616,TDFN-8-EP_2x2mm,LiPo fuel gauge,PCBA_FACTORY,Selected
+U9,Texas Instruments,TCA9535PWR,C130204,TSSOP-24,Header GPIO expander,PCBA_FACTORY,Selected
+U10,Bosch,BMI270,C2836813,LGA-14_3x2.5mm,6-axis IMU,PCBA_FACTORY,Full prototype variant
+U11,Bosch,BMP390,C5124834,PocketLab_Custom:BMP390_LGA-10_2x2mm,Barometric sensor,PCBA_FACTORY,Full prototype variant
+U12,NXP,"PCF8563T/5,518",C7440,SOIC-8,Low-power RTC,PCBA_FACTORY,Selected hand-reworkable package
+U13,Vishay,TSOP75338WTR,PROCUREMENT_GAP,PocketLab_Custom:TSOP75338WTR_HeimdallW_SideView,38kHz IR receiver,PCBA_FACTORY,Exact optical orientation must be reviewed
+U14,Texas Instruments,BQ29700DSER,PROCUREMENT_GAP,WSON-6_1.5x1.5mm,1-cell protection controller,PCBA_FACTORY,Selected; complements but does not replace protected pack
+Q2/Q3,Texas Instruments,CSD16406Q3,PROCUREMENT_GAP,VSON-8_3.3x3.3mm_NexFET,Back-to-back battery protection FETs,PCBA_FACTORY,Common-drain orientation must be visually checked
+U15,Texas Instruments,TPS2553DBVR,PROCUREMENT_GAP,SOT-23-6,500mA auxiliary output limiter,PCBA_FACTORY,Selected non-latching variant
+U16,STMicroelectronics,USBLC6-4SC6Y,PROCUREMENT_GAP,SOT-23-6,USB and CC ESD array,PCBA_FACTORY,Place directly at J1
+U17,Texas Instruments,TPS22919DCKR,C2149796,SC-70-6,LF 5V load switch,PCBA_FACTORY,Selected; controlled by U18 P4
+U18,Texas Instruments,TCA9534PWR,PROCUREMENT_GAP,TSSOP-16,Internal control expander,PCBA_FACTORY,Selected
+U19/U24/U25,onsemi,SRV05-4MR6T1G,PROCUREMENT_GAP,SOT-23-6,microSD plus J5 I2C/SPI ESD arrays,PCBA_FACTORY,Selected; U24/U25 protect only the five shared header bus lines
+U20,Texas Instruments,SN74AHCT1G126DBVR,C163712,SOT-23-5,3.3V-to-5V RGB data buffer,PCBA_FACTORY_OR_HAND,Active-high OE follows BOOST5_EN; output is high-impedance while 5V is off
+C601/C603-C606/C609,Yageo,CC0805KRX7R9BB104,C49678,0805,100nF local IR/RGB decoupling,PCBA_FACTORY_OR_HAND,Hand-reworkable X7R source; C609 must sit directly at U20
+C602,Samsung Electro-Mechanics,CL21A475KAQNNNE,C1779,0805,4.7uF IR receiver supply filter,PCBA_FACTORY_OR_HAND,Hand-reworkable X5R source
+R604,Yageo,RC0805FR-07100RL,C105577,0805,IR receiver supply filter resistor,PCBA_FACTORY_OR_HAND,100R 1 percent
+R605,Yageo,RC0603FR-0768RL,PROCUREMENT_GAP,0603,RGB data source termination,PCBA_FACTORY_OR_HAND,68R 1 percent; place at U20 pin 4
+D101,Littelfuse,SMF5.0A,PROCUREMENT_GAP,SOD-123F,USB VBUS TVS,PCBA_FACTORY,Unidirectional polarity is critical
+F1,Littelfuse,1206L075/13.2,PROCUREMENT_GAP,1206,USB resettable fuse,PCBA_FACTORY,Exact voltage and hold-current grade
+L6,Coilcraft,XFL4020-152MEC,PROCUREMENT_GAP,PocketLab_Custom:Coilcraft_XFL4020,TPS63070 inductor,PCBA_FACTORY,Footprint and height review required
+L7,Cyntec,HBME042A-1R0MS-99,PROCUREMENT_GAP,PocketLab_Custom:Cyntec_HBME042A-1R0MS,TPS61023 inductor,PCBA_FACTORY,Footprint and height review required
+Y301,TBD,27.12MHz_CL7pF,PROCUREMENT_GAP,Crystal_SMD_3225-4Pin,NFC crystal,PCBA_FACTORY,Exact load capacitance and ESR must be frozen
+Y701,Abracon,ABS07-32.768KHZ-7-T,PROCUREMENT_GAP,Crystal_SMD_3215-2Pin,RTC crystal,PCBA_FACTORY,Selected CL=7pF
+J1,HRO,TYPE-C-31-M-12,C165948,USB_C_Hybrid_THT,USB-C data and power,PCBA_FACTORY_OR_HAND,Through-hole shell adds mechanical strength
+J2,Molex,104031-0811,PROCUREMENT_GAP,Connector_Card:microSD_HC_Molex_104031-0811,microSD socket,PCBA_FACTORY,Exact connector footprint selected
+J3,Generic,1x02_P2.54mm,N/A,PinHeader_1x02_P2.54mm_Vertical,Removable 400uH LF antenna coil,MANUAL_THT,Fit only after measuring coil inductance and selecting C506/C507/C508
+J4,JST,S2B-PH-SM4-TB,PROCUREMENT_GAP,JST_PH_side_entry,Protected 1S LiPo connector,PCBA_FACTORY_OR_HAND,Back-side mounted and rotated 90deg left from prior front view; verify cable exit and polarity before connection
+J5,Generic,30pin_6x5_P2.54mm,N/A,PocketLab_Custom:Dupont_Grid_6x5_P2.54mm,Dupont expansion and optional NTC on pins 28/30,MANUAL_THT,Ships unpopulated; accepts individual Dupont leads or breakaway strips but not one monolithic 2x15 housing; cut SJ1 before external NTC use
+J8,EastRising,ER-OLED0.42-1W,DIRECT_BUY,PocketLab_Custom:EastRising_ER-OLED0.42-1W_SolderFPC,0.42in 72x40 white OLED,MANUAL_FINE_PITCH,Solder and inspect 16-way 0.65mm FPC before folding/bonding glass; verify pin 1 and contact side
+U21,Texas Instruments,SN74AHCT125PWR,C36365,TSSOP-14,LF SCLK and DIN 3.3V-to-5V translation,PCBA_FACTORY,Two unused channels disabled
+U22,Texas Instruments,SN74LVC1G17DBVR,C7836,SOT-23-5_HandSoldering,LF DOUT 5V-to-3.3V Schmitt buffer,PCBA_FACTORY_OR_HAND,5.5V-tolerant input
+U23,Microchip,ATECC608C-SSHDA-T,C28975195,SOIC-8_3.9x4.9mm_P1.27mm,Secure identity and future owner keys,PCBA_FACTORY_OR_HAND,Ship unprovisioned; zone locking is a separate irreversible release step
+RT701,KUU,KNTC0603/10KF3950,C2892547,0603,10k B3950 board-temperature NTC,PCBA_FACTORY_OR_HAND,Selected 1 percent B3950 part; place beside 5V converter area
+R736,UNI-ROYAL,0603WAF1002T5E,C25804,0603,Board-temperature divider bias,PCBA_FACTORY_OR_HAND,10k 1 percent; pair with RT701
+Y501,YXC,4MHz_5V_CMOS,C42448900,Oscillator_SMD_3.2x2.5mm,HTRC110 external clock,PCBA_FACTORY,Verify 40-60 percent duty cycle
+SW6,C&K,KMR221GLFS,C72443,SW_Push_1P1T_NO_CK_KMR2,Dedicated physical PAIR button,PCBA_FACTORY,Active low on GPIO38
+SW3/SW4/SW7,C&K,KMR221GLFS,C72443,SW_Push_1P1T_NO_CK_KMR2,UP DOWN and SELECT navigation buttons,PCBA_FACTORY,Three adjacent labeled 4.6x2.8mm switches; SELECT uses U9 P07 and does not share PAIR
+C503/C504,Qualified_sources,100nF_X7R,PROCUREMENT_GAP,0805,HTRC CEXT and QGND bypass,PCBA_FACTORY_OR_HAND,Keep local to U4
+C505-C508,Qualified_sources,C0G_LF_tuning,PROCUREMENT_GAP,0805_plus_0603,Protected LF resonance network,PCBA_FACTORY_OR_HAND,C506 3.9nF starting value; C507/C508 DNP until measured tuning
+R502,Qualified_sources,47R_0.5W_pulse,PROCUREMENT_GAP,1210,LF antenna current limiter,PCBA_FACTORY_OR_HAND,Validate current and temperature with final coil
+R503/R504,Qualified_sources,1k_plus_150k_1percent,PROCUREMENT_GAP,0805,LF EMI return and protected RX divider,PCBA_FACTORY_OR_HAND,Keep inside the short resonant loop
+SW1/SW2,C&K,KMR221GLFS,C72443,SW_Push_1P1T_NO_CK_KMR2,Reset and boot service buttons,PCBA_FACTORY,Adjacent labeled 4.6x2.8mm service switches; keep separate from navigation row
+SW5,SHOUHAN,MSK12C02,C431540,SW_SPDT_Shouhan_MSK12C02,Low-current main power enable switch,PCBA_FACTORY_OR_HAND,Switches TPS63070 EN only; does not interrupt charger or full battery current
+D1-D3,Vishay,TSAL6200,C55528,PocketLab_Custom:TSAL6200_LayFlat_Inboard,Three 940nm IR emitters,MANUAL_THT,Use one forming jig across each transverse 2.54mm lead pair; bend both pins 90 degrees on the same line and lay the body flat with its optical face 0.5mm inside the short edge
+R601/R610/R611,Qualified_sources,39R_0.5W_1percent,PROCUREMENT_GAP,1210,Independent IR LED current limit resistors,PCBA_FACTORY_OR_HAND,One resistor per emitter; hand-solderable 1210 size is pulse-rated for the bounded IR burst duty; do not bridge or replace with one shared resistor
+C607/C617/C608,Qualified_sources,2x22uF_10V_X5R_plus_100nF,PROCUREMENT_GAP,1206_plus_0805,Local 5V IR pulse buffer,PCBA_FACTORY_OR_HAND,Place directly at the three LED branches and Q1 hot loop; verify effective capacitance at 5V
+C610-C616,Qualified_sources,1uF_4.7uF_2.2uF_100nF_X7R_X5R,PROCUREMENT_GAP,0805,OLED charge pump and local decoupling,PCBA_FACTORY_OR_HAND,Keep values and nets exactly as schematic; place beside folded FPC lands
+LED1-LED4,Worldsemi,WS2812B-2020,C965555,LED_2020,Compact 5V addressable RGB LEDs,PCBA_FACTORY,2.0mm package is not intended for routine hand placement; pin-1 and JLC assembly-view review required
+R/C_general,Qualified_sources,1percent_X7R_X5R,PROCUREMENT_GAP,0805,General passives,PCBA_FACTORY,Exact MPN and LCSC population remains release-gated
+RF_passives,Qualified_sources,C0G_high_Q,PROCUREMENT_GAP,0603,NFC and RF matching,PCBA_FACTORY,C310-C312 remain DNP until measurement

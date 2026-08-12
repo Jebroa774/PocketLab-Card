@@ -1,16 +1,18 @@
 # Detaillierter Entwurf: USB-C, Akku und Stromversorgung
 
-Stand: 2026-08-09. Dieses Dokument ist die verbindliche Schaltungsgrundlage
-für Blatt `01_USB_POWER`. Es ist noch **kein Freigabenachweis für ein
-Serienprodukt**. LiPo-Sicherheit, thermische Grenzen, USB-Konformität und alle
-Stromgrenzen müssen am ersten Prototyp verifiziert werden.
+Stand: 2026-08-09. Dieses Dokument erklärt Auslegung und Prüfkriterien für den
+Power-Block. Für Referenzbezeichner, Netznamen und tatsächlich bestückte
+Optionen ist der aktuell erzeugte KiCad-Schaltplan maßgeblich. Es ist noch
+**kein Freigabenachweis für ein Serienprodukt**. LiPo-Sicherheit, thermische
+Grenzen, USB-Konformität und alle Stromgrenzen müssen am ersten Prototyp
+verifiziert werden.
 
 ## 1. Festgelegte Architektur
 
 ```text
 USB-C VBUS
   -> F1 1206L075/13.2
-  -> VBUS_PROT (TVS + 4.7 uF)
+  -> VBUS_FUSED (TVS + 4.7 uF)
   -> BQ24074 IN
 
 2-pin 1S LiPo
@@ -21,7 +23,7 @@ BQ24074 OUT = VSYS (normal ca. 2.9 ... 4.5 V; nahe Akku-Cutoff ggf. tiefer)
   -> TPS63070 -> +3V3
   -> TPS61023 -> +5V_RAW
                     -> IR-Stufe
-                    -> TPS2553 -> +5V_AUX_HEADER
+                    -> TPS2553 -> +5V_AUX
 
 MAX17048 misst CELL_POS gegen System-GND.
 ```
@@ -30,8 +32,8 @@ Die Netzbezeichnungen sind absichtlich eindeutig:
 
 | Netz | Bedeutung |
 |---|---|
-| `VBUS_CONN` | USB-VBUS direkt am Stecker, vor F1 |
-| `VBUS_PROT` | Geschützter USB-Eingang nach F1 |
+| `VBUS_USB` | USB-VBUS direkt am Stecker, vor F1 |
+| `VBUS_FUSED` | Geschützter USB-Eingang nach F1 |
 | `CELL_POS` | Akku-Plus und BQ24074-BAT |
 | `CELL_NEG` | Akku-Minus vor den Schutz-MOSFETs; kein System-GND |
 | `BAT_FET_MID` | Gemeinsame Drains der Schutz-MOSFETs |
@@ -39,7 +41,7 @@ Die Netzbezeichnungen sind absichtlich eindeutig:
 | `VSYS` | BQ24074-OUT, Eingang der beiden DC/DC-Wandler |
 | `+3V3` | Dauerhafte digitale 3,3-V-Schiene |
 | `+5V_RAW` | Schaltbare 5-V-Schiene direkt vom TPS61023 |
-| `+5V_AUX_HEADER` | Separat strombegrenzte 5-V-Schiene am Header |
+| `+5V_AUX` | Separat strombegrenzte 5-V-Schiene am Header |
 
 Die beiden Wandler-Nennwerte dürfen nicht gleichzeitig als Dauerlast
 ausgenutzt werden. Schon `3.3 V * 1.5 A + 5 V * 1.0 A = 9.95 W` Ausgangsleistung
@@ -52,35 +54,42 @@ Puffer.
 
 ## 2. USB-C-Sink und USB 2.0
 
-### 2.1 Stecker J_USB
+### 2.1 Stecker J1
 
 Bauteil: HRO `TYPE-C-31-M-12`, KiCad-Footprint
 `Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12`.
 
 | Kontakt(e) | Netz / Beschaltung |
 |---|---|
-| A4, A9, B4, B9 | gemeinsam `VBUS_CONN` |
+| A4, A9, B4, B9 | gemeinsam `VBUS_USB` |
 | A1, A12, B1, B12 | `GND` |
-| A6, B6 | gemeinsam `USB_DP_CONN` |
-| A7, B7 | gemeinsam `USB_DM_CONN` |
+| A6, B6 | gemeinsam `USB_CONN_P` |
+| A7, B7 | gemeinsam `USB_CONN_N` |
 | A5 / CC1 | `USB_CC1`; eigener 5.1-kOhm-Widerstand nach GND |
 | B5 / CC2 | `USB_CC2`; eigener 5.1-kOhm-Widerstand nach GND |
 | A8 / SBU1, B8 / SBU2 | unbeschaltet |
-| Shield-Pads | kurze, breite Verbindung nach GND und mehrere Stitching-Vias |
+| Shield-Pads | gemeinsam `USB_SHIELD`; R103 1 MOhm und C101 4.7 nF parallel nach GND |
 
 CC1 und CC2 dürfen **nicht** miteinander verbunden werden. Je ein
 `5.1 kOhm, 1 %, 0805` nach GND kennzeichnet das Board als reinen 5-V-Sink.
 Es gibt kein USB-PD und ohne CC-Controller auch keine Auswertung einer
 1.5-A-/3-A-Ankündigung. Die Schaltung bleibt deshalb bei höchstens USB-500.
 
+Der Steckerschirm ist in diesem Prototyp nicht direkt mit System-GND
+kurzgeschlossen. Seine Pads bilden eine kurze, zusammenhängende
+`USB_SHIELD`-Kupferinsel; R103/C101 koppeln diese Insel DC-/HF-definiert an
+GND. Ob für das reale Gehäuse und die EMV-Prüfung stattdessen eine direkte
+Verbindung erforderlich ist, muss gemessen und dann als eigene Revision
+festgelegt werden.
+
 ### 2.2 VBUS-Schutz
 
 | Ref | Wert / Teil | Footprint | Verbindung |
 |---|---|---|---|
-| F1 | Littelfuse `1206L075/13.2`, 0.75 A hold, 1.5 A trip | `Fuse:Fuse_1206_3216Metric` | `VBUS_CONN` -> `VBUS_PROT` |
-| D_VBUS | Littelfuse `SMF5.0A`, unidirektional | `Diode_SMD:D_SOD-123F` | Kathode `VBUS_PROT`, Anode GND |
-| C_U5_IN1 | 4.7 uF, 16 V, X7R, 0805 | 0805 | `VBUS_PROT` nach GND; zugleich U5-IN-Bypass |
-| C_U5_IN2 | 100 nF, 16 V, X7R, 0805 | 0805 | `VBUS_PROT` nach GND; zugleich U5-IN-Bypass |
+| F1 | Littelfuse `1206L075/13.2`, 0.75 A hold, 1.5 A trip | `Fuse:Fuse_1206_3216Metric` | `VBUS_USB` -> `VBUS_FUSED` |
+| D101 | Littelfuse `SMF5.0A`, unidirektional | `Diode_SMD:D_SOD-123F` | Kathode `VBUS_FUSED`, Anode GND |
+| C103 | 4.7 uF, 16 V, X7R, 0805 | 0805 | `VBUS_FUSED` nach GND; zugleich U5-IN-Bypass |
+| C106 | 100 nF, 16 V, X7R, 0805 | 0805 | `VBUS_FUSED` nach GND; zugleich U5-IN-Bypass |
 
 Der 1206L075 hat bei 20 Grad C 0.75 A Haltestrom, 1.5 A Auslösestrom und
 bis zu 0.35 Ohm nach Auslösung/Rückstellung laut Herstellerdaten. Bei hoher
@@ -92,22 +101,22 @@ strombegrenzenden BQ24074-Power-Path.
 
 ### 2.3 ESD und Datenleitungen
 
-U_USB_ESD: ST `USBLC6-4SC6Y`, SOT-23-6L / JEDEC MO-178AB,
+U16: ST `USBLC6-4SC6Y`, SOT-23-6L / JEDEC MO-178AB,
 KiCad `Package_TO_SOT_SMD:SOT-23-6`.
 
 | Pin | Funktion | Netz |
 |---:|---|---|
-| 1 | I/O1 | `USB_DP_CONN` |
+| 1 | I/O1 | `USB_CONN_P` |
 | 2 | GND | GND |
-| 3 | I/O2 | `USB_DM_CONN` |
+| 3 | I/O2 | `USB_CONN_N` |
 | 4 | I/O3 | `USB_CC1` |
-| 5 | VBUS | `VBUS_PROT` |
+| 5 | VBUS | `VBUS_FUSED` |
 | 6 | I/O4 | `USB_CC2` |
 
 Das ESD-Array ist eine Abzweigklemme, kein serielles Durchgangsbauteil. Es
 muss direkt hinter dem Stecker mit extrem kurzen Leitungen nach GND und
-`VBUS_PROT` sitzen. Danach folgen je `22 Ohm, 1 %, 0805` seriell in D+ und D-
-zu `USB_DP` beziehungsweise `USB_DM` am ESP32-S3. D+ und D- werden als
+`VBUS_FUSED` sitzen. Danach folgen je `22 Ohm, 1 %, 0805` seriell in D+ und D-
+zu `USB_D_P` beziehungsweise `USB_D_N` am ESP32-S3. D+ und D- werden als
 90-Ohm-Differenzpaar mit durchgehender Referenzfläche, gleicher Via-Anzahl und
 ohne bestückte Shunt-Kondensatoren geführt.
 
@@ -127,12 +136,12 @@ Das Exposed Pad ist in KiCad Pad 17 und muss an GND liegen.
 | 4 | CE | `CHG_DISABLE`; 100 kOhm Pulldown nach GND; High sperrt Laden |
 | 5 | EN2 | `BQ_EN2`; 100 kOhm Pulldown nach GND |
 | 6 | EN1 | `BQ_EN1`; 100 kOhm Pulldown nach GND, MCU darf auf High schalten |
-| 7 | PGOOD | `USB_PGOOD_N`; 100 kOhm Pull-up nach +3V3 |
+| 7 | PGOOD | `CHARGER_PGOOD_N`; 100 kOhm Pull-up nach +3V3 |
 | 8 | VSS | GND |
-| 9 | CHG | `CHG_ACTIVE_N`; 100 kOhm Pull-up nach +3V3 |
+| 9 | CHG | `CHARGER_CHG_N`; 100 kOhm Pull-up nach +3V3 |
 | 10, 11 | OUT | `VSYS`; 4.7 uF + 100 nF unmittelbar nach GND |
 | 12 | ILIM | 3.48 kOhm, 1 %, nach GND |
-| 13 | IN | `VBUS_PROT`; gemeinsamer C_U5_IN1 4.7 uF + C_U5_IN2 100 nF nach GND |
+| 13 | IN | `VBUS_FUSED`; gemeinsamer C103 4.7 uF + C106 100 nF nach GND |
 | 14 | TMR | 68.1 kOhm, 1 %, nach GND |
 | 15 | ITERM | 3.01 kOhm, 1 %, nach GND |
 | 16 | ISET | 1.78 kOhm, 1 %, nach GND |
@@ -144,11 +153,11 @@ sie ohne Schaltungsänderung auf 47 kOhm reduziert werden.
 
 Die BQ24074-Empfehlung für die gesamte an OUT sichtbare Keramikkapazität ist
 4.7 bis 47 uF. Daher werden direkt an U5 nur 4.7 uF bestückt. Am
-TPS63070-Eingang werden standardmäßig nur `C33_IN1` und `C33_IN_HF` mit je
-10 uF bestückt; `C33_IN2` bleibt DNP. Zusammen mit 10 uF am
+TPS63070-Eingang werden standardmäßig nur `C108` und `C123` mit je
+10 uF bestückt; `C109` bleibt DNP. Zusammen mit 10 uF am
 TPS61023-Eingang entstehen damit etwa 34.7 uF nominal auf `VSYS`. Das gibt
 Reserve für positive Bauteiltoleranzen und weitere unvermeidbare
-Abblockkondensatoren. `C33_IN2` darf erst nach einem Stabilitäts- und
+Abblockkondensatoren. `C109` darf erst nach einem Stabilitäts- und
 Lastsprungtest bestückt werden; dann liegen 44.7 uF nominal an `VSYS` und die
 47-uF-Grenze muss einschließlich Toleranzen erneut bewertet werden.
 
@@ -208,11 +217,11 @@ nicht. Im normalen USB-Betrieb bestimmt jedoch EN1/EN2 den Eingangsstrom.
 | 1 | 0 | Widerstandsmodus, hier max. ca. 499 mA |
 | 1 | 1 | Standby |
 
-Produktionsdefault ist `EN2=0`, `EN1=0`. Die Firmware setzt EN1 erst nach
-Enumeration auf High. Ein optionaler, klar beschrifteter DNP-Lötjumper darf
-EN1 für Labor-/Batteryless-Betrieb auf High legen, gehört aber nicht in die
-USB-konforme Standardvariante. Im 100-mA-Startzustand müssen PN532, 5-V-Boost,
-GNSS-Antennenversorgung, RGB-LEDs und externe Lasten sicher ausgeschaltet
+Produktionsdefault ist `EN2=0`, `EN1=0`. Die aktuelle sichere Firmware lässt
+EN1 dauerhaft Low und bleibt damit im USB100-Modus; eine spätere Umschaltung
+auf USB500 ist nur nach einer verlässlichen Erkennung der zulässigen
+Quellenstromstärke erlaubt. Im 100-mA-Startzustand müssen PN532, 5-V-Boost,
+LF-RFID-Versorgung, RGB-LEDs und externe Lasten sicher ausgeschaltet
 bleiben. Falls der ESP32 unter 100 mA nicht zuverlässig startet, ist für den
 Prototyp ein Akku erforderlich.
 
@@ -220,15 +229,34 @@ Prototyp ein Akku erforderlich.
 
 Der gewählte 2-polige JST-Stecker hat keinen Temperaturkontakt. Daher:
 
-- `R_TS_FIXED = 10.0 kOhm, 1 %, 0805` standardmäßig bestücken.
-- Zusätzlich `J_NTC`, zwei unbestückte THT-Pads im 2.54-mm-Raster, für
-  `CHG_TS` und GND vorsehen.
-- Bei Verwendung eines echten 10-k-NTC muss `R_TS_FIXED` entfernt werden.
+- R108 (`10 kOhm TS fixed`, 0805) und den gebrückten Lötjumper SJ1
+  standardmäßig bestücken.
+- J5 stellt an Pin 28 `CHG_TS` und an Pin 30 GND im 2.54-mm-Raster für einen
+  optionalen externen NTC bereit.
+- Bei Verwendung eines echten 10-kOhm-NTC SJ1 auftrennen. Dadurch wird R108
+  von `CHG_TS` getrennt; R108 muss nicht ausgelötet werden.
 
 Ein Festwiderstand hält TS elektrisch im gültigen Bereich, misst aber **keine
 Zellentemperatur**. Für ein endgültiges Produkt ist ein Akku mit drittem
 NTC-Kontakt die bevorzugte Lösung. Nur Standard-LiPo/Li-Ion mit 4.20-V-
 Ladeschlussspannung verwenden, keine 4.35-V-LiHV-Zelle.
+
+#### 3.4.1 Interne Platinentemperatur
+
+R736 (10 kOhm, 1 %) liegt von +3V3 nach `BOARD_TEMP_ADC`; RT701 (10-kOhm-NTC,
+B3950) liegt vom Messknoten nach GND. GPIO9/ADC1_CH8 misst dadurch bei 25 Grad C
+ungefähr 1.65 V. Der NTC sitzt auf der Rückseite neben der 5-V-Leistungszone und
+ist ein Schutz-/Diagnosewert, kein Ersatz für einen NTC direkt an der Zelle.
+J5 Pin 7 erreicht denselben Knoten nur über R714 und darf ausschließlich
+hochohmig gemessen werden.
+
+Die Bring-up-Firmware mittelt 16 ADC-Messungen. Ab 80 Grad C sperrt sie neue
+IR/LF/Boost-Anforderungen und schaltet Ladefreigabe sowie vorhandene 5-V-Lasten
+ab. Unter 70 Grad C wird nur die Ladefreigabe automatisch zurückgenommen; die
+Lasten bleiben aus, bis die App sie erneut einschaltet. Diese Schwellen müssen
+am bestückten Prototyp gegen eine externe Temperaturmessung kalibriert werden.
+Ein offener oder kurzgeschlossener Teiler wird ausfallsicher wie Übertemperatur
+behandelt.
 
 ### 3.5 Verlustleistung
 
@@ -253,10 +281,14 @@ Silkscreen groß markiert werden.
 
 ### 4.1 Stecker
 
-J_BAT: JST `S2B-PH-SM4-TB`, PH-Serie, 2.0-mm-Raster, Side-Entry. Pin 1 wird
+J4: JST `S2B-PH-SM4-TB`, PH-Serie, 2.0-mm-Raster, Side-Entry. Pin 1 wird
 im Projekt als `CELL_POS`, Pin 2 als `CELL_NEG` festgelegt. Das ist eine
 Boarddefinition; fertig konfektionierte JST-Akkukabel haben keine universell
 garantierte Polarität.
+
+J4 wird auf der Rückseite bestückt und gegenüber der früheren Vorderansicht um
+90 Grad nach links gedreht. Der Kabelabgang sowie `BAT +`/`BAT -` müssen in der
+Unterseitenansicht des Bestückers geprüft werden.
 
 ### 4.2 Schutz-IC U14
 
@@ -266,8 +298,8 @@ KiCad: `Package_SON:WSON-6_1.5x1.5mm_P0.5mm`. JLCPCB-Bestückung zwingend.
 | Pin | Name | Netz / Beschaltung |
 |---:|---|---|
 | 1 | NC | wirklich unverbunden |
-| 2 | COUT | Gate Q_BAT_CHG; zusätzlich 5.1 MOhm Gate-Source |
-| 3 | DOUT | Gate Q_BAT_DSG; zusätzlich 5.1 MOhm Gate-Source |
+| 2 | COUT | Gate Q3; zusätzlich R107 5.1 MOhm Gate-Source |
+| 3 | DOUT | Gate Q2; zusätzlich R106 5.1 MOhm Gate-Source |
 | 4 | VSS | `CELL_NEG` |
 | 5 | BAT | über 330 Ohm von `CELL_POS`; 100 nF von Pin 5 nach `CELL_NEG` |
 | 6 | V- | über 2.2 kOhm von GND / `PACK_NEG` |
@@ -284,7 +316,7 @@ Fest programmierte Schwellen des BQ29700:
 
 ### 4.3 Schutz-MOSFETs
 
-Q_BAT_DSG und Q_BAT_CHG: je TI `CSD16406Q3`, DQG / VSON-CLIP,
+Q2 und Q3: je TI `CSD16406Q3`, DQG / VSON-CLIP,
 3.3 x 3.3 mm, 0.65-mm-Pitch. KiCad:
 `Package_SON:VSON-8_3.3x3.3mm_P0.65mm_NexFET`.
 
@@ -305,8 +337,8 @@ Back-to-back, Common-Drain:
 
 | FET | Source | Drain | Gate | Gate-Source-Widerstand |
 |---|---|---|---|---|
-| Q_BAT_DSG | `CELL_NEG` | `BAT_FET_MID` | U14 DOUT | 5.1 MOhm nach `CELL_NEG` |
-| Q_BAT_CHG | GND / `PACK_NEG` | `BAT_FET_MID` | U14 COUT | 5.1 MOhm nach GND |
+| Q2 (discharge) | `CELL_NEG` | `BAT_FET_MID` | U14 DOUT | R106 5.1 MOhm nach `CELL_NEG` |
+| Q3 (charge) | GND / `PACK_NEG` | `BAT_FET_MID` | U14 COUT | R107 5.1 MOhm nach GND |
 
 Das maximale RDS(on) eines FETs beträgt laut TI 7.4 mOhm bei VGS=4.5 V.
 Nur als grobe Raumtemperatur-Abschätzung:
@@ -328,7 +360,8 @@ bereits der gewählte Akku-Pack nachweislich in diesem Bereich abschaltet,
 muss vor Serienfreigabe eine zusätzliche Sicherung oder passend ausgelegte
 Hardware-Strombegrenzung in den Akkupfad aufgenommen werden.
 
-Testpunkte `TP_CELL_POS`, `TP_CELL_NEG`, `TP_BAT_FET_MID` und `TP_GND` sind
+Testpunkte TP101 (`CELL_POS`), TP102 (`CELL_NEG`), TP103 (`BAT_FET_MID`) und
+TP104 (`GND`) sind
 zwingend. `CELL_NEG` darf nicht auf normalen Erweiterungssteckern erscheinen,
 weil das die Schutz-FETs umgehen würde. Nach Schutzabschaltung kann zum
 Aufwecken das Anlegen des Ladegeräts erforderlich sein.
@@ -351,7 +384,7 @@ U8: Analog Devices / Maxim `MAX17048G+T10`, TDFN-8-EP, 2.0 x 2.0 mm,
 | 8 | SDA | `I2C_SDA` |
 | EP / 9 | EP | GND |
 
-Die zentralen I2C-Pull-ups sind einmalig `4.7 kOhm` nach +3V3. Keine zweiten
+Die zentralen I2C-Pull-ups R701/R702 sind einmalig `3.3 kOhm` nach +3V3. Keine zweiten
 Pull-ups auf diesem Blatt bestücken. Adresse: `0x36` (7 Bit), Bus bis 400 kHz.
 
 Die Masse des Gauge liegt auf der Systemseite der Schutz-FETs. Dadurch
@@ -371,7 +404,7 @@ Es darf **kein generisches QFN** verwendet werden. Projekt-Footprint:
 
 | Pin | Name | Netz / Beschaltung |
 |---:|---|---|
-| 1 | PS/SYNC | 10 kOhm nach `VSYS`; Power-Save/PFM aktiv |
+| 1 | PS/SYNC | gemeinsam mit EN hinter 10 kOhm nach `VSYS`; Power-Save/PFM aktiv |
 | 2 | PG | `PWR_3V3_PG`; 10 kOhm Pull-up nach +3V3 |
 | 3 | VAUX | nur 100 nF nach GND; keine externe Last |
 | 4 | GND | ruhige Signalmasse |
@@ -382,7 +415,7 @@ Es darf **kein generisches QFN** verwendet werden. Projekt-Footprint:
 | 10 | PGND | Leistungsmassenfläche |
 | 11 | L1 | L6 Anschluss 1 |
 | 12, 13 | VIN | `VSYS` |
-| 14 | EN | `VSYS`, direkt oder über 0 Ohm |
+| 14 | EN | gemeinsam mit PS/SYNC auf `U6_PS_SYNC`, hinter R116 10 kOhm nach `VSYS` |
 | 15 | VSEL | GND |
 
 Feedback:
@@ -399,14 +432,14 @@ Das ist zugleich die von TI angegebene Standardkombination für 3.3 V.
 | Ref | Hersteller / Teil | Wert / Eckdaten | Package |
 |---|---|---|---|
 | L6 | Coilcraft `XFL4020-152MEC` | 1.5 uH, Isat 4.6 A bei 30 % Abfall, DCR typ. 14.4 mOhm | 4.0 x 4.0 x 2.1 mm |
-| C33_IN1 | Murata `GRM21BC71E106ME11L` | 10 uF, 25 V, X7S | 0805 |
-| C33_IN2 | Murata `GRM21BC71E106ME11L` | 10 uF, 25 V, X7S; **DNP ab Werk** | 0805 |
-| C33_IN_HF | Taiyo Yuden `TMK107BBJ106MA-T` | 10 uF, 25 V, X5R; direkt an VIN/PGND | 0603 |
-| C33_OUT1/2/3 | Murata `GRM21BC81C226ME44L` | je 22 uF, 16 V, X6S | 0805 |
-| C33_OUT_HF | Taiyo Yuden `TMK107BBJ106MA-T` | 10 uF, 25 V, X5R; direkt an VOUT/PGND | 0603 |
-| C_VAUX | beliebig qualifiziert | 100 nF, X7R | 0805 |
-| R_FB_TOP | 470 kOhm, 1 % | +3V3 nach FB | 0805 |
-| R_FB_BOT | 150 kOhm, 1 % | FB nach GND | 0805 |
+| C108 | Murata `GRM21BC71E106ME11L` | 10 uF, 25 V, X7S | 0805 |
+| C109 | Murata `GRM21BC71E106ME11L` | 10 uF, 25 V, X7S; **DNP ab Werk** | 0805 |
+| C123 | Taiyo Yuden `TMK107BBJ106MA-T` | 10 uF, 25 V, X5R; direkt an VIN/PGND | 0603 |
+| C110/C111/C112 | Murata `GRM21BC81C226ME44L` | je 22 uF, 16 V, X6S | 0805 |
+| C124 | Taiyo Yuden `TMK107BBJ106MA-T` | 10 uF, 25 V, X5R; direkt an VOUT/PGND | 0603 |
+| C107 | beliebig qualifiziert | 100 nF, X7R | 0805 |
+| R117 | 470 kOhm, 1 % | +3V3 nach FB | 0805 |
+| R118 | 150 kOhm, 1 % | FB nach GND | 0805 |
 
 Die Kondensator-MPNs sind aus der TI-Typapplikation. Die beiden 0603-Bypässe
 gehören direkt an die IC-Pins und reduzieren die Schaltspitzen. Alternativen sind nur
@@ -462,6 +495,10 @@ Kennzeichnung manuell zu kontrollieren.
 Layout: L6 direkt zwischen L1 und L2, Eingangskondensatoren unmittelbar an
 VIN/PGND, Ausgangskondensatoren unmittelbar an VOUT/PGND. FB-Teiler an Pin 5,
 weit weg von L1/L2 und Induktor; GND-Seite des Teilers an ruhige GND-Zone.
+TI fordert außerdem einen Serienwiderstand, wenn EN oder PS/SYNC fest an VIN
+gebunden werden. R116 ist deshalb der gemeinsame 10-kOhm-Widerstand für beide
+Pins; eine direkte beziehungsweise 0-Ohm-Verbindung von EN nach VSYS ist nicht
+zulässig.
 
 ## 7. Schaltbare +5V mit TPS61023
 
@@ -471,7 +508,7 @@ U7: TI `TPS61023DRLR`, DRL / SOT-563-6. KiCad:
 | Pin | Name | Netz / Beschaltung |
 |---:|---|---|
 | 1 | FB | Mittelpunkt 732 kOhm / 100 kOhm |
-| 2 | EN | `BOOST_5V_EN`; 100 kOhm Pulldown, optional 1 kOhm vom MCU |
+| 2 | EN | `BOOST5_EN`; 100 kOhm Pulldown, Steuerung über U18/P5 |
 | 3 | VIN | `VSYS` |
 | 4 | GND | GND |
 | 5 | SW | L7 Anschluss 2 |
@@ -480,11 +517,11 @@ U7: TI `TPS61023DRLR`, DRL / SOT-563-6. KiCad:
 | Ref | Teil / Wert | Package |
 |---|---|---|
 | L7 | Cyntec `HBME042A-1R0MS-99`, 1.0 uH, DCR 11.5 mOhm, Isat 7 A | 4.1 x 4.1 x 2.1 mm |
-| C5_IN | 10 uF, >=10 V, X5R/X7R | 0805 |
-| C5_OUT1/2 | je 22 uF, >=10 V, X5R/X7R | 0805 |
-| R5_TOP | 732 kOhm, 1 % | 0805 |
-| R5_BOT | 100 kOhm, 1 % | 0805 |
-| C5_FF | 220 pF, C0G, parallel zu R5_TOP | 0603 oder 0805 |
+| C114 | 10 uF, >=10 V, X5R/X7R | 0805 |
+| C115/C116 | je 22 uF, >=10 V, X5R/X7R | 0805 |
+| R120 | 732 kOhm, 1 % | 0805 |
+| R121 | 100 kOhm, 1 % | 0805 |
+| C113 | 220 pF, C0G, parallel zu R120 | 0603 oder 0805 |
 
 ```text
 V_OUT,typ = 0.595 * (1 + 732k / 100k) = 4.950 V
@@ -524,6 +561,11 @@ werden.
 Optionaler Diagnose-ADC: 100 kOhm von `+5V_RAW` auf `ADC_5V_MON`, 33 kOhm von
 dort nach GND und 10 nF nach GND. Bei 5 V entstehen ca. 1.24 V.
 
+Die IR-Stufe erhält zusätzlich direkt am lokalen Pulsstromkreis C607 mit
+22 uF/10 V X5R im handfreundlichen 1206-Gehäuse und C608 mit 100 nF im
+0805-Gehäuse. Beide liegen von `+5V_RAW` nach GND und gehören räumlich zu
+R601/D1/Q1, nicht zum entfernten U7-Ausgangskondensatorbank.
+
 ## 8. 500-mA-Load-Switch für den Header
 
 U15: TI `TPS2553DBVR`, ausdrücklich **ohne `-1`**. DBV / SOT-23-6,
@@ -540,7 +582,7 @@ dagegen verriegeln.
 | 3 | EN | `AUX5_EN`; 100 kOhm Pulldown nach GND |
 | 4 | FAULT | `AUX5_FAULT_N`; 100 kOhm Pull-up nach +3V3 |
 | 5 | ILIM | 60.4 kOhm, 1 %, nach GND |
-| 6 | OUT | `+5V_AUX_HEADER`; 100 nF + 10 uF nach GND |
+| 6 | OUT | `+5V_AUX`; 100 nF + 10 uF nach GND |
 
 Mit den TI-Grenzgleichungen:
 
@@ -564,11 +606,11 @@ GND-Pins vorsehen. Auf dem Silkscreen: `5V OUT, <=0.5A, NOT INPUT`.
 
 | Ref | Bestellteil | Gehäuse | KiCad / Footprint-Quelle | Bestückung |
 |---|---|---|---|---|
-| J_USB | HRO TYPE-C-31-M-12 | Hybrid SMD/THT | stock HRO footprint | JLC oder Hand |
-| U_USB_ESD | USBLC6-4SC6Y | SOT-23-6L | SOT-23-6 | JLC, Hand-Rework möglich |
+| J1 | HRO TYPE-C-31-M-12 | Hybrid SMD/THT | stock HRO footprint | JLC oder Hand |
+| U16 | USBLC6-4SC6Y | SOT-23-6L | SOT-23-6 | JLC, Hand-Rework möglich |
 | U5 | BQ24074RGTR | RGT VQFN-16-EP 3x3 P0.5 | stock ThermalVias footprint | JLC only |
 | U14 | BQ29700DSER | DSE WSON-6 1.5x1.5 P0.5 | stock WSON-6 | JLC only |
-| Q_BAT_* | CSD16406Q3 | DQG VSON-CLIP 3.3x3.3 | stock NexFET footprint | JLC only |
+| Q2/Q3 | CSD16406Q3 | DQG VSON-CLIP 3.3x3.3 | stock NexFET footprint | JLC only |
 | U8 | MAX17048G+T10 | TDFN-8-EP 2x2 P0.5 | stock TDFN footprint | JLC only |
 | U6 | TPS63070RNMR | RNM VQFN-HR-15 3x2.5 | **custom nach MPQF446A** | JLC only |
 | U7 | TPS61023DRLR | DRL SOT-563-6 | stock SOT-563 | JLC only |
@@ -577,8 +619,8 @@ GND-Pins vorsehen. Auf dem Silkscreen: `5V OUT, <=0.5A, NOT INPUT`.
 | L7 | HBME042A-1R0MS-99 | 4.1x4.1x2.1 | `PocketLab_Custom:Cyntec_HBME042A` | JLC |
 
 Allgemeine Widerstände und Kondensatoren bleiben 0805. Nur die beiden von TI
-vorgesehenen TPS63070-HF-Bypässe und C5_FF dürfen 0603 sein; C5_FF kann auch
-0805 werden, wenn ein geeignetes C0G-Teil verfügbar ist. Polaritätsmarkierungen für USB-TVS, J_BAT, U5, U6, U7, U8 und U14 müssen
+vorgesehenen TPS63070-HF-Bypässe C123/C124 und C113 dürfen 0603 sein; C113 kann auch
+0805 werden, wenn ein geeignetes C0G-Teil verfügbar ist. Polaritätsmarkierungen für D101, J4, U5, U6, U7, U8 und U14 müssen
 auf Fab und Silkscreen sichtbar sein. Der Akku-Plus-Pin erhält zusätzlich ein
 großes `+` im Silkscreen.
 
@@ -595,13 +637,14 @@ großes `+` im Silkscreen.
 5. FB-Leitungen nicht unter Induktoren oder an Schaltknoten entlangführen.
 6. BQ24074-EP an zusammenhängende GND-Fläche mit Thermal-Vias; keine
    Plane-Splits unter dem IC.
-7. USBLC6-4SC6Y und D_VBUS direkt am Stecker platzieren. ESD-Rückweg darf
+7. U16 und D101 direkt am Stecker platzieren. ESD-Rückweg darf
    nicht durch die digitale Masseinsel laufen.
-8. Testpunkte: `VBUS_CONN`, `VBUS_PROT`, `CELL_POS`, `CELL_NEG`,
-   `BAT_FET_MID`, GND, `VSYS`, `+3V3`, `+5V_RAW`, `+5V_AUX_HEADER`,
-   `CHG_ACTIVE_N`, `USB_PGOOD_N`.
-9. Je Rail zusätzlich ein GND-Testpunkt in Tastkopfnähe vorsehen.
-10. Schaltwandler und Induktoren maximal weit vom GNSS-Eingang, U.FL,
+8. Bestückte Testpunkte: TP101 `CELL_POS`, TP102 `CELL_NEG`, TP103
+   `BAT_FET_MID`, TP104 GND, TP105 `VBUS_USB`, TP106 `VBUS_FUSED`, TP107
+   `VSYS`, TP108 `+3V3`, TP109 `+5V_RAW` und TP110 `+5V_AUX`.
+9. TP104 ist der gemeinsame GND-Testpunkt; lokale Masse-Probe-Pads dürfen beim
+   Layout nahe kritischer Rails ergänzt werden, sofern der Platz reicht.
+10. Schaltwandler und Induktoren maximal weit vom LF-RX-Eingang,
     NFC-Matching und Sub-GHz-RF-Pfad entfernt platzieren.
 
 ## 11. Bring-up und Abnahmekriterien
@@ -634,7 +677,7 @@ machen.
 10. USB-Daten mit HS-Eye/Packet-Fehlerrate soweit verfügbar prüfen; mindestens
     Flash, CDC und längerer Datentransfer mit beiden Steckerorientierungen.
 11. RF-Rauschvergleich mit allen Wandlerzuständen durchführen, besonders
-    GNSS C/N0, Sub-GHz-Empfang und NFC-Lesereichweite.
+    LF-RFID-Reichweite/Phase, Sub-GHz-Empfang und NFC-Lesereichweite.
 12. Erst nach diesen Tests einen realen, geschützten 4.2-V-LiPo anschließen.
 
 ## 12. Offizielle Quellen
