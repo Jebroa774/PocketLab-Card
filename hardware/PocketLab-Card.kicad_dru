@@ -1,5 +1,20 @@
 (version 1)
 
+(rule "LF control routing clearance"
+    (constraint clearance (min 0.15mm))
+    (condition "(A.Type == 'Track' && A.NetName =~ '/LF_.*') || (B.Type == 'Track' && B.NetName =~ '/LF_.*')")
+)
+
+(rule "LF control via clearance"
+    (constraint clearance (min 0.15mm))
+    (condition "(A.Type == 'Via' && A.NetName =~ '/LF_.*') || (B.Type == 'Via' && B.NetName =~ '/LF_.*')")
+)
+
+(rule "Shared SPI branch clearance"
+    (constraint clearance (min 0.15mm))
+    (condition "A.NetName == '/SPI_SCK' || A.NetName == '/SPI_MOSI' || A.NetName == '/SPI_MISO' || B.NetName == '/SPI_SCK' || B.NetName == '/SPI_MOSI' || B.NetName == '/SPI_MISO'")
+)
+
 # Package-native land patterns are allowed to use tighter pad-to-pad spacing
 # only inside the named footprint.  Inter-component copper and routed copper
 # keep the board/netclass clearance.  The 0.15 mm group is JLCPCB's stated
@@ -7,11 +22,11 @@
 # 0.49 mm signal pads restore that gap without reducing the large power lands.
 (rule "0.20 mm native fine-pitch pads"
     (constraint clearance (min 0.20mm))
-    (condition "A.Type == 'Pad' && B.Type == 'Pad' && A.Parent == B.Parent && (A.Reference == 'J1' || A.Reference == 'U2' || A.Reference == 'U5' || A.Reference == 'U6' || A.Reference == 'U8' || A.Reference == 'U14')"))
+    (condition "A.Type == 'Pad' && B.Type == 'Pad' && ((A.Reference == 'J1' && B.Reference == 'J1') || (A.Reference == 'U2' && B.Reference == 'U2') || (A.Reference == 'U5' && B.Reference == 'U5') || (A.Reference == 'U6' && B.Reference == 'U6') || (A.Reference == 'U8' && B.Reference == 'U8') || (A.Reference == 'U14' && B.Reference == 'U14') || (A.Reference == 'U17' && B.Reference == 'U17') || (A.Reference == 'U21' && B.Reference == 'U21')))"))
 
 (rule "0.15 mm native fine-pitch pads"
     (constraint clearance (min 0.15mm))
-    (condition "A.Type == 'Pad' && B.Type == 'Pad' && A.Parent == B.Parent && (A.Reference == 'Q2' || A.Reference == 'Q3' || A.Reference == 'U7')"))
+    (condition "A.Type == 'Pad' && B.Type == 'Pad' && ((A.Reference == 'Q2' && B.Reference == 'Q2') || (A.Reference == 'Q3' && B.Reference == 'Q3') || (A.Reference == 'U7' && B.Reference == 'U7')))"))
 
 # U6 pin 14 sits beside the two VSYS pads in the manufacturer's fine-pitch
 # VQFN land pattern.  Its first 0.20-mm PS/SYNC escape is allowed the same
@@ -67,7 +82,58 @@
 (rule "Power rails use wide outer-layer copper"
     (layer outer)
     (constraint track_width (min 0.50mm) (opt 0.80mm))
-    (condition "A.NetName == '/VBUS_USB' || A.NetName == '/VBUS_FUSED' || A.NetName == '/CELL_POS' || A.NetName == '/CELL_NEG' || A.NetName == '/BAT_FET_MID' || A.NetName == '/VSYS' || A.NetName == '/+3V3' || A.NetName == '/+5V_RAW' || A.NetName == '/+5V_AUX' || A.NetName == '/LF_5V'"))
+    (condition "A.NetName == '/VBUS_USB' || A.NetName == '/VBUS_FUSED' || A.NetName == '/CELL_POS' || A.NetName == '/CELL_NEG' || A.NetName == '/BAT_FET_MID' || A.NetName == '/VSYS' || A.NetName == '/+5V_RAW' || A.NetName == '/+5V_AUX' || A.NetName == '/LF_5V'"))
+
+# +3V3 is distributed on L3.  Outer-layer copper on this net is therefore a
+# short SMD-pad-to-via fanout, not a board-spanning power trace.  Fine-pitch
+# IC pads need a 0.20-mm minimum escape; the deterministic plane-fanout pass
+# uses 0.25 mm normally and the converter output is routed wider separately.
+(rule "3V3 SMD plane fanouts"
+    (layer outer)
+    (constraint track_width (min 0.20mm) (opt 0.25mm))
+    (condition "A.NetName == '/+3V3'"))
+
+# Short GND/+3V3 fanouts must leave several 0.5/0.65-mm-pitch packages before
+# reaching their plane vias.  Keep the expressions deliberately small because
+# KiCad rejects oversized compiled condition expressions as a whole.
+(rule "Fine-pitch plane-pad escapes A"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Track' && (A.NetName == '/GND' || A.NetName == '/+3V3')) && (B.Type == 'Pad' && (B.Reference == 'U2' || B.Reference == 'U6' || B.Reference == 'U7'))) || ((B.Type == 'Track' && (B.NetName == '/GND' || B.NetName == '/+3V3')) && (A.Type == 'Pad' && (A.Reference == 'U2' || A.Reference == 'U6' || A.Reference == 'U7')))"))
+
+(rule "Fine-pitch plane-pad escapes B"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Track' && (A.NetName == '/GND' || A.NetName == '/+3V3')) && (B.Type == 'Pad' && (B.Reference == 'U8' || B.Reference == 'U9' || B.Reference == 'U10'))) || ((B.Type == 'Track' && (B.NetName == '/GND' || B.NetName == '/+3V3')) && (A.Type == 'Pad' && (A.Reference == 'U8' || A.Reference == 'U9' || A.Reference == 'U10')))"))
+
+(rule "Fine-pitch plane-pad escapes C"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Track' && (A.NetName == '/GND' || A.NetName == '/+3V3')) && (B.Type == 'Pad' && (B.Reference == 'U11' || B.Reference == 'U17' || B.Reference == 'U18'))) || ((B.Type == 'Track' && (B.NetName == '/GND' || B.NetName == '/+3V3')) && (A.Type == 'Pad' && (A.Reference == 'U11' || A.Reference == 'U17' || A.Reference == 'U18')))"))
+
+(rule "Fine-pitch plane-pad escapes D"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Track' && (A.NetName == '/GND' || A.NetName == '/+3V3')) && (B.Type == 'Pad' && (B.Reference == 'U19' || B.Reference == 'U24' || B.Reference == 'U25'))) || ((B.Type == 'Track' && (B.NetName == '/GND' || B.NetName == '/+3V3')) && (A.Type == 'Pad' && (A.Reference == 'U19' || A.Reference == 'U24' || A.Reference == 'U25')))"))
+
+(rule "Fine-pitch plane-pad escapes E"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Track' && (A.NetName == '/GND' || A.NetName == '/+3V3')) && (B.Type == 'Pad' && (B.Reference == 'J2' || B.Reference == 'J8' || B.Reference == 'U15'))) || ((B.Type == 'Track' && (B.NetName == '/GND' || B.NetName == '/+3V3')) && (A.Type == 'Pad' && (A.Reference == 'J2' || A.Reference == 'J8' || A.Reference == 'U15')))"))
+
+# The same reviewed 0.20-mm copper clearance is allowed between the ordinary
+# plane fanout vias and adjacent pads of these dense packages.  Drill and
+# annular-ring limits are unchanged.
+(rule "Fine-pitch plane-via clearance A"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Via' && (A.NetName == '/GND' || A.NetName == '/+3V3')) && (B.Type == 'Pad' && (B.Reference == 'U2' || B.Reference == 'U6' || B.Reference == 'U9'))) || ((B.Type == 'Via' && (B.NetName == '/GND' || B.NetName == '/+3V3')) && (A.Type == 'Pad' && (A.Reference == 'U2' || A.Reference == 'U6' || A.Reference == 'U9')))"))
+
+(rule "Fine-pitch plane-via clearance B"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Via' && (A.NetName == '/GND' || A.NetName == '/+3V3')) && (B.Type == 'Pad' && (B.Reference == 'U10' || B.Reference == 'U17' || B.Reference == 'U19'))) || ((B.Type == 'Via' && (B.NetName == '/GND' || B.NetName == '/+3V3')) && (A.Type == 'Pad' && (A.Reference == 'U10' || A.Reference == 'U17' || A.Reference == 'U19')))"))
+
+(rule "Fine-pitch plane-via clearance C"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Via' && (A.NetName == '/GND' || A.NetName == '/+3V3')) && (B.Type == 'Pad' && (B.Reference == 'U25' || B.Reference == 'J2' || B.Reference == 'J8'))) || ((B.Type == 'Via' && (B.NetName == '/GND' || B.NetName == '/+3V3')) && (A.Type == 'Pad' && (A.Reference == 'U25' || A.Reference == 'J2' || A.Reference == 'J8')))"))
+
+(rule "Fine-pitch plane-via clearance D"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Via' && (A.NetName == '/GND' || A.NetName == '/+3V3')) && (B.Type == 'Pad' && B.Reference == 'U15')) || ((B.Type == 'Via' && (B.NetName == '/GND' || B.NetName == '/+3V3')) && (A.Type == 'Pad' && A.Reference == 'U15'))"))
 
 # U17 uses 0.65-mm-pitch SOT-23-6 lands.  Its LF_5V output needs one short
 # 0.20-mm escape before widening to the normal 0.50-mm rail.

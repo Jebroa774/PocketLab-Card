@@ -1606,7 +1606,7 @@
         "8": "SUBGHZ_GDO0",
         "9": "SUBGHZ_GDO2",
         "10": "SD_CS_N",
-        "11": "LF_SCLK_3V3",
+        "11": null,
         "12": "GPIO8_MCU",
         "13": "USB_D_N",
         "14": "USB_D_P",
@@ -1618,12 +1618,12 @@
         "20": "SPI_SCK",
         "21": "SPI_MISO",
         "22": "SUBGHZ_CS_N",
-        "23": "LF_DOUT_3V3",
+        "23": null,
         "24": "GPIO47_MCU",
         "25": "GPIO48_MCU",
         "26": "STRAP_VDD_SPI_TP",
         "27": "BOOT_N",
-        "28": "LF_DIN_3V3",
+        "28": null,
         "29": "IR_TX",
         "30": "IR_RX",
         "31": "GPIO38_MCU",
@@ -1645,7 +1645,11 @@
       },
       "dnp": false,
       "in_bom": true,
-      "no_connect_nets": {}
+      "no_connect_nets": {
+        "11": "unconnected-(U1-IO18-Pad11)",
+        "23": "unconnected-(U1-IO21-Pad23)",
+        "28": "unconnected-(U1-IO35-Pad28)"
+      }
     },
     {
       "block": "02 ESP32-S3 MCU / USB",
@@ -3063,17 +3067,17 @@
       "block": "05 LF RFID / SECURITY / MICROSD",
       "lib_id": "Connector_Generic:Conn_02x07_Odd_Even",
       "reference": "U21",
-      "value": "SN74AHCT125PWR LF 3V3-TO-5V",
+      "value": "SN74LV125ATPWR LF/SPI 3V3-TO-5V IOFF",
       "footprint": "Package_SO:TSSOP-14_4.4x5mm_P0.65mm",
       "x": 812.8,
       "y": 228.6,
       "pins": {
         "1": "GND",
-        "2": "LF_SCLK_3V3",
-        "3": "LF_SCLK_5V",
+        "2": "SPI_MOSI",
+        "3": "LF_DIN_5V",
         "4": "GND",
-        "5": "LF_DIN_3V3",
-        "6": "LF_DIN_5V",
+        "5": "SPI_SCK",
+        "6": "LF_SCLK_5V",
         "7": "GND",
         "8": null,
         "9": "GND",
@@ -3085,8 +3089,8 @@
       },
       "fields": {
         "Manufacturer": "TI",
-        "MPN": "SN74AHCT125PWR",
-        "LCSC": "C36365"
+        "MPN": "SN74LV125ATPWR",
+        "LCSC": "C2675655"
       },
       "dnp": false,
       "in_bom": true,
@@ -3099,7 +3103,7 @@
       "block": "05 LF RFID / SECURITY / MICROSD",
       "lib_id": "Device:C",
       "reference": "C515",
-      "value": "100nF AHCT supply",
+      "value": "100nF LV-AT supply",
       "footprint": "Capacitor_SMD:C_0805_2012Metric",
       "x": 838.2,
       "y": 228.6,
@@ -3114,29 +3118,27 @@
     },
     {
       "block": "05 LF RFID / SECURITY / MICROSD",
-      "lib_id": "74xGxx:74LVC1G17",
+      "lib_id": "74xGxx:74LVC1G126",
       "reference": "U22",
-      "value": "SN74LVC1G17DBVR LF 5V-TO-3V3",
+      "value": "SN74LVC1G126DBVR LF 5V-TO-3V3 TRI-STATE",
       "footprint": "Package_TO_SOT_SMD:SOT-23-5_HandSoldering",
       "x": 863.6,
       "y": 228.6,
       "pins": {
-        "1": null,
+        "1": "LF_RFID_EN",
         "2": "LF_DOUT_5V",
         "3": "GND",
-        "4": "LF_DOUT_3V3",
+        "4": "SPI_MISO",
         "5": "+3V3"
       },
       "fields": {
         "Manufacturer": "TI",
-        "MPN": "SN74LVC1G17DBVR",
-        "LCSC": "C7836"
+        "MPN": "SN74LVC1G126DBVR",
+        "LCSC": "C7834"
       },
       "dnp": false,
       "in_bom": true,
-      "no_connect_nets": {
-        "1": "unconnected-(U22-NC-Pad1)"
-      }
+      "no_connect_nets": {}
     },
     {
       "block": "05 LF RFID / SECURITY / MICROSD",
@@ -5304,7 +5306,6 @@
     "SUBGHZ_GDO0": 2,
     "SUBGHZ_GDO2": 2,
     "SD_CS_N": 2,
-    "LF_SCLK_3V3": 2,
     "GPIO8_MCU": 2,
     "USB_D_N": 2,
     "USB_D_P": 2,
@@ -5312,16 +5313,14 @@
     "STRAP_BOOT_TP": 2,
     "BOARD_TEMP_ADC": 4,
     "RGB_DATA": 2,
-    "SPI_MOSI": 4,
-    "SPI_SCK": 4,
-    "SPI_MISO": 4,
+    "SPI_MOSI": 5,
+    "SPI_SCK": 5,
+    "SPI_MISO": 5,
     "SUBGHZ_CS_N": 2,
-    "LF_DOUT_3V3": 2,
     "GPIO47_MCU": 2,
     "GPIO48_MCU": 2,
     "STRAP_VDD_SPI_TP": 2,
     "BOOT_N": 3,
-    "LF_DIN_3V3": 2,
     "IR_TX": 2,
     "IR_RX": 2,
     "GPIO38_MCU": 2,
@@ -5364,7 +5363,7 @@
     "LF_CEXT": 2,
     "LF_QGND": 3,
     "LF_RX": 3,
-    "LF_RFID_EN": 3,
+    "LF_RFID_EN": 4,
     "LF_QOD": 2,
     "LF_ANT_A": 3,
     "LF_ANT_B": 2,

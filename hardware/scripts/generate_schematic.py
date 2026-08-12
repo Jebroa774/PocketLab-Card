@@ -242,12 +242,12 @@ def build_mcu() -> None:
         "PocketLab_Card:ESP32-S3-WROOM-1_PhysicalCourtyard", 355.6, 114.3,
         {"1": "GND", "2": "+3V3", "3": "ESP_EN", "4": "GPIO4_MCU", "5": "I2C_SDA",
          "6": "I2C_SCL", "7": "NFC_IRQ_N", "8": "SUBGHZ_GDO0", "9": "SUBGHZ_GDO2",
-         "10": "SD_CS_N", "11": "LF_SCLK_3V3", "12": "GPIO8_MCU", "13": "USB_D_N",
+         "10": "SD_CS_N", "11": NC, "12": "GPIO8_MCU", "13": "USB_D_N",
          "14": "USB_D_P", "15": "JTAG_STRAP_TP", "16": "STRAP_BOOT_TP", "17": "BOARD_TEMP_ADC",
          "18": "RGB_DATA", "19": "SPI_MOSI", "20": "SPI_SCK", "21": "SPI_MISO",
-         "22": "SUBGHZ_CS_N", "23": "LF_DOUT_3V3", "24": "GPIO47_MCU",
+         "22": "SUBGHZ_CS_N", "23": NC, "24": "GPIO47_MCU",
          "25": "GPIO48_MCU", "26": "STRAP_VDD_SPI_TP", "27": "BOOT_N",
-         "28": "LF_DIN_3V3", "29": "IR_TX", "30": "IR_RX", "31": "GPIO38_MCU",
+         "28": NC, "29": "IR_TX", "30": "IR_RX", "31": "GPIO38_MCU",
          "32": "IOEXP_INT_N", "33": "GPIO40_MCU", "34": "GPIO41_MCU", "35": "GPIO42_MCU",
          "36": "GPIO44_MCU", "37": "GPIO43_MCU", "38": "GPIO2_MCU", "39": "GPIO1_MCU",
          "40": "GND", "41": "GND"}, Manufacturer="Espressif", MPN="ESP32-S3-WROOM-1-N8R2", LCSC="C2913204")
@@ -420,23 +420,23 @@ def build_lf_rfid_sd() -> None:
     add(b, "Connector:TestPoint", "TP502", "LF ANTENNA TAP - HIGH VOLTAGE",
         "TestPoint:TestPoint_Pad_D1.0mm", 927.1, 203.2, {"1": "LF_TAP"})
 
-    # HTRC inputs require 0.7*VDD high level, so 3.3-V ESP32 outputs are lifted
-    # by a TTL-compatible AHCT buffer.  HTRC DOUT is then reduced to 3.3 V by
-    # a 5.5-V-tolerant LVC Schmitt buffer.  The two unused AHCT channels are
-    # explicitly disabled instead of leaving CMOS inputs floating.
-    add(b, "Connector_Generic:Conn_02x07_Odd_Even", "U21", "SN74AHCT125PWR LF 3V3-TO-5V",
+    # Share the already-routed SPI bus with LF RFID.  The input buffer has Ioff
+    # partial-power-down isolation so the active SPI bus cannot back-power the
+    # switched LF_5V domain.  DOUT uses an active-high tri-state buffer driven
+    # by LF_RFID_EN, preventing contention with other SPI MISO devices.
+    add(b, "Connector_Generic:Conn_02x07_Odd_Even", "U21", "SN74LV125ATPWR LF/SPI 3V3-TO-5V IOFF",
         "Package_SO:TSSOP-14_4.4x5mm_P0.65mm", 812.8, 228.6,
-        {"1": "GND", "2": "LF_SCLK_3V3", "3": "LF_SCLK_5V",
-         "4": "GND", "5": "LF_DIN_3V3", "6": "LF_DIN_5V", "7": "GND",
+        {"1": "GND", "2": "SPI_MOSI", "3": "LF_DIN_5V",
+         "4": "GND", "5": "SPI_SCK", "6": "LF_SCLK_5V", "7": "GND",
          "8": NC, "9": "GND", "10": "LF_5V", "11": NC,
          "12": "GND", "13": "LF_5V", "14": "LF_5V"},
-        Manufacturer="TI", MPN="SN74AHCT125PWR", LCSC="C36365")
-    passive(b, "C515", "100nF AHCT supply", C0805, 838.2, 228.6,
+        Manufacturer="TI", MPN="SN74LV125ATPWR", LCSC="C2675655")
+    passive(b, "C515", "100nF LV-AT supply", C0805, 838.2, 228.6,
             "LF_5V", "GND")
-    add(b, "74xGxx:74LVC1G17", "U22", "SN74LVC1G17DBVR LF 5V-TO-3V3",
+    add(b, "74xGxx:74LVC1G126", "U22", "SN74LVC1G126DBVR LF 5V-TO-3V3 TRI-STATE",
         "Package_TO_SOT_SMD:SOT-23-5_HandSoldering", 863.6, 228.6,
-        {"1": NC, "2": "LF_DOUT_5V", "3": "GND", "4": "LF_DOUT_3V3", "5": "+3V3"},
-        Manufacturer="TI", MPN="SN74LVC1G17DBVR", LCSC="C7836")
+        {"1": "LF_RFID_EN", "2": "LF_DOUT_5V", "3": "GND", "4": "SPI_MISO", "5": "+3V3"},
+        Manufacturer="TI", MPN="SN74LVC1G126DBVR", LCSC="C7834")
     passive(b, "C516", "100nF LVC supply", C0805, 889.0, 228.6,
             "+3V3", "GND")
 

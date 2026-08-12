@@ -1,13 +1,41 @@
 # Work checkpoint — 2026-08-12
 
+## Paused state — 2026-08-13
+
+- Work was intentionally stopped at the user's request and all accepted local
+  changes were saved before publishing the branch.
+- The authoritative PCB now includes the first deterministic GND/+3V3
+  plane-fanout pass: 730 outer-layer track segments and 214 through vias are
+  present. Open connection items fell from 499 to 290. Twenty-one dense
+  GND/+3V3 clusters remain explicitly reported by
+  `hardware/scripts/route_plane_fanouts.py` for the next reviewed pass.
+- LF RFID now shares the existing SPI SCK/MOSI/MISO bus instead of consuming
+  three separately trapped ESP32 pins. U21 is the partial-power-down-safe
+  SN74LV125ATPWR (LCSC C2675655); U22 is the LF_RFID_EN-controlled tri-state
+  SN74LVC1G126DBVR (LCSC C7834). This prevents an unpowered LF domain from
+  back-powering or driving the active SPI bus.
+- The generated schematic/design netlist and PCB agree on that architecture;
+  the final saved parity check passes and ERC reports 0 errors / 0 warnings.
+  ESP32 pins 11/23/28 are intentionally NC; the SPI channel mapping was chosen
+  so U21 can remain at its collision-free 0-degree placement.
+- `route_lf_global.py` is saved as work in progress. Its latest atomic trial
+  found legal routes for LF_RFID_EN and all three 5-V HTRC control signals,
+  but the subsequent SPI_MOSI branch was blocked by those candidate paths.
+  Because the pass is atomic, none of that unverified global LF copper was
+  promoted to the authoritative PCB.
+- The POWER netclass clearance is now 0.20 mm, matching the documented normal
+  JLCPCB-capable design target and the existing fine-pitch package geometry.
+  Wide 0.50/0.80-mm power-route requirements remain unchanged.
+- This is a reproducible routing checkpoint, not an order-ready board.
+
 ## Saved state
 
 - ESP32-S3-WROOM-1-N8R2 remains the V1 controller. ESP32-S31 was reviewed as a
   possible future V2 option but is not being introduced into this revision;
   changing to its larger, preliminary WROOM ecosystem would restart placement,
   routing and firmware validation without improving a current V1 requirement.
-- Generated schematic: 273 symbols, 266 footprints, 183 named logical nets
-  and 231 physical PCB nets; ERC is 0 errors / 0 warnings.
+- Generated schematic: 273 symbols, 266 footprints and 180 named logical nets;
+  the current PCB contains 231 physical nets, including three unique NC nets.
 - GNSS hardware has been removed. U4 is now HTRC110 125-kHz LF RFID with
   switched 5 V, level translation, external 4-MHz clock and removable coil.
 - ATECC608C-SSHDA-T, decoupling and the dedicated SW6 PAIR button are captured.
@@ -52,8 +80,8 @@
   5-V feedback sense branch are now also routed. The nearby IR branch was
   rerouted around Y701, and R405 now faces U3 -> antenna. CC2 and the provisional
   Sub-GHz feed are also complete. After replacing conflicting legacy copper
-  with the reviewed LF routes, the board currently contains 396 track segments
-  and 23 vias.
+  with the reviewed LF routes, the board now contains 730 track segments and
+  214 vias after the first GND/+3V3 plane-fanout pass.
 - Two named B.Cu rule areas limit U7's unavoidable 0.20-mm power-pin neckdowns
   to the package exits and the reviewed Kelvin/sense corridor; the power rails
   widen to 0.50 mm outside those areas.
@@ -83,9 +111,11 @@
   USB/button/LF placement. These nets are intentionally back in the ratsnest,
   with no dangling copper stubs. This is why the total copper count fell while
   the routed LF block was added.
-- KiCad DRC has no routed-geometry or schematic-parity error. Six reviewed
-  local footprint-library comparison warnings remain and 499 connection items
-  are still open, so this is only a routing checkpoint.
+- The final saved KiCad checks pass schematic/PCB parity and ERC with 0 errors /
+  0 warnings. DRC still reports 41 known non-release findings: 8 clearances,
+  11 copper-to-edge findings, 16 embedded-thermal drill-size findings and six
+  local footprint-library comparison warnings. There are 290 open connection
+  items, so this remains only a routing checkpoint.
 - Firmware remains at the preceding two-button checkpoint by explicit project
   priority; no firmware file was changed for the new SELECT hardware. That
   previous ESP32-S3 build provides LF power sequencing,
@@ -100,13 +130,12 @@
 1. Confirm the live `JLC04121H-7628` data and recalculate the stack-dependent
    USB and provisional 0.36-mm Sub-GHz geometry. Retune the assembled pi
    network before treating the RF path as production-final.
-2. Complete the remaining LF support connections outside the finished analog
-   island: upstream `+5V_RAW`, the global `LF_RFID_EN` path, level-translator
-   signals and reviewed ground returns. Then route NFC manually without
-   crossing either antenna keepout.
-3. Reroute the deliberately cleared digital nets, including short U24/U25
-   clamp branches; then add reviewed GND stitching, refill planes and close all
-   499 ratsnest items.
+2. Resume `route_lf_global.py` with negotiated/rip-up routing so the four LF
+   control paths and the three shared-SPI branches coexist without crossings;
+   then connect upstream `+5V_RAW`, LF_5V and the remaining reviewed grounds.
+3. Finish the 21 reported plane clusters and the battery/USB/VSYS/5-V power
+   trunks. Then reroute the deliberately cleared digital nets, including short
+   U24/U25 clamp branches, refill planes and close all 290 ratsnest items.
 4. Run full KiCad DRC, schematic/PCB parity, independent footprint review and
    JLCPCB DFM/BOM/CPL preview.
 5. Assemble a small bring-up batch; current-limit first power-up and measure
