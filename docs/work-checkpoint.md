@@ -1,4 +1,4 @@
-# Work checkpoint — 2026-08-11
+# Work checkpoint — 2026-08-12
 
 ## Saved state
 
@@ -21,6 +21,10 @@
   eleven direct expansion GPIOs remain.
 - Stale GNSS DNP rules were removed from the manufacturing exporter; its safety
   defaults now match the NFC, Sub-GHz and LF tuning footprints in this design.
+- Repository cleanup removed the superseded placement render, empty capture-target
+  sheets, generated PCB/autorouter intermediates and their duplicate DRC reports.
+  These staging files are reproducible from `hardware/scripts` and are now ignored;
+  the main schematic and `PocketLab-Card.kicad_pcb` remain authoritative.
 - The placement builder fits all 266 footprints (132 front, 134 back) without
   unapproved courtyard, keepout or board-inset collision.
 - The routed checkpoint retains 128 front and 138 back footprints from its

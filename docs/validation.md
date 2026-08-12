@@ -25,7 +25,8 @@
 - Inner-plane staging regenerates with L2 GND and L3 +3V3 plus switcher cutouts.
 - Stack-up audit: nominal 1.2-mm `JLC04121H-7628`, four copper layers,
   0.665-mm core, two 0.2104-mm 7628 prepregs and ENIG are serialized in the
-  template, main, netlisted and plane-staging boards.
+  template and authoritative main board. The placement builder repeats this
+  audit whenever the untracked staging boards are regenerated.
 - Routing checkpoint: guarded digital fanout plus DRC-clean U6_L1, U6_L2,
   U7_SW, RTC_OSCI/RTC_OSCO, U6/U7 local power and U7 feedback routes. The two
   U7 power-pin neckdowns and the 5-V Kelvin branch are confined by named rule

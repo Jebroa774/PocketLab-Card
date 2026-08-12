@@ -33,9 +33,13 @@ all-copper-layer keep-out. Its matching is intentionally not a release value:
 measure and tune the populated prototype with the final stack-up, enclosure and
 battery using a VNA or suitable NFC fixture.
 
-`PocketLab-Card-netlisted.kicad_pcb` is the reproducible placement work file.
-The tracked `PocketLab-Card.kicad_pcb` is now the routing-in-progress checkpoint.
-It contains the guarded digital autorouter fanout plus reviewed local U6/L6,
+The tracked `PocketLab-Card.kicad_pcb` is the only authoritative PCB checkpoint.
+Generated placement, plane, autorouter and routing-progress boards are deliberately
+not versioned because the scripts below recreate them from the schematic,
+mechanical template and current rules. This avoids presenting an old intermediate
+board as a second design source.
+
+The current PCB contains the guarded digital autorouter fanout plus reviewed local U6/L6,
 U7/L7, converter input/output, U7-feedback, RTC-crystal and complete native USB
 data routes; L2/L3 remain plane-only. R201/R202 are vertical side-by-side 0805
 parts, the MCU-side pair stays via-free, and a staggered five-via bridge joins
@@ -56,16 +60,22 @@ order-ready fabrication release.
 The reproducible routing helpers are:
 
 ```powershell
+# Regenerate the placement and inner-plane staging boards
+& "$env:LOCALAPPDATA\Programs\KiCad\10.0\bin\python.exe" scripts/build_pcb.py
+& "$env:LOCALAPPDATA\Programs\KiCad\10.0\bin\python.exe" scripts/add_planes.py
+
 # Export the full routing DSN
 & "$env:LOCALAPPDATA\Programs\KiCad\10.0\bin\python.exe" scripts/route_pcb.py --export-only --force
 
-# Apply the reviewed local critical-route checkpoint to a validated routed base
+# After a reviewed FreeRouting import, apply the local critical-route checkpoint
 & "$env:LOCALAPPDATA\Programs\KiCad\10.0\bin\python.exe" scripts/route_critical.py --force
 ```
 
 `route_pcb.py` can also run FreeRouting 2.3 with `--jar` and `--java`. Its
 separate autorouter DSN physically removes all 42 protected power, USB, RF,
 LF and sensitive nets before routing and the SES importer verifies them again.
+All files produced by this staging pipeline are ignored by Git; only a deliberately
+reviewed result is promoted to `PocketLab-Card.kicad_pcb`.
 
 ## Required layout, sourcing and bring-up checks
 
