@@ -69,6 +69,13 @@
     (constraint track_width (min 0.50mm) (opt 0.80mm))
     (condition "A.NetName == '/VBUS_USB' || A.NetName == '/VBUS_FUSED' || A.NetName == '/CELL_POS' || A.NetName == '/CELL_NEG' || A.NetName == '/BAT_FET_MID' || A.NetName == '/VSYS' || A.NetName == '/+3V3' || A.NetName == '/+5V_RAW' || A.NetName == '/+5V_AUX' || A.NetName == '/LF_5V'"))
 
+# U17 uses 0.65-mm-pitch SOT-23-6 lands.  Its LF_5V output needs one short
+# 0.20-mm escape before widening to the normal 0.50-mm rail.
+(rule "U17 LF5V pin neckdown width"
+    (layer F.Cu)
+    (constraint track_width (min 0.20mm) (opt 0.50mm))
+    (condition "A.Type == 'Track' && A.NetName == '/LF_5V' && A.intersectsArea('U17_LF5V_NECKDOWN')"))
+
 # U7's 0.5-mm-pitch power pins cannot accept the normal 0.50-mm rail width
 # without touching their adjacent pads.  The named rule areas are created by
 # route_critical.py and limit the relaxation to the reviewed local geometry.

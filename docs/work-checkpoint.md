@@ -25,13 +25,23 @@
   sheets, generated PCB/autorouter intermediates and their duplicate DRC reports.
   These staging files are reproducible from `hardware/scripts` and are now ignored;
   the main schematic and `PocketLab-Card.kicad_pcb` remain authoritative.
-- The placement builder fits all 266 footprints (132 front, 134 back) without
+- The placement builder fits all 266 footprints (131 front, 135 back) without
   unapproved courtyard, keepout or board-inset collision.
-- The routed checkpoint retains 128 front and 138 back footprints from its
-  validated staging allocation. The builder/checkpoint side-count difference
-  consists only of generic unrouted packing slots; all 266 references exist.
-- LF resonance/current-limit/RX parts are fixed around U4/J3 rather than left
-  to the generic auto-packer.
+- The authoritative routed checkpoint contains 130 front and 136 back
+  footprints. The one-part-per-side difference from the regenerated placement
+  donor is limited to a generic unrouted packing slot; all 266 references exist.
+- U4 and its LF resonance, current-limit, RX, oscillator and coil-interface
+  parts now form one compact back-side analog island beside J3. C506/C507/C508
+  are aligned as a straight tuning bank; C507/C508 remain DNP options.
+- `LF_TX1`, `LF_TX2`, `LF_ANT_A`, `LF_ANT_B`, `LF_TAP`, `LF_RX`, `LF_CEXT`,
+  `LF_QGND` and `LF_CLK_4M` are completely routed on B.Cu with no vias.
+  The front-side U17 support island and its LF 5-V distribution to U4, Y501
+  and C513 are also routed. A narrowly scoped U17 pin-escape rule permits a
+  0.20-mm SOT-23 neckdown; three ordinary tented through-vias carry LF 5 V.
+- The placement generator reserves the LF support route corridor so future
+  regenerations cannot silently pack unrelated parts into it. The LF analog,
+  placement-merge and support routes are reproducible with the three dedicated
+  scripts in `hardware/scripts`.
 - L2 GND and L3 +3V3 staging planes regenerate successfully.
 - The PCB stack is now the nominal 1.2-mm, four-layer
   `JLC04121H-7628` target with 1-oz outer / 0.5-oz inner copper and ENIG.
@@ -41,8 +51,9 @@
   input/output power, U7 input/output power, U7 feedback and the low-current
   5-V feedback sense branch are now also routed. The nearby IR branch was
   rerouted around Y701, and R405 now faces U3 -> antenna. CC2 and the provisional
-  Sub-GHz feed are also complete. The board currently contains 498 track
-  segments and 29 vias.
+  Sub-GHz feed are also complete. After replacing conflicting legacy copper
+  with the reviewed LF routes, the board currently contains 396 track segments
+  and 23 vias.
 - Two named B.Cu rule areas limit U7's unavoidable 0.20-mm power-pin neckdowns
   to the package exits and the reviewed Kelvin/sense corridor; the power rails
   widen to 0.50 mm outside those areas.
@@ -66,10 +77,12 @@
   KMR221GLFS footprint as RESET/BOOT. R607 is the SELECT pull-up; U9/P07 is the
   SELECT input and BMP390 INT is NC. PAIR remains a separate security button.
 - SPI_SCK, SPI_MOSI, SPI_MISO, I2C_SCL, GPIO44_MCU, NFC_DVDD, the three user
-  button nets, IR_LED_A1, GPIO43, NFC_LOADMOD, LF_DOUT_5V and OLED_VCC
+  button nets, IR_LED_A1, IR_LED_K, GPIO43, NFC_LOADMOD, NFC_RESET_N,
+  I2C_SDA, PAIR_N, SPI_MOSI_HDR, SPI_SCK_HDR, LF_DOUT_5V and OLED_VCC
   autorouter copper was removed as complete nets where it crossed the accepted
-  USB/button placement. These nets are intentionally back in the ratsnest,
-  with no dangling copper stubs.
+  USB/button/LF placement. These nets are intentionally back in the ratsnest,
+  with no dangling copper stubs. This is why the total copper count fell while
+  the routed LF block was added.
 - KiCad DRC has no routed-geometry or schematic-parity error. Six reviewed
   local footprint-library comparison warnings remain and 499 connection items
   are still open, so this is only a routing checkpoint.
@@ -87,12 +100,13 @@
 1. Confirm the live `JLC04121H-7628` data and recalculate the stack-dependent
    USB and provisional 0.36-mm Sub-GHz geometry. Retune the assembled pi
    network before treating the RF path as production-final.
-2. Resolve the LF placement/rule mismatch before routing: several sensitive LF
-   nets currently join front- and back-side SMD pads although the present rule
-   forbids vias. Re-place those parts on one side or explicitly review a small
-   controlled transition set; then route LF resonant/RX and NFC manually.
-3. Complete the remaining digital nets, including short U24/U25 clamp branches; then
-   add reviewed GND stitching, refill planes and close all 499 ratsnest items.
+2. Complete the remaining LF support connections outside the finished analog
+   island: upstream `+5V_RAW`, the global `LF_RFID_EN` path, level-translator
+   signals and reviewed ground returns. Then route NFC manually without
+   crossing either antenna keepout.
+3. Reroute the deliberately cleared digital nets, including short U24/U25
+   clamp branches; then add reviewed GND stitching, refill planes and close all
+   499 ratsnest items.
 4. Run full KiCad DRC, schematic/PCB parity, independent footprint review and
    JLCPCB DFM/BOM/CPL preview.
 5. Assemble a small bring-up batch; current-limit first power-up and measure

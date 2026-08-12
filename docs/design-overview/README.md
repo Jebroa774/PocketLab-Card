@@ -1,6 +1,6 @@
 # PocketLab Card design overview
 
-These KiCad renders show the current 2026-08-11 routing checkpoint, not the
+These KiCad renders show the current 2026-08-12 routing checkpoint, not the
 final fabrication appearance. Placement is complete, but 499 connection items
 remain open. The IR bodies and spring antenna use approximate mechanical preview
 models; the footprint courtyards and board outline remain the manufacturing
@@ -35,7 +35,8 @@ future V2 candidate and is not part of this PCB revision.
 
 The back carries power conversion, protection, sensors, RTC, I/O expanders,
 the two-part board-temperature divider beside the 5-V converter,
-the removable 125 kHz coil connector and the Sub-GHz module. It is not a flat cosmetic surface. The large apparently
+the removable 125 kHz coil connector, the via-free HTRC110 analog island and
+the Sub-GHz module. It is not a flat cosmetic surface. The large apparently
 empty region opposite the NFC loop must also remain free of metal and major
 components; it is an RF keepout, not spare battery space.
 

@@ -13,15 +13,15 @@
   switched 5 V, while the ESP32 and ATECC608C remain on 3.3 V.
 - ATECC608C is present in SOIC-8 but intentionally unprovisioned.
 
-## 2026-08-11 generated design
+## 2026-08-12 generated design
 
 - KiCad 10 schematic: 273 symbols, 266 footprints, 183 logical/231 PCB nets.
 - ERC: 0 errors, 0 warnings.
-- Placement builder: 132 front and 134 back footprints; scripted courtyard, board,
+- Placement builder: 131 front and 135 back footprints; scripted courtyard, board,
   NFC, ESP and spring-pocket keepout audit passes.
-- The routed checkpoint itself retains 128 front and 138 back footprints from
-  its validated staging base. The side-count difference is limited to generic,
-  unrouted packing slots; all 266 references remain present.
+- The authoritative routed checkpoint contains 130 front and 136 back
+  footprints. Its one-part-per-side difference from the regenerated donor is
+  limited to a generic unrouted packing slot; all 266 references remain present.
 - Inner-plane staging regenerates with L2 GND and L3 +3V3 plus switcher cutouts.
 - Stack-up audit: nominal 1.2-mm `JLC04121H-7628`, four copper layers,
   0.665-mm core, two 0.2104-mm 7628 prepregs and ENIG are serialized in the
@@ -34,6 +34,14 @@
   Sub-GHz feed is now retained DRC-clean: C404 is perpendicular to the line,
   the module-side section stays on B.Cu, and one 0.60/0.30-mm via moves the
   antenna-side section to F.Cu outside the spring-notch edge clearance.
+- The HTRC110 analog island is now coherent on B.Cu. All nine sensitive LF
+  nets (`LF_TX1`, `LF_TX2`, `LF_ANT_A`, `LF_ANT_B`, `LF_TAP`, `LF_RX`,
+  `LF_CEXT`, `LF_QGND`, `LF_CLK_4M`) are completely routed without a via.
+  The straight C506/C507/C508 tuning bank preserves two DNP tuning sites.
+- U17 and the LF support parts form a separate front-side island. The local
+  `LF_5V` route to U4, Y501 and C513 uses three standard tented vias and a
+  named, package-local 0.20-mm SOT-23 escape rule. A generator-owned reserve
+  protects this routing corridor during future placement regeneration.
 - R201/R202 were moved to a validated vertical side-by-side placement. Native
   D+/D- is complete from the ESP32 through the two series resistors and U16 to
   all four J1 data pads. The MCU side has no vias. A staggered five-via J1
@@ -48,9 +56,12 @@
   U9/P07 with R607; BMP390 pin 7 is NC and the sensor remains usable by I2C.
   RESET, BOOT and PAIR retain their dedicated functions.
 - Conflicting SPI_SCK/SPI_MOSI/SPI_MISO, I2C_SCL, GPIO44_MCU, NFC_DVDD,
-  user-button, IR_LED_A1, GPIO43, NFC_LOADMOD, LF_DOUT_5V and OLED_VCC autorouter copper
+  user-button, IR_LED_A1, IR_LED_K, GPIO43, NFC_LOADMOD, NFC_RESET_N,
+  I2C_SDA, PAIR_N, SPI_MOSI_HDR, SPI_SCK_HDR, LF_DOUT_5V and OLED_VCC autorouter copper
   was removed as complete nets, avoiding dangling stubs while those nets wait
-  for reviewed routes around USB and the new button strip.
+  for reviewed routes around USB, the new button strip and the LF island.
+- The board currently contains 396 track segments and 23 vias. The lower count
+  reflects removal of those conflicting legacy routes, not missing LF copper.
 - DRC: no routed-geometry or schematic-parity error. Six reviewed footprint
   library-comparison warnings and 499 unconnected items remain.
 - The PCB is therefore not order-ready.
@@ -71,9 +82,9 @@ firmware below is the preceding two-button checkpoint and has not been changed.
 ## Outstanding before an order
 
 1. Reroute the cleared USB/button/display-adjacent digital nets, then route the
-   remaining 499 open items. Resolve the front/back LF SMD placement against
-   its no-via rule before manual LF routing; complete NFC and power routing,
-   refill planes and close DRC with no unexplained item.
+   remaining 499 open items. Complete upstream LF power/enable/translator
+   connections, NFC and the remaining power routes; refill planes and close
+   DRC with no unexplained item.
 2. Independently review every footprint, polarity and custom land pattern.
 3. Recheck live JLC/LCSC stock, assembly side/class, BOM and CPL rotations.
 4. Measure/tune the NFC loop and Sub-GHz network on assembled prototypes.
