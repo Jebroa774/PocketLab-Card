@@ -163,7 +163,7 @@ FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     # CEXT/QGND/RX conditioning sits immediately above the SO14, while the two
     # optional tuning capacitors remain accessible along its right edge.
     FixedPlacement("R502", "B", 40.37, 64.2, 180.0),
-    FixedPlacement("C505", "B", 35.7, 58.2, 90.0),
+    FixedPlacement("C505", "B", 35.7, 58.0, 90.0),
     # Three parallel tuning capacitors form two straight buses below U4:
     # TX2 on their upper pads, TAP on their lower pads.  C507/C508 are DNP.
     FixedPlacement("C506", "B", 43.74, 64.2, 90.0),
@@ -248,12 +248,11 @@ FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     # lower-right edge.  J5.28 now carries the optional charger-NTC input.
     FixedPlacement("J5", "F", 56.0, 67.0, 0.0, True, True, True),
     FixedPlacement("SW6", "F", 102.5, 69.5, 0.0, False, True, False),
-    # The custom mechanical footprint models the bent leads and keeps every
-    # lens inside the original left edge.  The third centre is raised clear of
-    # the ISO-card corner radius, so every 5-mm body remains inside the outline.
-    FixedPlacement("D1", "F", 20.25, 55.78, 0.0, True, True, True),
-    FixedPlacement("D2", "F", 20.25, 62.20, 0.0, True, True, True),
-    FixedPlacement("D3", "F", 20.25, 68.62, 0.0, True, True, True),
+    # Factory-mounted side-view emitters face the left card edge.  Their
+    # 1.2-mm bodies stay inboard while their narrow optical axes remain clear.
+    FixedPlacement("D1", "F", 21.65, 55.78, 90.0, True, True, True),
+    FixedPlacement("D2", "F", 21.65, 62.20, 90.0, True, True, True),
+    FixedPlacement("D3", "F", 21.65, 68.62, 90.0, True, True, True),
     # The side-view receiver uses the free top-edge window.  Its optical face
     # is 0.325 mm inside the original card outline and its complete physical
     # body/pad row remains inboard; only the normal edge courtyard is relaxed.
@@ -261,9 +260,10 @@ FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     FixedPlacement("R604", "F", 60.8, 26.5, 90.0),
     FixedPlacement("C601", "F", 63.2, 26.5, 90.0),
     FixedPlacement("C602", "F", 65.6, 26.5, 90.0),
-    # Edge-access microSD under the ESP body.  Electrical pads retain
-    # 0.325 mm copper-to-edge clearance; the card intentionally projects out.
-    FixedPlacement("J2", "B", 99.25, 39.0, 90.0, False, True, False),
+    # Edge-access microSD under the ESP body.  The reviewed 0.175-mm inward
+    # adjustment keeps its electrical and shell pads at the configured
+    # 0.50-mm copper-to-edge clearance; the card intentionally projects out.
+    FixedPlacement("J2", "B", 99.10, 39.0, 90.0, False, True, False),
     # NFC controller just outside the loop annulus.
     FixedPlacement("U2", "F", 65.0, 42.6),
     # Keep the 27.12 MHz Pierce oscillator directly below U2.  The two load
@@ -316,17 +316,14 @@ FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     # The slide actuator faces the lower card edge.  Switching U6 EN rather
     # than the battery current path keeps the small switch within its rating.
     FixedPlacement("SW5", "F", 92.9, 69.45),
-    # Put the IR pulse buffer, series resistor, LED and MOSFET in one local
-    # current loop.  R601 pad 2 faces D1; the two gate resistors sit beside Q1.
-    FixedPlacement("R601", "F", 75.0, 63.15, 270.0),
+    # Keep each compact ballast resistor directly behind its edge emitter.
+    # The pulse reservoir and MOSFET remain in the shared high-current island.
+    FixedPlacement("R601", "F", 25.0, 55.78, 0.0),
     FixedPlacement("C607", "F", 70.65, 61.50),
     FixedPlacement("C617", "B", 65.0, 62.15, 90.0),
     FixedPlacement("C608", "F", 64.825, 68.55, 90.0),
-    # R610 moves to the former LF-auto pocket. R611 sits immediately right of
-    # D3's through-hole pads, freeing the back-side LF analogue island while
-    # retaining a short, wide high-current IR connection.
-    FixedPlacement("R610", "F", 69.025, 28.025),
-    FixedPlacement("R611", "F", 35.8, 68.5, 90.0),
+    FixedPlacement("R610", "F", 25.0, 62.20, 0.0),
+    FixedPlacement("R611", "F", 25.0, 68.62, 0.0),
     FixedPlacement("Q1", "F", 69.0, 64.8, 270.0),
     FixedPlacement("R602", "F", 66.2, 64.8, 90.0),
     FixedPlacement("R603", "F", 71.8, 64.8, 90.0),
@@ -364,8 +361,8 @@ FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     FixedPlacement("U6", "B", 67.0, 44.0),
     FixedPlacement("L6", "B", 62.5, 44.0, 90.0),
     FixedPlacement("C108", "B", 62.0, 39.8),
-    FixedPlacement("C123", "B", 66.6, 40.8, 180.0),
-    FixedPlacement("C124", "B", 67.95, 47.62, 270.0),
+    FixedPlacement("C123", "B", 66.8, 40.8, 180.0),
+    FixedPlacement("C124", "B", 67.95, 47.85, 270.0),
     FixedPlacement("C107", "B", 70.55, 44.6, 180.0),
     FixedPlacement("R116", "B", 70.3, 41.2, 90.0),
     FixedPlacement("R117", "B", 70.4, 47.4, 90.0),
@@ -381,7 +378,8 @@ FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     FixedPlacement("C113", "B", 86.4, 41.8, 270.0),
     FixedPlacement("R120", "B", 84.5, 41.8, 270.0),
     FixedPlacement("R121", "B", 84.5, 45.5, 270.0),
-    FixedPlacement("R122", "B", 84.0, 51.1),
+    FixedPlacement("R122", "B", 89.75, 44.5, 180.0),
+    FixedPlacement("R129", "B", 84.2, 49.1, 90.0),
     FixedPlacement("C114", "B", 81.1, 47.5),
     FixedPlacement("C115", "B", 81.3, 41.65, 180.0),
     FixedPlacement("C116", "B", 77.4, 51.1),
@@ -480,7 +478,7 @@ FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     FixedPlacement("R511", "F", 87.15, 51.4, 180.0),
     FixedPlacement("R512", "F", 82.2, 47.8, 270.0),
     FixedPlacement("R513", "F", 103.1, 42.55, 90.0),
-    # C510/C511 are local at the edge.  The larger C512 stays 1210 and uses
+    # C510/C511 are local at the edge.  The bulk C512 is now a smaller 1206 and uses
     # the solid L3 rail as lower-frequency write-current storage.
     FixedPlacement("C512", "B", 85.25, 29.0),
     FixedPlacement("C510", "F", 104.3, 34.47, 90.0, False, True, False),
@@ -992,7 +990,7 @@ POWER_BUCK = refs(
     "C123", "C124",
 )
 POWER_BOOST = refs(
-    "R120", "R121", "R122", "C113", "C114", "C115", "C116"
+    "R120", "R121", "R122", "R129", "C113", "C114", "C115", "C116"
 )
 POWER_AUX = refs("R123", "R124", "R127", "C117", "C118", "C119")
 POWER_GAUGE = refs("R125", "C120")
@@ -1378,9 +1376,9 @@ def main() -> int:
 
     all_parts = load_design(design_path)
     populated_parts = [part for part in all_parts if str(part.get("footprint", ""))]
-    if len(all_parts) != 273 or len(populated_parts) != 266:
+    if len(all_parts) != 274 or len(populated_parts) != 267:
         raise RuntimeError(
-            f"Design count changed: expected 273 symbols / 266 footprints, got "
+            f"Design count changed: expected 274 symbols / 267 footprints, got "
             f"{len(all_parts)} / {len(populated_parts)}. Review placement assumptions first."
         )
 
@@ -1395,10 +1393,27 @@ def main() -> int:
     nets = create_nets(board, populated_parts)
     footprints: dict[str, pcbnew.FOOTPRINT] = {}
     parts_by_ref = {str(part["reference"]): part for part in populated_parts}
+    internally_commoned_footprints = {
+        "J1",
+        "J2",
+    }
     for part in populated_parts:
         footprint = load_footprint(hardware_dir, part)
         validate_footprint_pads(part, footprint)
         assign_pad_nets(part, footprint, nets)
+        reference = str(part["reference"])
+        if reference == "U7":
+            # The manufacturer's 0.5-mm-pitch SOT-563 land pattern has a
+            # native 0.15-mm copper gap. Store the bounded override on the
+            # lands themselves so CLI DRC and regenerated boards agree even
+            # when broader project rules are reordered.
+            for pad in footprint.Pads():
+                pad.SetLocalClearance(pcbnew.FromMM(0.15))
+        if str(part["reference"]) in internally_commoned_footprints:
+            # The USB-C and microSD connector footprints duplicate their
+            # continuous metal-shell contact. Identically numbered terminals
+            # are internally commoned by the physical part in both cases.
+            footprint.SetDuplicatePadNumbersAreJumpers(True)
         footprints[str(part["reference"])] = footprint
 
     # BOARD.Remove invalidates KiCad's short-lived PCB_IO plug-in wrapper in

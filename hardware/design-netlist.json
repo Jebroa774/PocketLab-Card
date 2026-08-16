@@ -1191,6 +1191,27 @@
     },
     {
       "block": "01 USB / BATTERY / POWER",
+      "lib_id": "Device:R",
+      "reference": "R129",
+      "value": "0R SPI CROSSOVER",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "x": 304.8,
+      "y": 228.6,
+      "pins": {
+        "1": "SPI_MOSI_JMP",
+        "2": "SPI_MOSI"
+      },
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0805W8F0000T5E",
+        "LCSC": "C17477"
+      },
+      "dnp": false,
+      "in_bom": true,
+      "no_connect_nets": {}
+    },
+    {
+      "block": "01 USB / BATTERY / POWER",
       "lib_id": "Connector_Generic:Conn_01x06",
       "reference": "U15",
       "value": "TPS2553DBVR 500mA LIMIT",
@@ -2548,7 +2569,7 @@
       "x": 698.5,
       "y": 165.1,
       "pins": {
-        "1": "SPI_MOSI",
+        "1": "SPI_MOSI_JMP",
         "2": "SUB_MOSI"
       },
       "fields": {},
@@ -3073,18 +3094,18 @@
       "y": 228.6,
       "pins": {
         "1": "GND",
-        "2": "SPI_MOSI",
-        "3": "LF_DIN_5V",
+        "2": "GND",
+        "3": null,
         "4": "GND",
         "5": "SPI_SCK",
         "6": "LF_SCLK_5V",
         "7": "GND",
         "8": null,
         "9": "GND",
-        "10": "LF_5V",
-        "11": null,
-        "12": "GND",
-        "13": "LF_5V",
+        "10": "GND",
+        "11": "LF_DIN_5V",
+        "12": "SPI_MOSI",
+        "13": "GND",
         "14": "LF_5V"
       },
       "fields": {
@@ -3095,8 +3116,8 @@
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {
-        "8": "unconnected-(U21-Pin_8-Pad8)",
-        "11": "unconnected-(U21-Pin_11-Pad11)"
+        "3": "unconnected-(U21-Pin_3-Pad3)",
+        "8": "unconnected-(U21-Pin_8-Pad8)"
       }
     },
     {
@@ -5253,7 +5274,7 @@
     }
   ],
   "net_usage": {
-    "GND": 191,
+    "GND": 193,
     "VBUS_USB": 6,
     "USB_CC1": 3,
     "USB_CONN_P": 4,
@@ -5292,6 +5313,8 @@
     "BOOST5_EN": 4,
     "U7_SW": 2,
     "+5V_RAW": 26,
+    "SPI_MOSI_JMP": 2,
+    "SPI_MOSI": 5,
     "AUX5_EN": 3,
     "AUX5_FAULT_N": 3,
     "U15_ILIM": 2,
@@ -5299,7 +5322,7 @@
     "FG_ALERT_N": 3,
     "I2C_SCL": 12,
     "I2C_SDA": 13,
-    "LF_5V": 13,
+    "LF_5V": 11,
     "ESP_EN": 5,
     "GPIO4_MCU": 2,
     "NFC_IRQ_N": 2,
@@ -5313,7 +5336,6 @@
     "STRAP_BOOT_TP": 2,
     "BOARD_TEMP_ADC": 4,
     "RGB_DATA": 2,
-    "SPI_MOSI": 5,
     "SPI_SCK": 5,
     "SPI_MISO": 5,
     "SUBGHZ_CS_N": 2,

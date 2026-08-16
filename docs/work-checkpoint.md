@@ -1,31 +1,79 @@
-# Work checkpoint — 2026-08-12
+# Work checkpoint — 2026-08-16
 
-## Paused state — 2026-08-13
+## Active PCB routing state — 2026-08-16
 
-- Work was intentionally stopped at the user's request and all accepted local
-  changes were saved before publishing the branch.
-- The authoritative PCB now includes the first deterministic GND/+3V3
-  plane-fanout pass: 730 outer-layer track segments and 214 through vias are
-  present. Open connection items fell from 499 to 290. Twenty-one dense
-  GND/+3V3 clusters remain explicitly reported by
-  `hardware/scripts/route_plane_fanouts.py` for the next reviewed pass.
-- LF RFID now shares the existing SPI SCK/MOSI/MISO bus instead of consuming
-  three separately trapped ESP32 pins. U21 is the partial-power-down-safe
-  SN74LV125ATPWR (LCSC C2675655); U22 is the LF_RFID_EN-controlled tri-state
-  SN74LVC1G126DBVR (LCSC C7834). This prevents an unpowered LF domain from
-  back-powering or driving the active SPI bus.
-- The generated schematic/design netlist and PCB agree on that architecture;
-  the final saved parity check passes and ERC reports 0 errors / 0 warnings.
-  ESP32 pins 11/23/28 are intentionally NC; the SPI channel mapping was chosen
-  so U21 can remain at its collision-free 0-degree placement.
-- `route_lf_global.py` is saved as work in progress. Its latest atomic trial
-  found legal routes for LF_RFID_EN and all three 5-V HTRC control signals,
-  but the subsequent SPI_MOSI branch was blocked by those candidate paths.
-  Because the pass is atomic, none of that unverified global LF copper was
-  promoted to the authoritative PCB.
-- The POWER netclass clearance is now 0.20 mm, matching the documented normal
-  JLCPCB-capable design target and the existing fine-pitch package geometry.
-  Wide 0.50/0.80-mm power-route requirements remain unchanged.
+- Work has resumed on the PCB only; firmware and app work remain deferred.
+- The 2026-08-16 continuation corrected the physical internal-contact
+  semantics of the six KMR2 switches and the continuous J1/J2 shell contacts.
+  This removed one false ratsnest item without adding copper. J2 was also
+  shifted 0.175 mm inward; all ten microSD copper-to-edge findings are gone
+  while the adjacent B.Cu ground track retains exactly 0.20 mm clearance.
+- U2.5 and U2.8 now share a short, via-free 0.15-mm NFC_DVDD escape on F.Cu.
+  The former long U2.3 ground branch was folded directly into the exposed GND
+  pad, one redundant west-side GND via was removed, and the retained plane via
+  moved 0.20 mm right / 0.10 mm up into a clearance-clean site. U2.3, U2.7 and U2.41 remain
+  explicitly connectivity-checked to GND.
+- Current local checkpoint saved on 2026-08-16 at 18:47 Europe/Berlin; the
+  authoritative PCB, DRC/ERC reports and progress documentation are in sync.
+  No commit or remote push was requested in this continuation.
+- LF RFID shares the existing SPI SCK/MOSI/MISO bus. U21 remains the
+  partial-power-down-safe SN74LV125ATPWR (LCSC C2675655), and U22 remains the
+  LF_RFID_EN-controlled SN74LVC1G126DBVR (LCSC C7834). U21 channels 2 and 4
+  translate SCK and MOSI; the unused channel input/OE pairs are grounded and
+  their outputs are NC. This avoids back-powering or driving an unpowered LF
+  domain while giving all seven U21 GND pads short inner-plane connections.
+- Six global LF/shared-SPI data paths are routed and connectivity-checked:
+  SPI_SCK, SPI_MOSI, SPI_MISO, LF_SCLK_5V, LF_DIN_5V and LF_DOUT_5V.
+  The original LF_RFID_EN branch is present, but its newly added U22 enable
+  endpoint is still an explicit ratsnest item; the routing generator now
+  includes that endpoint
+  and will no longer report the older branch alone as complete. The low-current
+  LF_5V branch from the existing distribution via
+  C515 to U21 is also complete, with a reviewed 0.39-mm TSSOP neckdown.
+- The dense-plane cleanup is complete. All GND and +3V3 islands are now
+  closed, including the difficult U2.40, C704 and microSD J2.4 fanouts. U2.40
+  uses a reviewed local reroute of LF_SCLK_5V/LF_DIN_5V; C704 is connected on
+  B.Cu without a via below U21, and J2.4 reaches the L3 +3V3 plane through a
+  clearance-checked 0.45/0.20-mm via.
+- The accepted charger and battery-protection power stages are complete.
+  VBUS_FUSED now joins F1, D101,
+  C106, C103, U5.13 and U16.5 with 0.50/0.60-mm copper and one ordinary
+  0.80/0.40-mm via. Both U5 CELL_POS pins join C121/C104 through short local
+  neckdowns; the main CELL_POS route then runs at 0.80 mm to J4.1 and reuses
+  one capacitor via. CELL_NEG leaves J4.2 without via-in-pad, crosses on F.Cu
+  outside the connector pad and reaches Q2 with a reviewed local neckdown.
+  BAT_FET_MID joins Q2/Q3 at 0.80 mm, and BAT_COUT plus the U14 CELL_NEG sense
+  return complete the local battery-protection block. VSYS now joins U5, U6,
+  U7 and the local bulk capacitors through a reviewed B.Cu corridor. R129 is a
+  hand-friendly 0805 zero-ohm SPI_MOSI crossover that preserves the solid L2
+  GND plane and the protected L3 power corridors.
+  Both USB-C VBUS contact groups now reach F1 through 0.30-mm F.Cu pin escapes,
+  two 0.70/0.35-mm vias and a short 0.20-mm shield-corridor neck that widens
+  immediately to 0.50/0.60 mm. `+5V_RAW` and `+5V_AUX` are now fully connected
+  through two narrow, higher-priority L3 corridors; all other 5-V trunks are
+  complete as well. L2 remains an uninterrupted GND return plane. L3 retains
+  the protected power polygons and may also carry ordinary low-speed digital
+  traces outside +5V_RAW/+5V_AUX, RF, USB, NFC and LF analogue keepouts.
+- The authoritative PCB now contains 1734 track segments, 327 vias and 23
+  zones. The current ratsnest contains 159 open connection items. GND, +3V3,
+  +5V_RAW and +5V_AUX are all fully connected.
+  Accepted DRC-neutral additions include I2C_SDA, EX0/EX1/EX4 interrupt,
+  NFC_I0, SUBGHZ_GDO2, AUX5_EN, I2C_SCL_HDR, GPIO44_MCU, BOOT_N,
+  USER_BUTTON_B_N, CHG_DISABLE, USER_BUTTON_SELECT_N, SUB_CS_N, SPI_SCK,
+  SD_DETECT_N and AUX5_FAULT_N islands. Both PN532 crystal pins and their
+  load-capacitor branches are complete. The two local matching-to-loop paths
+  and both external loop feeds are routed through the intended NFC keepout
+  corridors; the latter use two ordinary vias and short L3 signal sections.
+  The three high-output IR LEDs now share a complete 0.50-mm common-cathode
+  route along the short board edge.
+- Schematic/PCB/design-netlist parity passes, every new route passes explicit
+  endpoint connectivity checks, and ERC reports 0 errors / 0 warnings. DRC
+  reports 16 known non-release findings: 8 existing clearance findings, one
+  J4 copper-to-edge finding, six reviewed footprint-library findings and one
+  positionless B.Cu copper-sliver warning created by plane refill. The project
+  minima are now 0.15-mm track, 0.45-mm via and 0.20-mm drill; critical power,
+  USB, NFC, LF and Sub-GHz nets retain their stricter custom rules. No new
+  routing clearance, short, dangling-track or power violation is present.
 - This is a reproducible routing checkpoint, not an order-ready board.
 
 ## Saved state
@@ -34,7 +82,7 @@
   possible future V2 option but is not being introduced into this revision;
   changing to its larger, preliminary WROOM ecosystem would restart placement,
   routing and firmware validation without improving a current V1 requirement.
-- Generated schematic: 273 symbols, 266 footprints and 180 named logical nets;
+- Generated schematic: 274 symbols, 267 footprints and 181 named logical nets;
   the current PCB contains 231 physical nets, including three unique NC nets.
 - GNSS hardware has been removed. U4 is now HTRC110 125-kHz LF RFID with
   switched 5 V, level translation, external 4-MHz clock and removable coil.
@@ -53,11 +101,11 @@
   sheets, generated PCB/autorouter intermediates and their duplicate DRC reports.
   These staging files are reproducible from `hardware/scripts` and are now ignored;
   the main schematic and `PocketLab-Card.kicad_pcb` remain authoritative.
-- The placement builder fits all 266 footprints (131 front, 135 back) without
+- The placement builder fits all 267 footprints (131 front, 136 back) without
   unapproved courtyard, keepout or board-inset collision.
-- The authoritative routed checkpoint contains 130 front and 136 back
+- The authoritative routed checkpoint contains 130 front and 137 back
   footprints. The one-part-per-side difference from the regenerated placement
-  donor is limited to a generic unrouted packing slot; all 266 references exist.
+  donor is limited to a generic unrouted packing slot; all 267 references exist.
 - U4 and its LF resonance, current-limit, RX, oscillator and coil-interface
   parts now form one compact back-side analog island beside J3. C506/C507/C508
   are aligned as a straight tuning bank; C507/C508 remain DNP options.
@@ -70,7 +118,8 @@
   regenerations cannot silently pack unrelated parts into it. The LF analog,
   placement-merge and support routes are reproducible with the three dedicated
   scripts in `hardware/scripts`.
-- L2 GND and L3 +3V3 staging planes regenerate successfully.
+- The solid L2 GND plane and mixed-power L3 plane regenerate successfully;
+  the L3 +5V polygons are protected from ordinary-signal routing.
 - The PCB stack is now the nominal 1.2-mm, four-layer
   `JLC04121H-7628` target with 1-oz outer / 0.5-oz inner copper and ENIG.
   Confirm the live factory stack before freezing USB and RF widths.
@@ -79,12 +128,18 @@
   input/output power, U7 input/output power, U7 feedback and the low-current
   5-V feedback sense branch are now also routed. The nearby IR branch was
   rerouted around Y701, and R405 now faces U3 -> antenna. CC2 and the provisional
-  Sub-GHz feed are also complete. After replacing conflicting legacy copper
-  with the reviewed LF routes, the board now contains 730 track segments and
-  214 vias after the first GND/+3V3 plane-fanout pass.
+  Sub-GHz feed are also complete. The subsequent split-5V and dense-plane
+  stages formed the earlier 1214-segment checkpoint; the current authoritative
+  board has advanced to 1734 segments, 327 vias and 23 zones.
 - Two named B.Cu rule areas limit U7's unavoidable 0.20-mm power-pin neckdowns
   to the package exits and the reviewed Kelvin/sense corridor; the power rails
   widen to 0.50 mm outside those areas.
+- The accepted stage-5 pass completes VSYS without inner-layer signal copper.
+  R129 (C17477) splits SPI_MOSI through a real 0805 series crossover, and the
+  corridor uses a documented 0.30-mm VSYS neck only where required.
+- The accepted stage-6 pass completes the local USB-C VBUS-to-F1 connection.
+  Its two connector escapes and shield-corridor neck are bounded by three named
+  rule areas; all longer input-current sections use 0.50/0.60-mm copper.
 - R201/R202 are now vertical, side-by-side 0805 parts. The native USB pair is
   fully routed from U1 through both 22-ohm resistors and U16 to all four J1
   A6/B6/A7/B7 data pads. The MCU side is via-free; the connector bridge uses
@@ -108,13 +163,13 @@
   button nets, IR_LED_A1, IR_LED_K, GPIO43, NFC_LOADMOD, NFC_RESET_N,
   I2C_SDA, PAIR_N, SPI_MOSI_HDR, SPI_SCK_HDR, LF_DOUT_5V and OLED_VCC
   autorouter copper was removed as complete nets where it crossed the accepted
-  USB/button/LF placement. These nets are intentionally back in the ratsnest,
-  with no dangling copper stubs. This is why the total copper count fell while
-  the routed LF block was added.
+  USB/button/LF placement. This describes the earlier cleanup; several of those
+  islands have since been rerouted with the guarded deterministic router. The
+  remaining items stay in the ratsnest without dangling copper stubs.
 - The final saved KiCad checks pass schematic/PCB parity and ERC with 0 errors /
-  0 warnings. DRC still reports 41 known non-release findings: 8 clearances,
-  11 copper-to-edge findings, 16 embedded-thermal drill-size findings and six
-  local footprint-library comparison warnings. There are 290 open connection
+  0 warnings. DRC reports 16 known non-release findings: 8 clearances, one J4
+  copper-to-edge finding, six local footprint-library comparison warnings and
+  one positionless B.Cu copper-sliver warning. There are 159 open connection
   items, so this remains only a routing checkpoint.
 - Firmware remains at the preceding two-button checkpoint by explicit project
   priority; no firmware file was changed for the new SELECT hardware. That
@@ -127,15 +182,15 @@
 
 ## Next engineering steps
 
-1. Confirm the live `JLC04121H-7628` data and recalculate the stack-dependent
+1. Reroute the remaining digital/control nets, including the short U24/U25
+   clamp branches, then hand-route the dense ESP_EN, BMI/IO-expander and
+   microSD signal corridors that the guarded router correctly skips. Refill
+   planes after each accepted batch and close all 159 ratsnest items.
+2. Complete the PN532 DVDD and TX matching network with reviewed short RF
+   paths; preserve the antenna keepout and tune the populated V1 board.
+3. Confirm the live `JLC04121H-7628` data and recalculate the stack-dependent
    USB and provisional 0.36-mm Sub-GHz geometry. Retune the assembled pi
    network before treating the RF path as production-final.
-2. Resume `route_lf_global.py` with negotiated/rip-up routing so the four LF
-   control paths and the three shared-SPI branches coexist without crossings;
-   then connect upstream `+5V_RAW`, LF_5V and the remaining reviewed grounds.
-3. Finish the 21 reported plane clusters and the battery/USB/VSYS/5-V power
-   trunks. Then reroute the deliberately cleared digital nets, including short
-   U24/U25 clamp branches, refill planes and close all 290 ratsnest items.
 4. Run full KiCad DRC, schematic/PCB parity, independent footprint review and
    JLCPCB DFM/BOM/CPL preview.
 5. Assemble a small bring-up batch; current-limit first power-up and measure
@@ -147,3 +202,31 @@
    ATECC provisioning or locking work.
 
 This checkpoint is not an order-ready fabrication release.
+
+## Paused PCBA/layout work (2026-08-17)
+
+Work was paused at the user's request after the first direct-assembly and
+compact-layout pass.  The authoritative `hardware/PocketLab-Card.kicad_pcb`
+remains the last promoted board and is intentionally not replaced by an
+unfinished candidate.
+
+- All 237 populated BOM rows now have an LCSC identifier in the generated
+  design data.  Safe commodity passives are assigned smaller 0402/0603
+  packages; power, pulse, RF and reviewed crossover parts remain larger where
+  their electrical or layout margin matters.
+- The through-hole, hand-bent TSAL6200 emitters and the larger user switches
+  have direct-assembly SMD replacement footprints.  Their source footprints,
+  generator policy and migration/routing helpers are preserved in this branch.
+- The best preserved routing candidate is
+  `hardware/checkpoints/PocketLab-Card-pcba-routing-wip.kicad_pcb`.  It includes
+  the accepted NFC_I0 and SPI_MISO repairs and one +3V3 stitching via.
+- Its last full project-context DRC recorded 46 rule findings and 158 open
+  connection items.  The higher finding count than the authoritative board is
+  primarily the honest result of checking the migrated fine-pitch/custom
+  footprints in full project context; it is not a release result.
+- A subsequent compact-cleanup script and narrowed custom-clearance rules are
+  saved but deliberately not executed/accepted after the pause request.
+
+Resume from the checkpoint candidate, run the compact repair on a new copy,
+compare DRC and connectivity, and only then promote a verified candidate to the
+authoritative PCB.

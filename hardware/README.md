@@ -15,7 +15,7 @@
 
 KiCad 10 is installed locally. `PocketLab-Card.kicad_pro` is the project entry
 point and the PCB scaffold contains the exact credit-card outline. The current
-generated schematic comprises 273 symbols, 266 assigned footprints and 183
+generated schematic comprises 274 symbols, 267 assigned footprints and 181
 named logical nets (231 physical PCB nets); `reports/erc-current.rpt` reports zero
 errors and zero warnings.
 
@@ -41,21 +41,32 @@ board as a second design source.
 
 The current PCB contains the guarded digital autorouter fanout plus reviewed local U6/L6,
 U7/L7, converter input/output, U7-feedback, RTC-crystal and complete native USB
-data routes; L2/L3 remain plane-only. R201/R202 are vertical side-by-side 0805
+data routes; L2 remains the uninterrupted ground plane and L3 retains the
+power polygons plus explicitly reviewed low-speed signal crossings. R201/R202 are vertical side-by-side 0805
 parts, the MCU-side pair stays via-free, and a staggered five-via bridge joins
 J1's alternating A/B data pads. U16 is 0.55 mm farther inboard; front-side
 0805 R102 now has its J1-B5 pull-down and local ground return routed. The CC2
 protection branch to U16 pin 6 is also complete using two ordinary 0.50/0.30-mm
 through vias and outer-layer tracks only. SW3/SW7/SW4 are compact, adjacent UP/OK/DOWN
 controls; SELECT uses U9/P07 and the BMP390 remains available by I2C polling.
+VSYS is now complete through the charger/converter island; an 0805 zero-ohm
+SPI_MOSI crossover preserves the plane-only inner layers. Both J1 VBUS contacts
+also reach F1 through reviewed local neckdowns and 0.50/0.60-mm B.Cu copper.
 The provisional 868-MHz feed now runs through the correctly oriented pi network
 and makes its sole signal-layer transition before the spring pocket; its F.Cu
 section remains on the narrow PCB bridge outside the notch. The present
-checkpoint has 498 track segments and 29 vias. R405 is oriented with pad 1
-toward U3 and pad 2 toward the antenna.
-KiCad DRC has no routed-geometry or schematic-parity error; six local-library
-comparison warnings and 499 open items remain. None of these files is an
-order-ready fabrication release.
+checkpoint has 1734 track segments, 327 vias and 23 zones. Both `+5V_RAW` and
+`+5V_AUX` are complete on narrow L3 corridors, the requested 36 dense-plane
+clusters are closed, and the reviewed U2.3 GND escape is routed. R405 is
+oriented with pad 1 toward U3 and pad 2 toward the antenna. The microSD socket
+is now 0.175 mm farther inboard, eliminating its ten copper-to-edge findings.
+KiCad DRC retains 16 documented non-release findings and has no
+schematic-parity error; ERC is clean and 159 open items remain. None of these files is an order-ready
+fabrication release.
+
+The latest PN532 cleanup connects U2.5/U2.8 with a short via-free DVDD escape
+and replaces the old west-side U2.3 GND detour with a direct exposed-pad
+connection. `scripts/route_nfc_dvdd_escape.py` reproduces that reviewed stage.
 
 The reproducible routing helpers are:
 
@@ -109,7 +120,7 @@ Four-layer, nominal 1.2 mm FR-4, encoded for the JLC04121H-7628 target:
 
 1. L1: components, RF and short high-speed signals
 2. L2: uninterrupted ground plane
-3. L3: power plane only
+3. L3: power polygons and reviewed low-speed signal crossings
 4. L4: components and low-speed routing
 
 The encoded build uses 35-um outer copper, 15.2-um inner copper, two 0.2104-mm

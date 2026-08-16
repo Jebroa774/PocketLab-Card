@@ -227,6 +227,13 @@ def positive_int(value: str) -> int:
     return result
 
 
+def nonnegative_int(value: str) -> int:
+    result = int(value)
+    if result < 0:
+        raise argparse.ArgumentTypeError("must be zero or greater")
+    return result
+
+
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     hardware_dir = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(
@@ -293,7 +300,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--threads",
-        type=positive_int,
+        type=nonnegative_int,
         default=max(1, min(8, (os.cpu_count() or 2) - 1)),
         help="FreeRouting optimizer threads (-mt)",
     )
@@ -819,6 +826,33 @@ def validate_no_inner_tracks(board) -> None:
         )
 
 
+def validate_no_new_inner_tracks(
+    original_tracks: Counter[tuple[object, ...]],
+    actual_tracks: Counter[tuple[object, ...]],
+) -> None:
+    """Keep the reviewed L3 corridors, but reject new autorouter inner copper.
+
+    Later manual routing stages intentionally use a small number of In2.Cu
+    corridors through the +3V3 plane.  They are part of the protected input
+    geometry and must survive unchanged.  FreeRouting must still add tracks
+    only on the two outer signal layers.
+    """
+    added_tracks = actual_tracks - original_tracks
+    offenders: list[str] = []
+    for signature, count in added_tracks.items():
+        kind = str(signature[0])
+        if kind == "via":
+            continue
+        layer = int(signature[-1])
+        if layer in {int(pcbnew.In1_Cu), int(pcbnew.In2_Cu)}:
+            offenders.append(f"{signature[1]}:{kind} x{count}")
+    if offenders:
+        raise RuntimeError(
+            "Autorouter added copper on the protected inner plane layers: "
+            + ", ".join(offenders[:12])
+        )
+
+
 def validate_no_critical_vias(board) -> None:
     # Mirrors the project's .kicad_dru safety rules.  FreeRouting's DSN input
     # does not reliably express a per-net no-via constraint, so reject a route
@@ -1156,7 +1190,10 @@ def filter_autorouter_network(source: Path, destination: Path) -> tuple[int, int
     expected_manual_nets = manual_physical_nets & {
         root_local_net_name(name)
         for name in MANUAL_LOGICAL_NETS
-        if f"(net {root_local_net_name(name)}" in text
+        if re.search(
+            r"\(net\s+" + re.escape(root_local_net_name(name)) + r"(?=\s|\))",
+            text,
+        )
     }
     if seen_manual_nets != expected_manual_nets:
         raise RuntimeError(
@@ -1167,8 +1204,17 @@ def filter_autorouter_network(source: Path, destination: Path) -> tuple[int, int
         )
     if retained_nets < 1:
         raise RuntimeError("Autorouter DSN filter left no routable nets")
+    filtered_network_match = re.search(r"(?m)^\s*\(network\b", filtered)
+    if filtered_network_match is None:
+        raise RuntimeError("Filtered autorouter DSN lost its network section")
+    filtered_network_start = filtered.find("(", filtered_network_match.start())
+    filtered_network_end = dsn_expression_end(filtered, filtered_network_start)
+    filtered_network = filtered[filtered_network_start:filtered_network_end]
     for net_name in seen_manual_nets:
-        if f"(net {net_name}" in filtered:
+        if re.search(
+            r"\(net\s+" + re.escape(net_name) + r"(?=\s|\))",
+            filtered_network,
+        ):
             raise RuntimeError(f"Protected net survived autorouter DSN filtering: {net_name}")
     if "(resolution um 10)" not in filtered:
         raise RuntimeError("Guarded autorouter requires the expected 10-unit-per-um DSN resolution")
@@ -1234,7 +1280,11 @@ def validate_freerouting_jar(java: str, jar: Path) -> None:
         check=False,
     )
     match = re.search(r"Freerouting\s+v(\d+)\.(\d+)\.(\d+)", probe.stdout, re.I)
-    if probe.returncode != 0 or not match:
+    # FreeRouting 2.3.0 deliberately exits with status 1 after printing CLI
+    # help, even though the JAR and version probe are valid.  Treat the parsed
+    # official version banner as the acceptance signal instead of relying on
+    # that non-portable help exit code.
+    if not match:
         raise RuntimeError(
             "Could not verify the FreeRouting version from `java -jar ... -h`:\n"
             + probe.stdout[-2000:]
@@ -1257,6 +1307,7 @@ def run_freerouting(
         java,
         "-jar",
         str(jar),
+        "--gui.enabled=false",
         "-de",
         str(dsn),
         "-do",
@@ -1354,7 +1405,7 @@ def validate_round_trip(
             "SES import added tracks/vias on nets reserved for manual routing: "
             + examples
         )
-    validate_no_inner_tracks(board)
+    validate_no_new_inner_tracks(original_tracks, actual_tracks)
     validate_no_critical_vias(board)
     validate_four_layer_plane_stack(board)
     validate_required_planes(board)
@@ -1431,7 +1482,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     board = pcbnew.LoadBoard(str(input_path))
     layer_names = validate_four_layer_plane_stack(board)
     validate_required_planes(board)
-    validate_no_inner_tracks(board)
     validate_no_critical_vias(board)
     validate_design_parity(board, design_path)
     original_footprints = footprint_snapshot(board)
@@ -1566,7 +1616,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         f"{len(original_nets)} nets and produced {track_count} tracks/vias."
     )
     print(f"Remaining KiCad ratsnest edges (unconnected): {unconnected_count}")
-    print("Validated: no planar tracks on L2/L3 and no pre-existing track was lost.")
+    print(
+        "Validated: no new planar tracks on L2/L3 and no pre-existing track was lost."
+    )
     print(
         "REVIEW REQUIRED: manually inspect USB pair geometry, RF impedance/antenna, NFC "
         "matching, power/switch-node routing, plane fills and return paths; then run KiCad DRC."

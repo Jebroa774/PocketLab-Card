@@ -18,6 +18,8 @@ from pathlib import Path
 
 import pcbnew
 
+from route_pcb import MANUAL_LOGICAL_NETS
+
 from route_plane_fanouts import (
     B,
     DIFFERENT_NET_CLEARANCE_MM,
@@ -39,15 +41,19 @@ from route_plane_fanouts import (
     rect_of,
     segment_intersects_rect,
     simplify_grid_path,
-    track_segment_is_clear,
+    track_segment_is_clear as base_track_segment_is_clear,
     xy,
 )
 
 
 TRACK_WIDTH_MM = 0.20
-VIA_DIAMETER_MM = 0.60
+VIA_DIAMETER_MM = 0.50
 VIA_DRILL_MM = 0.30
 GRID_MM = 0.25
+ROUTE_EXPANSION_MM = 20.0
+MAX_ROUTE_SEARCH_STATES = 600_000
+ROUTING_LAYERS = (F, B)
+AVOID_L3_ZONE_POLYS: tuple[pcbnew.SHAPE_POLY_SET, ...] = ()
 ROUTE_PRIORITY = {
     "/SPI_MOSI": 0,
     "/SPI_SCK": 1,
@@ -59,30 +65,81 @@ ROUTE_PRIORITY = {
 }
 
 CONNECTIONS = (
-    ("/LF_RFID_EN", "U18", "9", "U17", "3"),
-    ("/LF_DIN_5V", "U21", "3", "U4", "9"),
-    ("/LF_SCLK_5V", "U21", "6", "U4", "8"),
-    ("/LF_DOUT_5V", "U4", "10", "U22", "2"),
-    ("/SPI_MOSI", "U21", "2", "R402", "1"),
+    ("/SPI_MOSI", "U21", "12", "R129", "2"),
     ("/SPI_SCK", "U21", "5", "R401", "1"),
-    ("/SPI_MISO", "U22", "4", "R403", "1"),
+    ("/SPI_MISO", "R403", "1", "U22", "4"),
+    ("/LF_SCLK_5V", "U21", "6", "U4", "8"),
+    ("/LF_DIN_5V", "U21", "11", "U4", "9"),
+    ("/LF_DOUT_5V", "U4", "10", "U22", "2"),
+    ("/LF_RFID_EN", "U18", "9", "U17", "3"),
+    # U22 was added after the first LF-enable route.  Its OE input belongs to
+    # the same gated enable net and needs a second physical connection.
+    ("/LF_RFID_EN", "U18", "9", "U22", "1"),
 )
 
+# The U21 channel ordering keeps SCLK and DIN topologically parallel.  Let the
+# single-layer search try that direct geometry first; a layer change remains
+# available as the fallback when local placement blocks the outer layer.
+PREFER_OPPOSITE_LAYER_NETS: frozenset[str] = frozenset()
+
+# U21 uses 0.65-mm-pitch lands.  Route each adjacent input/output pair out as
+# a coordinated parallel breakout before the global maze search starts.  The
+# offsets are relative to the exact pad centres at the reviewed 0-degree
+# placement and remain short enough to stay inside the local component field.
+U21_SEED_OFFSETS = {
+    "/LF_DIN_5V": ((1.20, 0.00),),
+    "/SPI_MOSI": ((1.20, 0.00),),
+    "/LF_SCLK_5V": ((-1.25, 0.00),),
+    "/SPI_SCK": ((-1.25, 0.00),),
+}
+
 LF_FINE_PITCH_REFS = frozenset({"U1", "U4", "U17", "U18", "U21", "U22"})
+STRICT_OBSTACLE_NETS = frozenset(MANUAL_LOGICAL_NETS)
+
+
+def track_segment_is_clear(
+    *,
+    net_name: str,
+    layer: int,
+    start: tuple[float, float],
+    end: tuple[float, float],
+    width_mm: float,
+    source_pads: set[str],
+    edge: Rect,
+    obstacles: list[CopperObstacle],
+) -> bool:
+    if layer == pcbnew.In2_Cu and AVOID_L3_ZONE_POLYS:
+        segment = pcbnew.SEG(point(*start), point(*end))
+        clearance = pcbnew.FromMM(width_mm / 2.0 + DIFFERENT_NET_CLEARANCE_MM)
+        if any(poly.Collide(segment, clearance) for poly in AVOID_L3_ZONE_POLYS):
+            return False
+    return base_track_segment_is_clear(
+        net_name=net_name,
+        layer=layer,
+        start=start,
+        end=end,
+        width_mm=width_mm,
+        source_pads=source_pads,
+        edge=edge,
+        obstacles=obstacles,
+    )
 
 
 def signal_clearance(net_name: str) -> float:
-    if net_name in {"/SPI_SCK", "/SPI_MOSI", "/SPI_MISO"}:
-        return 0.15
-    return 0.15
+    return DIFFERENT_NET_CLEARANCE_MM
+
+
+def obstacle_clearance(obstacle_net: str) -> float:
+    physical_name = obstacle_net[1:] if obstacle_net.startswith("/") else obstacle_net
+    return 0.25 if physical_name in STRICT_OBSTACLE_NETS else DIFFERENT_NET_CLEARANCE_MM
 
 
 def same_family_clearance(net_name: str, obstacle_net: str) -> float | None:
     spi = {"/SPI_SCK", "/SPI_MOSI", "/SPI_MISO"}
     if net_name in spi and obstacle_net in spi:
-        return 0.12
+        return DIFFERENT_NET_CLEARANCE_MM
     if net_name.startswith("/LF_") and obstacle_net.startswith("/LF_"):
-        return 0.12
+        return DIFFERENT_NET_CLEARANCE_MM
     return None
 
 
@@ -200,7 +257,31 @@ def signal_via_is_clear(
         return False
     if SUBGHZ_NOTCH.expanded(EDGE_CLEARANCE_MM + radius).contains(position):
         return False
+    if AVOID_L3_ZONE_POLYS:
+        clearance = pcbnew.FromMM(radius + DIFFERENT_NET_CLEARANCE_MM)
+        if any(poly.Collide(point(*position), clearance) for poly in AVOID_L3_ZONE_POLYS):
+            return False
     for obstacle in obstacles:
+        # Hole-to-hole clearance is mechanical and also applies to copper on
+        # the same net.  Check it before the ordinary same-net copper bypass.
+        if obstacle.kind == "via":
+            other_via = obstacle.owner
+            assert isinstance(other_via, pcbnew.PCB_VIA)
+            center, _ = obstacle.geometry
+            minimum_hole_distance = (
+                VIA_DRILL_MM / 2.0 + mm(other_via.GetDrillValue()) / 2.0 + 0.25
+            )
+            if distance(position, center) < minimum_hole_distance - 1e-6:
+                return False
+        elif obstacle.kind == "pad":
+            pad = obstacle.owner
+            assert isinstance(pad, pcbnew.PAD)
+            drill = pad.GetDrillSize()
+            pad_drill = max(mm(drill.x), mm(drill.y))
+            if pad_drill > 0.0 and distance(position, xy(pad.GetPosition())) < (
+                VIA_DRILL_MM / 2.0 + pad_drill / 2.0 + 0.25 - 1e-6
+            ):
+                return False
         if obstacle.net == net_name:
             continue
         sibling_clearance = same_family_clearance(net_name, obstacle.net)
@@ -212,16 +293,16 @@ def signal_via_is_clear(
             if item_key(pad) in endpoint_pad_ids:
                 if pad_rect.expanded(radius + 0.08).contains(position):
                     return False
-            elif pad_rect.expanded(radius + signal_clearance(net_name)).contains(position):
+            elif pad_rect.expanded(radius + obstacle_clearance(obstacle.net)).contains(position):
                 return False
         elif obstacle.kind == "via":
             center, other_radius = obstacle.geometry
-            via_clearance = sibling_clearance if sibling_clearance is not None else signal_clearance(net_name)
+            via_clearance = sibling_clearance if sibling_clearance is not None else obstacle_clearance(obstacle.net)
             if distance(position, center) < radius + other_radius + via_clearance:
                 return False
         elif obstacle.kind == "track":
             other_start, other_end, other_radius, _ = obstacle.geometry
-            track_clearance = sibling_clearance if sibling_clearance is not None else signal_clearance(net_name)
+            track_clearance = sibling_clearance if sibling_clearance is not None else obstacle_clearance(obstacle.net)
             if point_segment_distance(position, other_start, other_end) < (
                 radius + other_radius + track_clearance
             ):
@@ -517,17 +598,18 @@ def decomposed_route(
     end = xy(end_pad.GetPosition())
     endpoint_ids = {item_key(start_pad), item_key(end_pad)}
     if start_layer == end_layer:
-        direct = find_fixed_layer_path(
-            net_name=net_name,
-            start=start,
-            end=end,
-            layer=start_layer,
-            endpoint_pad_ids=endpoint_ids,
-            edge=edge,
-            obstacles=obstacles,
-        )
-        if direct is not None:
-            return tuple((position[0], position[1], start_layer) for position in direct)
+        if net_name not in PREFER_OPPOSITE_LAYER_NETS:
+            direct = find_fixed_layer_path(
+                net_name=net_name,
+                start=start,
+                end=end,
+                layer=start_layer,
+                endpoint_pad_ids=endpoint_ids,
+                edge=edge,
+                obstacles=obstacles,
+            )
+            if direct is not None:
+                return tuple((position[0], position[1], start_layer) for position in direct)
         start_escapes = find_escape_paths(
             net_name=net_name,
             pad=start_pad,
@@ -625,27 +707,41 @@ def find_route(
     end_pad: pcbnew.PAD,
     edge: Rect,
     obstacles: list[CopperObstacle],
+    start_override: tuple[float, float] | None = None,
+    end_override: tuple[float, float] | None = None,
+    start_layer_override: int | None = None,
+    end_layer_override: int | None = None,
 ) -> tuple[tuple[float, float, int], ...] | None:
-    split_route = decomposed_route(
-        net_name=net_name,
-        start_pad=start_pad,
-        end_pad=end_pad,
-        edge=edge,
-        obstacles=obstacles,
+    if (
+        start_override is None
+        and end_override is None
+        and start_layer_override is None
+        and end_layer_override is None
+    ):
+        split_route = decomposed_route(
+            net_name=net_name,
+            start_pad=start_pad,
+            end_pad=end_pad,
+            edge=edge,
+            obstacles=obstacles,
+        )
+        if split_route is not None:
+            return split_route
+    start_layer = (
+        start_layer_override if start_layer_override is not None else pad_layer(start_pad)
     )
-    if split_route is not None:
-        return split_route
-    start_layer = pad_layer(start_pad)
-    end_layer = pad_layer(end_pad)
+    end_layer = end_layer_override if end_layer_override is not None else pad_layer(end_pad)
     if start_layer is None or end_layer is None:
-        raise RuntimeError(f"LF endpoints must be one-sided SMD pads: {net_name}")
-    start = xy(start_pad.GetPosition())
-    end = xy(end_pad.GetPosition())
+        raise RuntimeError(
+            f"Routing endpoints must be one-sided SMD pads or provide a layer override: {net_name}"
+        )
+    start = start_override if start_override is not None else xy(start_pad.GetPosition())
+    end = end_override if end_override is not None else xy(end_pad.GetPosition())
     endpoint_ids = {item_key(start_pad), item_key(end_pad)}
     # Dense analogue/RF placement can require a broad detour around the
     # central component fields.  Keep the search inside the board geometry,
     # but do not artificially confine it to the endpoint bounding box.
-    expansion = 20.0
+    expansion = ROUTE_EXPANSION_MM
     local_obstacles = local_route_obstacles(obstacles, start, end, expansion)
     spatial = SpatialIndex(local_obstacles)
     left = min(start[0], end[0]) - expansion
@@ -663,7 +759,7 @@ def find_route(
     directions = ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1))
     goal_state: tuple[int, int, int] | None = None
 
-    while queue and len(cost) < 600_000:
+    while queue and len(cost) < MAX_ROUTE_SEARCH_STATES:
         _, current_cost, state = heapq.heappop(queue)
         if current_cost > cost.get(state, math.inf) + 1e-9:
             continue
@@ -714,24 +810,29 @@ def find_route(
         # corridor, permit a via anywhere that is legal.  The high transition
         # cost keeps the number of vias low while still allowing the route to
         # weave through complementary openings on F.Cu and B.Cu.
-        other_layer = B if layer == F else F
-        via_state = (ix, iy, other_layer)
-        if (
-            signal_via_is_clear(
-                net_name=net_name,
-                position=current,
-                endpoint_pad_ids=endpoint_ids,
-                edge=edge,
-                obstacles=spatial.query_point(current),
-            )
-            and current_cost + 2.5 < cost.get(via_state, math.inf)
+        if signal_via_is_clear(
+            net_name=net_name,
+            position=current,
+            endpoint_pad_ids=endpoint_ids,
+            edge=edge,
+            obstacles=spatial.query_point(current),
         ):
-            cost[via_state] = current_cost + 2.5
-            previous[via_state] = state
-            heapq.heappush(
-                queue,
-                (current_cost + 2.5 + distance(current, end), current_cost + 2.5, via_state),
-            )
+            for other_layer in ROUTING_LAYERS:
+                if other_layer == layer:
+                    continue
+                via_state = (ix, iy, other_layer)
+                if current_cost + 2.5 >= cost.get(via_state, math.inf):
+                    continue
+                cost[via_state] = current_cost + 2.5
+                previous[via_state] = state
+                heapq.heappush(
+                    queue,
+                    (
+                        current_cost + 2.5 + distance(current, end),
+                        current_cost + 2.5,
+                        via_state,
+                    ),
+                )
 
     if goal_state is None:
         for debug_layer in (F, B):
@@ -760,19 +861,45 @@ def find_route(
 
     # Simplify only within one layer; a repeated position with a layer change
     # is retained as the explicit via site.
+    def simplify_clear_section(
+        points: list[tuple[float, float]], layer: int
+    ) -> tuple[tuple[float, float], ...]:
+        if len(points) <= 2:
+            return tuple(points)
+        result = [points[0]]
+        anchor = 0
+        while anchor < len(points) - 1:
+            for candidate in range(len(points) - 1, anchor, -1):
+                if track_segment_is_clear(
+                    net_name=net_name,
+                    layer=layer,
+                    start=points[anchor],
+                    end=points[candidate],
+                    width_mm=TRACK_WIDTH_MM,
+                    source_pads=endpoint_ids,
+                    edge=edge,
+                    obstacles=local_obstacles,
+                ):
+                    result.append(points[candidate])
+                    anchor = candidate
+                    break
+            else:
+                raise RuntimeError(f"Could not retain a clear routed step on {net_name}")
+        return compact_path(result)
+
     result: list[tuple[float, float, int]] = []
     section: list[tuple[float, float]] = []
     section_layer = raw[0][2]
     for entry in raw:
         if entry[2] != section_layer:
-            for position in simplify_grid_path(section):
+            for position in simplify_clear_section(section, section_layer):
                 result.append((position[0], position[1], section_layer))
             result.append((entry[0], entry[1], entry[2]))
             section = [(entry[0], entry[1])]
             section_layer = entry[2]
         else:
             section.append((entry[0], entry[1]))
-    for position in simplify_grid_path(section):
+    for position in simplify_clear_section(section, section_layer):
         candidate = (position[0], position[1], section_layer)
         if not result or candidate != result[-1]:
             result.append(candidate)
@@ -830,11 +957,50 @@ def add_route(
     return tracks, vias
 
 
+def add_u21_seed_escape(
+    board: pcbnew.BOARD,
+    net_name: str,
+    start_pad: pcbnew.PAD,
+    edge: Rect,
+    obstacles: list[CopperObstacle],
+) -> tuple[tuple[float, float], int]:
+    offsets = U21_SEED_OFFSETS[net_name]
+    layer = pad_layer(start_pad)
+    if layer is None:
+        raise RuntimeError(f"Seeded U21 pad is not one-sided: {net_name}")
+    start = xy(start_pad.GetPosition())
+    points = (start,) + tuple((start[0] + dx, start[1] + dy) for dx, dy in offsets)
+    source_pads = {item_key(start_pad)}
+    for first, second in zip(points, points[1:]):
+        if not track_segment_is_clear(
+            net_name=net_name,
+            layer=layer,
+            start=first,
+            end=second,
+            width_mm=TRACK_WIDTH_MM,
+            source_pads=source_pads,
+            edge=edge,
+            obstacles=obstacles,
+        ):
+            raise RuntimeError(f"Reviewed U21 seed escape is blocked for {net_name}")
+    route = tuple((position[0], position[1], layer) for position in points)
+    tracks, vias = add_route(board, net_name, route, obstacles)
+    if vias:
+        raise RuntimeError(f"U21 seed escape unexpectedly added a via for {net_name}")
+    return points[-1], tracks
+
+
 def main() -> int:
     hardware_dir = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--net",
+        action="append",
+        choices=tuple(connection[0] for connection in CONNECTIONS),
+        help="Route only this connection; repeat to select an ordered subset",
+    )
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
     input_path = args.input.resolve()
@@ -847,24 +1013,49 @@ def main() -> int:
         raise RuntimeError(f"Output exists; use --force to replace it: {output_path}")
 
     board = pcbnew.LoadBoard(str(input_path))
+    input_footprint_count = len(list(board.GetFootprints()))
     edge = board_rect(board)
     obstacles = existing_obstacles(board)
     total_tracks = 0
     total_vias = 0
-    for net_name, start_ref, start_number, end_ref, end_number in CONNECTIONS:
+    selected_connections = CONNECTIONS
+    if args.net:
+        by_name = {connection[0]: connection for connection in CONNECTIONS}
+        selected_connections = tuple(by_name[net_name] for net_name in args.net)
+    pending_connections = []
+    for connection in selected_connections:
+        net_name, start_ref, start_number, end_ref, end_number = connection
+        start_pad = pad_by_reference(board, start_ref, start_number)
+        end_pad = pad_by_reference(board, end_ref, end_number)
+        if already_connected(board, start_pad, end_pad):
+            print(f"Already connected: {net_name}")
+            continue
+        pending_connections.append(connection)
+
+    seed_ends: dict[str, tuple[float, float]] = {}
+    for net_name, start_ref, start_number, _, _ in pending_connections:
+        if net_name not in U21_SEED_OFFSETS:
+            continue
+        start_pad = pad_by_reference(board, start_ref, start_number)
+        seed_end, seed_tracks = add_u21_seed_escape(
+            board, net_name, start_pad, edge, obstacles
+        )
+        seed_ends[net_name] = seed_end
+        total_tracks += seed_tracks
+        print(f"Seeded {net_name}: segments={seed_tracks}")
+
+    for net_name, start_ref, start_number, end_ref, end_number in pending_connections:
         start_pad = pad_by_reference(board, start_ref, start_number)
         end_pad = pad_by_reference(board, end_ref, end_number)
         if start_pad.GetNetname() != net_name or end_pad.GetNetname() != net_name:
             raise RuntimeError(f"LF endpoint net mismatch for {net_name}")
-        if already_connected(board, start_pad, end_pad):
-            print(f"Already connected: {net_name}")
-            continue
         route = find_route(
             net_name=net_name,
             start_pad=start_pad,
             end_pad=end_pad,
             edge=edge,
             obstacles=obstacles,
+            start_override=seed_ends.get(net_name),
         )
         if route is None:
             raise RuntimeError(f"No DRC-aware outer-layer route found for {net_name}")
@@ -873,9 +1064,10 @@ def main() -> int:
         total_vias += vias
         print(f"Routed {net_name}: segments={tracks}, vias={vias}")
 
+    pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     pcbnew.SaveBoard(str(output_path), board)
     reloaded = pcbnew.LoadBoard(str(output_path))
-    if len(list(reloaded.GetFootprints())) != 266:
+    if len(list(reloaded.GetFootprints())) != input_footprint_count:
         raise RuntimeError("LF global route save/reload changed the footprint count")
     print(
         f"Saved LF-global routed PCB: {output_path}; segments={total_tracks}; vias={total_vias}"

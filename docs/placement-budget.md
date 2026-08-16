@@ -35,8 +35,8 @@ VNA measurement.
 ## Audited residual space
 
 The 262-footprint checkpoint was sampled on a 0.25-mm grid; the current
-266-footprint estimate also accounts for the compact SELECT switch/R607 and
-the expanded R736/RT701 courtyards. The conservative audit includes a
+267-footprint estimate also accounts for the compact SELECT switch/R607,
+the R129 0805 SPI crossover and the expanded R736/RT701 courtyards. The conservative audit includes a
 0.20-mm margin around courtyards, opposite-side through-hole projections and
 the full NFC, ESP32 and Sub-GHz reservations.
 

@@ -43,6 +43,74 @@ def set_field(footprint: pcbnew.FOOTPRINT, name: str, value: str) -> None:
     footprint.GetField(name).SetText(value)
 
 
+def remove_pad_escape_to_first_via(board: pcbnew.BOARD, target: pcbnew.PAD) -> int:
+    """Remove only the old local escape of a repurposed U21 pad.
+
+    Plane fanouts may share the first via with other pads.  Walk same-net
+    segments from the pad centre, include the segment that reaches a via, and
+    stop there so the shared via and every downstream branch remain intact.
+    """
+
+    def nearby(first: tuple[int, int], second: tuple[int, int]) -> bool:
+        # KiCad zone refill can round a serialized endpoint by one nanometre.
+        return abs(first[0] - second[0]) <= 5 and abs(first[1] - second[1]) <= 5
+
+    old_net = target.GetNetname()
+    frontier = {(target.GetPosition().x, target.GetPosition().y)}
+    visited_positions: set[tuple[int, int]] = set()
+    reached_via_positions: set[tuple[int, int]] = set()
+    removable: list[pcbnew.PCB_TRACK] = []
+    tracks = [item for item in board.GetTracks() if not isinstance(item, pcbnew.PCB_VIA)]
+    via_positions = {
+        (item.GetPosition().x, item.GetPosition().y)
+        for item in board.GetTracks()
+        if isinstance(item, pcbnew.PCB_VIA) and item.GetNetname() == old_net
+    }
+    while frontier:
+        position = frontier.pop()
+        reached_via = next(
+            (candidate for candidate in via_positions if nearby(position, candidate)),
+            None,
+        )
+        if reached_via is not None:
+            reached_via_positions.add(reached_via)
+            continue
+        if position in visited_positions:
+            continue
+        visited_positions.add(position)
+        for item in tracks:
+            if item in removable or item.GetNetname() != old_net:
+                continue
+            start = (item.GetStart().x, item.GetStart().y)
+            end = (item.GetEnd().x, item.GetEnd().y)
+            if not nearby(start, position) and not nearby(end, position):
+                continue
+            removable.append(item)
+            frontier.add(end if nearby(start, position) else start)
+    for item in removable:
+        board.Delete(item)
+    remaining_tracks = [
+        item for item in board.GetTracks() if not isinstance(item, pcbnew.PCB_VIA)
+    ]
+    for item in list(board.GetTracks()):
+        if not isinstance(item, pcbnew.PCB_VIA):
+            continue
+        position = (item.GetPosition().x, item.GetPosition().y)
+        if not any(nearby(position, candidate) for candidate in reached_via_positions):
+            continue
+        has_branch = any(
+            track.GetStart() != track.GetEnd()
+            and (
+                nearby((track.GetStart().x, track.GetStart().y), position)
+                or nearby((track.GetEnd().x, track.GetEnd().y), position)
+            )
+            for track in remaining_tracks
+        )
+        if not has_branch:
+            board.Delete(item)
+    return len(removable)
+
+
 def main() -> int:
     hardware_dir = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser()
@@ -64,15 +132,31 @@ def main() -> int:
         ("U1", "11", "unconnected-(U1-IO18-Pad11)"),
         ("U1", "23", "unconnected-(U1-IO21-Pad23)"),
         ("U1", "28", "unconnected-(U1-IO35-Pad28)"),
-        ("U21", "2", "/SPI_MOSI"),
-        ("U21", "3", "/LF_DIN_5V"),
+        ("U21", "1", "/GND"),
+        ("U21", "2", "/GND"),
+        ("U21", "3", "unconnected-(U21-Pin_3-Pad3)"),
+        ("U21", "4", "/GND"),
         ("U21", "5", "/SPI_SCK"),
         ("U21", "6", "/LF_SCLK_5V"),
+        ("U21", "7", "/GND"),
+        ("U21", "8", "unconnected-(U21-Pin_8-Pad8)"),
+        ("U21", "9", "/GND"),
+        ("U21", "10", "/GND"),
+        ("U21", "11", "/LF_DIN_5V"),
+        ("U21", "12", "/SPI_MOSI"),
+        ("U21", "13", "/GND"),
+        ("U21", "14", "/LF_5V"),
         ("U22", "1", "/LF_RFID_EN"),
         ("U22", "4", "/SPI_MISO"),
     )
+    removed_segments = 0
+    for reference, number, net_name in assignments:
+        target = pad(board, reference, number)
+        if reference == "U21" and target.GetNetname() != net_name:
+            removed_segments += remove_pad_escape_to_first_via(board, target)
     for reference, number, net_name in assignments:
         set_net(board, reference, number, net_name)
+    board.RemoveUnusedNets(None)
 
     u21 = board.FindFootprintByReference("U21")
     u22 = board.FindFootprintByReference("U22")
@@ -93,7 +177,10 @@ def main() -> int:
     for (reference, number), net_name in expected.items():
         if pad(reloaded, reference, number).GetNetname() != net_name:
             raise RuntimeError(f"Save/reload lost {reference}.{number} net assignment")
-    print(f"Saved shared-SPI LF architecture: {output_path}")
+    print(
+        f"Saved shared-SPI LF architecture: {output_path}; "
+        f"removed_old_U21_escape_segments={removed_segments}"
+    )
     return 0
 
 

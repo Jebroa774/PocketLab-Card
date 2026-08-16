@@ -26,6 +26,13 @@ hardware/reports/planed-drc.rpt
 hardware/reports/routed-drc.rpt
 hardware/reports/routing-progress-drc.rpt
 
+# Local iterative routing/audit scratch files.  Deliberate pause/review
+# snapshots belong in hardware/checkpoints instead.
+hardware/.candidate-*
+hardware/.tmp-*
+hardware/.audit-*
+hardware/.current-*
+
 # Manufacturing outputs are generated for tagged releases
 manufacturing/*.zip
 manufacturing/*.zip.sha256

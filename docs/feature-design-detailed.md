@@ -149,7 +149,7 @@ The module is 10 x 10 mm, uses 1.27 mm castellated-pad pitch, operates from
 | 3-5, 8-11, 17, 19 | NC | Leave unconnected as specified |
 | 6 | ANT | `SUBGHZ_RF_MOD` into C403/R405/C404 and A1 |
 | 12 | MISO/GDO1 | `SUB_MISO`, then R403 22 ohm to `SPI_MISO` |
-| 13 | MOSI | `SPI_MOSI` through R402 22 ohm |
+| 13 | MOSI | `SPI_MOSI` through R129 0 ohm crossover and R402 22 ohm |
 | 14 | CSN | `SUB_CS_N`; R404 22 ohm and R406 100-kohm pull-up |
 | 15 | SCK | `SPI_SCK` through R401 22 ohm |
 | 18 | GDO0 | `SUBGHZ_GDO0` / GPIO15 |

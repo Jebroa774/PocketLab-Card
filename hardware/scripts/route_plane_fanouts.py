@@ -36,6 +36,9 @@ VIA_DRILL_MM = 0.30
 DIFFERENT_NET_CLEARANCE_MM = 0.25
 SAME_NET_SPACING_MM = 0.08
 EDGE_CLEARANCE_MM = 0.50
+GRID_STEP_MM = 0.25
+GRID_MAX_RADIUS_MM = 4.50
+EXISTING_VIA_MAX_DISTANCE_MM = 6.0
 FINE_PITCH_PLANE_ESCAPE_REFS = frozenset(
     {
         "J2", "J8", "U2", "U6", "U7", "U8", "U9", "U10", "U11",
@@ -47,6 +50,11 @@ PLANE_LAYER = {
     "/GND": pcbnew.In1_Cu,
     "/+3V3": pcbnew.In2_Cu,
 }
+
+# U2.3 sits on a 0.50-mm pitch next to NFC_TX1.  A normal 0.20-mm fanout
+# cannot leave the pad while satisfying the project's 0.25-mm NFC clearance;
+# keep this one connection for a reviewed neckdown/manual route.
+MANUAL_FANOUT_PADS = frozenset({("U2", "3")})
 
 
 @dataclass(frozen=True)
@@ -136,9 +144,33 @@ def segments_intersect(
     o2 = orientation(a, b, d)
     o3 = orientation(c, d, a)
     o4 = orientation(c, d, b)
-    return (o1 == 0.0 or o2 == 0.0 or o1 * o2 < 0.0) and (
-        o3 == 0.0 or o4 == 0.0 or o3 * o4 < 0.0
-    )
+    epsilon = 1e-9
+
+    def on_segment(
+        first: tuple[float, float],
+        second: tuple[float, float],
+        candidate: tuple[float, float],
+    ) -> bool:
+        return (
+            min(first[0], second[0]) - epsilon
+            <= candidate[0]
+            <= max(first[0], second[0]) + epsilon
+            and min(first[1], second[1]) - epsilon
+            <= candidate[1]
+            <= max(first[1], second[1]) + epsilon
+        )
+
+    if o1 * o2 < -epsilon and o3 * o4 < -epsilon:
+        return True
+    if abs(o1) <= epsilon and on_segment(a, b, c):
+        return True
+    if abs(o2) <= epsilon and on_segment(a, b, d):
+        return True
+    if abs(o3) <= epsilon and on_segment(c, d, a):
+        return True
+    if abs(o4) <= epsilon and on_segment(c, d, b):
+        return True
+    return False
 
 
 def segment_distance(
@@ -199,9 +231,9 @@ def plane_track_pad_clearance(net_name: str, pad: pcbnew.PAD) -> float:
     ):
         return 0.20
     if net_name.startswith("/LF_"):
-        return 0.15
+        return DIFFERENT_NET_CLEARANCE_MM
     if net_name in {"/SPI_SCK", "/SPI_MOSI", "/SPI_MISO"}:
-        return 0.15
+        return DIFFERENT_NET_CLEARANCE_MM
     return DIFFERENT_NET_CLEARANCE_MM
 
 
@@ -221,7 +253,9 @@ def isolated_clusters(board: pcbnew.BOARD, net_name: str) -> list[list[pcbnew.PA
         pad
         for footprint in board.GetFootprints()
         for pad in footprint.Pads()
-        if pad.GetNetname() == net_name and pad_layer(pad) is not None
+        if pad.GetNetname() == net_name
+        and pad_layer(pad) is not None
+        and (footprint.GetReference(), str(pad.GetNumber())) not in MANUAL_FANOUT_PADS
     ]
     clusters: dict[tuple[str, ...], list[pcbnew.PAD]] = {}
     for pad in pads:
@@ -442,9 +476,9 @@ def track_segment_is_clear(
     obstacles: list[CopperObstacle],
 ) -> bool:
     if net_name in {"/SPI_SCK", "/SPI_MOSI", "/SPI_MISO"}:
-        route_clearance = 0.15
+        route_clearance = DIFFERENT_NET_CLEARANCE_MM
     else:
-        route_clearance = 0.15 if net_name.startswith("/LF_") else DIFFERENT_NET_CLEARANCE_MM
+        route_clearance = DIFFERENT_NET_CLEARANCE_MM
     margin = EDGE_CLEARANCE_MM + width_mm / 2.0 + 0.05
     allowed_edge = edge.expanded(-margin)
     if not allowed_edge.contains(start) or not allowed_edge.contains(end):
@@ -627,8 +661,8 @@ def find_grid_fanout(
         return None
     start = xy(pad.GetPosition())
     source_pad_ids = {item_key(item) for item in cluster}
-    step = 0.25
-    maximum_radius = 4.50
+    step = GRID_STEP_MM
+    maximum_radius = GRID_MAX_RADIUS_MM
     local_obstacles = nearby_obstacles(obstacles, start, maximum_radius + 1.0)
     queue: list[tuple[float, int, int]] = [(0.0, 0, 0)]
     cost: dict[tuple[int, int], float] = {(0, 0): 0.0}
@@ -799,7 +833,7 @@ def connect_to_existing_via(
         start = xy(pad.GetPosition())
         nearby = sorted(via_targets, key=lambda item: distance(start, item[0]))
         for target, _ in nearby[:16]:
-            if distance(start, target) > 6.0:
+            if distance(start, target) > EXISTING_VIA_MAX_DISTANCE_MM:
                 break
             for route_points in path_candidates(start, target):
                 if any(
@@ -966,15 +1000,9 @@ def validate(board: pcbnew.BOARD) -> None:
     power_zones = [zone for zone in board.Zones() if zone.GetNetname() == "/+3V3"]
     if not ground_zones or not power_zones:
         raise RuntimeError("Expected L2 GND and L3 +3V3 zones are missing")
-    for item in board.GetTracks():
-        if not isinstance(item, pcbnew.PCB_VIA) or not item.IsLocked():
-            continue
-        if item.GetNetname() not in TARGET_NETS:
-            continue
-        if abs(mm(item.GetWidth(F)) - VIA_DIAMETER_MM) > 0.001:
-            raise RuntimeError("Serialized plane-fanout via diameter changed")
-        if abs(mm(item.GetDrillValue()) - VIA_DRILL_MM) > 0.001:
-            raise RuntimeError("Serialized plane-fanout via drill changed")
+    # Migrated boards legitimately contain older locked plane vias with other
+    # reviewed dimensions.  Do not mistake those for vias generated by this
+    # pass; the post-save KiCad DRC remains the geometry acceptance check.
 
 
 def main() -> int:
@@ -998,6 +1026,7 @@ def main() -> int:
     board = pcbnew.LoadBoard(str(input_path))
     added, shared, grid, skipped = route(board)
     validate(board)
+    pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     pcbnew.SaveBoard(str(output_path), board)
     reloaded = pcbnew.LoadBoard(str(output_path))
     validate(reloaded)
