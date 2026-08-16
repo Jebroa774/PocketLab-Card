@@ -1,0 +1,384 @@
+(version 1)
+
+# High-priority exceptions for the two deterministic dense-routing stages.
+# Custom rules use top-down priority, so these bounded exceptions must precede
+# the general power-rail and plane-fanout rules below.
+(rule "RAW5V reviewed fine escapes"
+    (layer F.Cu)
+    (constraint track_width (min 0.15mm) (opt 0.50mm))
+    (condition "A.Type == 'Track' && A.NetName == '/+5V_RAW' && (A.intersectsArea('U17_RAW5V_FINE_ESCAPE') || A.intersectsArea('LED1_RAW5V_FINE_ESCAPE'))"))
+
+(rule "AUX5V Dupont header escape"
+    (layer B.Cu)
+    (constraint track_width (min 0.20mm) (opt 0.20mm))
+    (condition "A.Type == 'Track' && A.NetName == '/+5V_AUX' && A.intersectsArea('J5_AUX_HEADER_ESCAPE')"))
+
+(rule "Reviewed compact 5V plane vias"
+    (constraint via_diameter (min 0.45mm))
+    (constraint hole_size (min 0.20mm))
+    (condition "A.Type == 'Via' && ((A.NetName == '/+5V_RAW' && A.intersectsArea('U17_RAW5V_FINE_ESCAPE')) || (A.NetName == '/+5V_AUX' && A.intersectsArea('J5_AUX_HEADER_ESCAPE')))"))
+
+(rule "Dense GND and 3V3 plane neckdowns"
+    (layer outer)
+    (constraint track_width (min 0.15mm) (opt 0.20mm))
+    (condition "A.Type == 'Track' && (A.NetName == '/GND' || A.NetName == '/+3V3')"))
+
+(rule "Dense GND and 3V3 plane vias"
+    (constraint via_diameter (min 0.45mm))
+    (constraint hole_size (min 0.20mm))
+    (condition "A.Type == 'Via' && (A.NetName == '/GND' || A.NetName == '/+3V3')"))
+
+(rule "LF control routing clearance"
+    (constraint clearance (min 0.25mm))
+    (condition "(A.Type == 'Track' && A.NetName =~ '/LF_.*') || (B.Type == 'Track' && B.NetName =~ '/LF_.*')")
+)
+
+(rule "LF control via clearance"
+    (constraint clearance (min 0.25mm))
+    (condition "(A.Type == 'Via' && A.NetName =~ '/LF_.*') || (B.Type == 'Via' && B.NetName =~ '/LF_.*')")
+)
+
+(rule "Shared SPI branch clearance"
+    (constraint clearance (min 0.25mm))
+    (condition "A.NetName == '/SPI_SCK' || A.NetName == '/SPI_MOSI' || A.NetName == '/SPI_MISO' || B.NetName == '/SPI_SCK' || B.NetName == '/SPI_MOSI' || B.NetName == '/SPI_MISO'")
+)
+
+# Package-native land patterns are allowed to use tighter pad-to-pad spacing
+# only inside the named footprint.  Inter-component copper and routed copper
+# keep the board/netclass clearance.  The 0.15 mm group is JLCPCB's stated
+# different-net SMD-pad minimum; Q2/Q3 use a project-local land pattern whose
+# 0.49 mm signal pads restore that gap without reducing the large power lands.
+(rule "0.20 mm native fine-pitch pads"
+    (constraint clearance (min 0.20mm))
+    (condition "A.Type == 'Pad' && B.Type == 'Pad' && ((A.Reference == 'J1' && B.Reference == 'J1') || (A.Reference == 'U2' && B.Reference == 'U2') || (A.Reference == 'U5' && B.Reference == 'U5') || (A.Reference == 'U6' && B.Reference == 'U6') || (A.Reference == 'U8' && B.Reference == 'U8') || (A.Reference == 'U14' && B.Reference == 'U14') || (A.Reference == 'U17' && B.Reference == 'U17') || (A.Reference == 'U21' && B.Reference == 'U21')))"))
+
+(rule "0.15 mm native fine-pitch pads"
+    (constraint clearance (min 0.15mm))
+    (condition "A.Type == 'Pad' && B.Type == 'Pad' && ((A.Reference == 'Q2' && B.Reference == 'Q2') || (A.Reference == 'Q3' && B.Reference == 'Q3') || (A.Reference == 'U7' && B.Reference == 'U7')))"))
+
+# U6 pin 14 sits beside the two VSYS pads in the manufacturer's fine-pitch
+# VQFN land pattern.  Its first 0.20-mm PS/SYNC escape is allowed the same
+# local 0.20-mm copper gap as the reviewed native package geometry; the rule
+# is limited to that one net against only U6 pads 12/13.
+(rule "U6 PS_SYNC package escape"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Track' && A.NetName == '/U6_PS_SYNC') && (B.Type == 'Pad' && B.Reference == 'U6' && (B.Pad_Number == '12' || B.Pad_Number == '13'))) || ((B.Type == 'Track' && B.NetName == '/U6_PS_SYNC') && (A.Type == 'Pad' && A.Reference == 'U6' && (A.Pad_Number == '12' || A.Pad_Number == '13')))"))
+
+# The three converter switch pins need a short 0.20-mm neck before the route
+# can widen to 0.60 mm without touching adjacent VQFN/SOT pads.  This rule
+# permits the package escape; the deterministic route widens immediately.
+(rule "Converter switch-pin neckdown"
+    (layer outer)
+    (constraint track_width (min 0.20mm) (opt 0.60mm))
+    (condition "A.NetName == '/U6_L1' || A.NetName == '/U6_L2' || A.NetName == '/U7_SW'"))
+
+(rule "U7 switch-pin adjacent-pad escape"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Track' && A.NetName == '/U7_SW') && (B.Type == 'Pad' && B.Reference == 'U7' && (B.Pad_Number == '4' || B.Pad_Number == '6'))) || ((B.Type == 'Track' && B.NetName == '/U7_SW') && (A.Type == 'Pad' && A.Reference == 'U7' && (A.Pad_Number == '4' || A.Pad_Number == '6')))"))
+
+# These are plated thermal holes embedded by the official KiCad land patterns,
+# not general routing vias.  Their 0.20/0.50-0.60 mm drill/pad geometry meets
+# JLCPCB's preferred 0.20 mm via drill and annular-ring guidance.
+(rule "0.20 mm embedded thermal holes"
+    (constraint hole_size (min 0.20mm))
+    (condition "A.Type == 'Pad' && ((A.Reference == 'U1' && A.Pad_Number == '41') || (A.Reference == 'U5' && A.Pad_Number == '17'))"))
+
+# J2 is an edge-access microSD socket.  Its signal pads retain at least
+# 0.325 mm copper-to-edge clearance while the inserted card intentionally
+# projects beyond the right board edge.  Other electrical pads keep the normal
+# 0.50 mm project requirement.
+(rule "Edge-mounted microSD socket"
+    (constraint edge_clearance (min 0.30mm))
+    (condition "(A.Type == 'Pad' && A.Reference == 'J2') || (B.Type == 'Pad' && B.Reference == 'J2')"))
+
+# J4 is a side-entry JST-PH connector.  Only its two unnumbered mechanical
+# shell tabs intentionally project 0.15 mm across the routed right edge; the
+# electrical pads retain the normal 0.50 mm copper-to-edge requirement.
+(rule "J4 mechanical shell tabs at card edge"
+    (constraint edge_clearance (min -0.20mm))
+    (condition "(A.Type == 'Pad' && A.Reference == 'J4' && A.Pad_Number == 'MP') || (B.Type == 'Pad' && B.Reference == 'J4' && B.Pad_Number == 'MP')"))
+
+# L2 remains the uninterrupted RF/USB return plane.  L3 is a mixed power and
+# ordinary-digital routing layer; its 5-V distribution polygons are treated as
+# hard routing keepouts by route_remaining_signals.py and are re-filled after
+# every accepted pass.
+(rule "L2 GND layer is plane only"
+    (layer "GND")
+    (constraint disallow track))
+
+(rule "L3 ordinary digital routing"
+    (layer "PWR")
+    (constraint track_width (min 0.15mm) (opt 0.15mm))
+    (constraint clearance (min 0.20mm))
+    (condition "A.Type == 'Track' && A.NetName != '/GND' && A.NetName != '/+3V3' && A.NetName != '/+5V_RAW' && A.NetName != '/+5V_AUX'"))
+
+# These values are minimum escape widths, not proof of current capacity.  The
+# battery, VSYS and converter paths still require short pours, several vias
+# where a layer transition is unavoidable, and prototype thermal validation.
+(rule "Power rails use wide outer-layer copper"
+    (layer outer)
+    (constraint track_width (min 0.50mm) (opt 0.80mm))
+    (condition "A.NetName == '/VBUS_USB' || A.NetName == '/VBUS_FUSED' || A.NetName == '/CELL_POS' || A.NetName == '/CELL_NEG' || A.NetName == '/BAT_FET_MID' || A.NetName == '/VSYS' || A.NetName == '/+5V_RAW' || A.NetName == '/+5V_AUX'"))
+
+# J1's two VBUS lands sit between fine-pitch signal lands and connector
+# alignment holes.  Confine the 0.30-mm escape to the two named F.Cu areas;
+# both branches widen to 0.60 mm immediately after their first via.
+(rule "USB-C VBUS pin neckdown width"
+    (layer F.Cu)
+    (constraint track_width (min 0.30mm) (opt 0.30mm))
+    (condition "A.Type == 'Track' && A.NetName == '/VBUS_USB' && (A.intersectsArea('USB_VBUS_LOWER_NECKDOWN') || A.intersectsArea('USB_VBUS_UPPER_NECKDOWN'))"))
+
+# On B.Cu the fused-input route passes once between J1's left shield stake and
+# the existing USB_CC2 route.  The available copper corridor is 0.62 mm wide;
+# 0.20-mm VBUS with 0.20-mm clearance on both sides fits without moving any
+# reviewed USB signal route, then widens before reaching F1.
+(rule "USB-C VBUS shield-corridor neckdown width"
+    (layer B.Cu)
+    (constraint track_width (min 0.20mm) (opt 0.20mm))
+    (condition "A.Type == 'Track' && A.NetName == '/VBUS_USB' && A.intersectsArea('USB_VBUS_SHIELD_NECKDOWN')"))
+
+# The BQ25895's 0.5-mm-pitch power lands need a short 0.20-mm neck before a
+# rail can widen to at least 0.50 mm.  The named B.Cu area is generated by
+# route_power_stage1.py and confines both relaxations to the charger package.
+(rule "U5 power-pin neckdown width"
+    (layer B.Cu)
+    (constraint track_width (min 0.20mm) (opt 0.50mm))
+    (condition "A.Type == 'Track' && A.intersectsArea('U5_POWER_PIN_NECKDOWNS') && (A.NetName == '/VBUS_FUSED' || A.NetName == '/CELL_POS' || A.NetName == '/VSYS')"))
+
+(rule "U5 power-pin neckdown clearance"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Track' && A.intersectsArea('U5_POWER_PIN_NECKDOWNS') && (A.NetName == '/VBUS_FUSED' || A.NetName == '/CELL_POS' || A.NetName == '/VSYS')) && (B.Type == 'Pad' && B.Reference == 'U5')) || ((B.Type == 'Track' && B.intersectsArea('U5_POWER_PIN_NECKDOWNS') && (B.NetName == '/VBUS_FUSED' || B.NetName == '/CELL_POS' || B.NetName == '/VSYS')) && (A.Type == 'Pad' && A.Reference == 'U5'))"))
+
+# Q2's three CELL_NEG source lands use 0.64-mm pitch.  Tie them locally with
+# 0.20-mm copper, then widen to the normal 0.50-mm battery rail immediately
+# outside the named area generated by route_power_stage3.py.
+(rule "Q2 CELL_NEG source-pin neckdown width"
+    (layer B.Cu)
+    (constraint track_width (min 0.20mm) (opt 0.50mm))
+    (condition "A.Type == 'Track' && A.NetName == '/CELL_NEG' && A.intersectsArea('Q2_CELL_NEG_PIN_NECKDOWN')"))
+
+(rule "Q2 CELL_NEG source-pin neckdown clearance"
+    (constraint clearance (min 0.15mm))
+    (condition "((A.Type == 'Track' && A.NetName == '/CELL_NEG' && A.intersectsArea('Q2_CELL_NEG_PIN_NECKDOWN')) && (B.Type == 'Pad' && B.Reference == 'Q2')) || ((B.Type == 'Track' && B.NetName == '/CELL_NEG' && B.intersectsArea('Q2_CELL_NEG_PIN_NECKDOWN')) && (A.Type == 'Pad' && A.Reference == 'Q2'))"))
+
+# BAT_COUT leaves the middle pin of U14 through the narrow reviewed corridor
+# between U14 and R104, then joins the existing R107/Q3 gate-control route.
+(rule "U14 BAT_COUT escape clearance"
+    (layer B.Cu)
+    (constraint clearance (min 0.20mm))
+    (condition "A.NetName == '/BAT_COUT' && A.intersectsArea('U14_BAT_COUT_ESCAPE')"))
+
+# The BQ29700, C102 and R106 draw only sensing/gate-control current from
+# CELL_NEG.  Their 0.20-mm branch is deliberately separated from the 0.50-mm
+# battery current path and confined to the named stage-4 areas.
+(rule "CELL_NEG low-current sense branch width"
+    (layer outer)
+    (constraint track_width (min 0.20mm) (opt 0.20mm))
+    (condition "A.Type == 'Track' && A.NetName == '/CELL_NEG' && (A.intersectsArea('CELL_NEG_SENSE_BRANCH_B') || A.intersectsArea('CELL_NEG_SENSE_BRANCH_F'))"))
+
+# The HTRC110 load path is routed at 0.50 mm.  Only the low-current branch to
+# U21 uses 0.30 mm through the dense digital field and a 0.39-mm package
+# escape; neither branch carries the external resonant-coil current.
+(rule "LF5V control-domain distribution"
+    (layer outer)
+    (constraint track_width (min 0.30mm) (opt 0.50mm))
+    (condition "A.NetName == '/LF_5V'"))
+
+# +3V3 is distributed on L3.  Outer-layer copper on this net is therefore a
+# short SMD-pad-to-via fanout, not a board-spanning power trace.  Fine-pitch
+# IC pads need a 0.20-mm minimum escape; the deterministic plane-fanout pass
+# uses 0.25 mm normally and the converter output is routed wider separately.
+(rule "3V3 SMD plane fanouts"
+    (layer outer)
+    (constraint track_width (min 0.20mm) (opt 0.25mm))
+    (condition "A.NetName == '/+3V3'"))
+
+# Short GND/+3V3 fanouts must leave several 0.5/0.65-mm-pitch packages before
+# reaching their plane vias.  Keep the expressions deliberately small because
+# KiCad rejects oversized compiled condition expressions as a whole.
+(rule "Fine-pitch plane-pad escapes A"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Track' && (A.NetName == '/GND' || A.NetName == '/+3V3')) && (B.Type == 'Pad' && (B.Reference == 'U2' || B.Reference == 'U6' || B.Reference == 'U7'))) || ((B.Type == 'Track' && (B.NetName == '/GND' || B.NetName == '/+3V3')) && (A.Type == 'Pad' && (A.Reference == 'U2' || A.Reference == 'U6' || A.Reference == 'U7')))"))
+
+(rule "Fine-pitch plane-pad escapes B"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Track' && (A.NetName == '/GND' || A.NetName == '/+3V3')) && (B.Type == 'Pad' && (B.Reference == 'U8' || B.Reference == 'U9' || B.Reference == 'U10'))) || ((B.Type == 'Track' && (B.NetName == '/GND' || B.NetName == '/+3V3')) && (A.Type == 'Pad' && (A.Reference == 'U8' || A.Reference == 'U9' || A.Reference == 'U10')))"))
+
+(rule "Fine-pitch plane-pad escapes C"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Track' && (A.NetName == '/GND' || A.NetName == '/+3V3')) && (B.Type == 'Pad' && (B.Reference == 'U11' || B.Reference == 'U17' || B.Reference == 'U18'))) || ((B.Type == 'Track' && (B.NetName == '/GND' || B.NetName == '/+3V3')) && (A.Type == 'Pad' && (A.Reference == 'U11' || A.Reference == 'U17' || A.Reference == 'U18')))"))
+
+(rule "Fine-pitch plane-pad escapes D"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Track' && (A.NetName == '/GND' || A.NetName == '/+3V3')) && (B.Type == 'Pad' && (B.Reference == 'U19' || B.Reference == 'U24' || B.Reference == 'U25'))) || ((B.Type == 'Track' && (B.NetName == '/GND' || B.NetName == '/+3V3')) && (A.Type == 'Pad' && (A.Reference == 'U19' || A.Reference == 'U24' || A.Reference == 'U25')))"))
+
+(rule "Fine-pitch plane-pad escapes E"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Track' && (A.NetName == '/GND' || A.NetName == '/+3V3')) && (B.Type == 'Pad' && (B.Reference == 'J2' || B.Reference == 'J8' || B.Reference == 'U15'))) || ((B.Type == 'Track' && (B.NetName == '/GND' || B.NetName == '/+3V3')) && (A.Type == 'Pad' && (A.Reference == 'J2' || A.Reference == 'J8' || A.Reference == 'U15')))"))
+
+# The same reviewed 0.20-mm copper clearance is allowed between the ordinary
+# plane fanout vias and adjacent pads of these dense packages.  Drill and
+# annular-ring limits are unchanged.
+(rule "Fine-pitch plane-via clearance A"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Via' && (A.NetName == '/GND' || A.NetName == '/+3V3')) && (B.Type == 'Pad' && (B.Reference == 'U2' || B.Reference == 'U6' || B.Reference == 'U9'))) || ((B.Type == 'Via' && (B.NetName == '/GND' || B.NetName == '/+3V3')) && (A.Type == 'Pad' && (A.Reference == 'U2' || A.Reference == 'U6' || A.Reference == 'U9')))"))
+
+(rule "Fine-pitch plane-via clearance B"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Via' && (A.NetName == '/GND' || A.NetName == '/+3V3')) && (B.Type == 'Pad' && (B.Reference == 'U10' || B.Reference == 'U17' || B.Reference == 'U19'))) || ((B.Type == 'Via' && (B.NetName == '/GND' || B.NetName == '/+3V3')) && (A.Type == 'Pad' && (A.Reference == 'U10' || A.Reference == 'U17' || A.Reference == 'U19')))"))
+
+(rule "Fine-pitch plane-via clearance C"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Via' && (A.NetName == '/GND' || A.NetName == '/+3V3')) && (B.Type == 'Pad' && (B.Reference == 'U25' || B.Reference == 'J2' || B.Reference == 'J8'))) || ((B.Type == 'Via' && (B.NetName == '/GND' || B.NetName == '/+3V3')) && (A.Type == 'Pad' && (A.Reference == 'U25' || A.Reference == 'J2' || A.Reference == 'J8')))"))
+
+(rule "Fine-pitch plane-via clearance D"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Via' && (A.NetName == '/GND' || A.NetName == '/+3V3')) && (B.Type == 'Pad' && B.Reference == 'U15')) || ((B.Type == 'Via' && (B.NetName == '/GND' || B.NetName == '/+3V3')) && (A.Type == 'Pad' && A.Reference == 'U15'))"))
+
+# U17 uses 0.65-mm-pitch SOT-23-6 lands.  Its LF_5V output needs one short
+# 0.20-mm escape before widening to the normal 0.50-mm rail.
+(rule "U17 LF5V pin neckdown width"
+    (layer F.Cu)
+    (constraint track_width (min 0.20mm) (opt 0.50mm))
+    (condition "A.Type == 'Track' && A.NetName == '/LF_5V' && A.intersectsArea('U17_LF5V_NECKDOWN')"))
+
+# U7's 0.5-mm-pitch power pins cannot accept the normal 0.50-mm rail width
+# without touching their adjacent pads.  The named rule areas are created by
+# route_critical.py and limit the relaxation to the reviewed local geometry.
+# The second area is a low-current Kelvin/sense branch to the feedback divider.
+(rule "U7 power-pin neckdown width"
+    (layer B.Cu)
+    (constraint track_width (min 0.20mm) (opt 0.50mm))
+    (condition "A.Type == 'Track' && ((A.intersectsArea('U7_POWER_PIN_NECKDOWNS') && (A.NetName == '/VSYS' || A.NetName == '/+5V_RAW')) || (A.intersectsArea('U7_5V_SENSE_CORRIDOR') && A.NetName == '/+5V_RAW'))"))
+
+(rule "U7 power-pin neckdown clearance"
+    (constraint clearance (min 0.20mm))
+    (condition "((A.Type == 'Track' && A.intersectsArea('U7_POWER_PIN_NECKDOWNS') && (A.NetName == '/VSYS' || A.NetName == '/+5V_RAW')) && (B.Type == 'Pad' && B.Reference == 'U7')) || ((B.Type == 'Track' && B.intersectsArea('U7_POWER_PIN_NECKDOWNS') && (B.NetName == '/VSYS' || B.NetName == '/+5V_RAW')) && (A.Type == 'Pad' && A.Reference == 'U7'))"))
+
+# R129 is a physical 0805 series crossover for the shared SPI MOSI bus.  VSYS
+# stays at 0.80 mm on both sides and uses a 0.30-mm, roughly 2.8-mm-long neck
+# only between the resistor lands; clearances and the two plane layers remain
+# unchanged.
+(rule "VSYS SPI crossover neck width"
+    (layer B.Cu)
+    (constraint track_width (min 0.30mm) (opt 0.30mm))
+    (condition "A.Type == 'Track' && A.NetName == '/VSYS' && A.intersectsArea('VSYS_SPI_CROSSOVER_NECK')"))
+
+(rule "Converter switch nodes stay wide"
+    (layer outer)
+    (constraint track_width (min 0.20mm) (opt 0.60mm))
+    (condition "A.NetName == '/U6_L1' || A.NetName == '/U6_L2' || A.NetName == '/U7_SW'"))
+
+# The HTRC110 resonant bridge can carry high AC voltage. Keep these nets wide,
+# short, on outer copper and out of the autorouter; final limits come from
+# measured coil current and voltage, not this minimum-width rule.
+(rule "LF RFID resonant path width"
+    (layer outer)
+    (constraint track_width (min 0.40mm) (opt 0.60mm))
+    (condition "A.NetName == '/LF_TX1' || A.NetName == '/LF_TX2' || A.NetName == '/LF_ANT_A' || A.NetName == '/LF_ANT_B' || A.NetName == '/LF_TAP'"))
+
+(rule "LF RFID analogue paths have no vias"
+    (constraint disallow via)
+    (condition "A.NetName == '/LF_TX1' || A.NetName == '/LF_TX2' || A.NetName == '/LF_ANT_A' || A.NetName == '/LF_ANT_B' || A.NetName == '/LF_TAP' || A.NetName == '/LF_RX' || A.NetName == '/LF_CEXT' || A.NetName == '/LF_QGND' || A.NetName == '/LF_CLK_4M'"))
+
+# Both resistor-separated USB sections use KiCad's _P/_N naming convention so
+# the pair rules apply on the connector and MCU sides.
+(rule "USB full-speed differential geometry"
+    (layer outer)
+    (constraint track_width (min 0.20mm) (max 0.20mm) (opt 0.20mm))
+    (constraint diff_pair_gap (min 0.18mm) (max 2.00mm) (opt 0.20mm))
+    (constraint diff_pair_uncoupled (max 20.0mm))
+    (condition "A.inDiffPair('/USB*')"))
+
+(rule "USB MCU-side pair has no vias"
+    (constraint disallow via)
+    (condition "A.NetName == '/USB_D_P' || A.NetName == '/USB_D_N'"))
+
+(rule "USB-C connector bridge clearance"
+    (constraint clearance (min 0.15mm))
+    (condition "(A.NetName == '/USB_CONN_P' || A.NetName == '/USB_CONN_N') && (B.NetName == '/USB_CONN_P' || B.NetName == '/USB_CONN_N') && (A.intersectsArea('USB_J1_BRIDGE_F') || A.intersectsArea('USB_J1_BRIDGE_B') || B.intersectsArea('USB_J1_BRIDGE_F') || B.intersectsArea('USB_J1_BRIDGE_B'))"))
+
+# U16 pin 6 needs one through-via beside the two back-side USB power
+# capacitors.  The deterministic route passes exactly through the centre gap
+# between their 0805 lands.  Keep this manufacturing-safe 0.20-mm relaxation
+# limited to CC2 against C103/C104; every other power/copper pair retains the
+# normal 0.25-mm clearance.
+(rule "USB CC2 local capacitor escape"
+    (constraint clearance (min 0.20mm))
+    (condition "(A.NetName == '/USB_CC2' && (B.Reference == 'C103' || B.Reference == 'C104')) || (B.NetName == '/USB_CC2' && (A.Reference == 'C103' || A.Reference == 'C104'))"))
+
+# J1 exposes separate A6/B6 and A7/B7 F.Cu-only pads in alternating P/N/P/N
+# order.  Connecting all four pads therefore needs a tiny matched B.Cu bridge:
+# two 0.50/0.30-mm bridge vias per connector-side net, kept immediately at J1,
+# plus one N-side feed via beside U16.  USB_CONN_P/N remain excluded from
+# autorouting; the exact five-via breakout is placed and reviewed manually.
+# The MCU-side USB_D_P/N section above remains strictly via-free.
+
+# The Sub-GHz feed uses one reviewed outer-layer transition before the spring
+# pocket.  Its 0.36-mm width remains provisional until the live production
+# stack is confirmed and the assembled pi network has been measured.
+(rule "Sub-GHz provisional feed width"
+    (layer outer)
+    (constraint track_width (min 0.36mm) (max 0.36mm) (opt 0.36mm))
+    (condition "A.NetName == '/SUBGHZ_RF_MOD' || A.NetName == '/SUBGHZ_RF_ANT'"))
+
+(rule "Sub-GHz module-side feed has no vias"
+    (constraint disallow via)
+    (condition "A.NetName == '/SUBGHZ_RF_MOD'"))
+
+# Keep every external PN532 matching connection on the component/loop side.
+# The only NFC layer transition is the crossover embedded inside AE1 itself.
+(rule "NFC matching route width"
+    (layer outer)
+    (constraint track_width (min 0.30mm) (max 0.50mm) (opt 0.40mm))
+    (condition "A.NetName == '/NFC_TX1' || A.NetName == '/NFC_TX2' || A.NetName == '/NFC_TX1_F' || A.NetName == '/NFC_TX2_F' || A.NetName == '/NFC_LOOP_A' || A.NetName == '/NFC_LOOP_B'"))
+
+(rule "NFC matching has no routing vias"
+    (constraint disallow via)
+    (condition "A.NetName == '/NFC_TX1' || A.NetName == '/NFC_TX2' || A.NetName == '/NFC_TX1_F' || A.NetName == '/NFC_TX2_F' || A.NetName == '/NFC_LOOP_A' || A.NetName == '/NFC_LOOP_B'"))
+
+(rule "PN532 crystal nets stay short"
+    (constraint length (max 10mm))
+    (condition "A.NetName == '/NFC_OSCIN' || A.NetName == '/NFC_OSCOUT'"))
+
+(rule "PN532 crystal nets stay on one outer layer"
+    (layer outer)
+    (constraint track_width (min 0.15mm) (max 0.25mm) (opt 0.20mm))
+    (constraint disallow via)
+    (condition "A.NetName == '/NFC_OSCIN' || A.NetName == '/NFC_OSCOUT'"))
+
+# The PN532 receive tap, AC coupling and VMID bias/decoupling are a compact
+# analog front end.  They are not ordinary digital nets and must not be
+# autorouted through the board or allowed to collect a long return loop.
+(rule "PN532 receive and VMID nodes stay local"
+    (layer outer)
+    (constraint track_width (min 0.15mm) (max 0.25mm) (opt 0.20mm))
+    (constraint length (max 10mm))
+    (constraint disallow via)
+    (condition "A.NetName == '/NFC_RX_AC' || A.NetName == '/NFC_RX' || A.NetName == '/NFC_VMID'"))
+
+(rule "RTC crystal nets stay short"
+    (constraint length (max 10mm))
+    (condition "A.NetName == '/RTC_OSCI' || A.NetName == '/RTC_OSCO'"))
+
+(rule "RTC crystal nets stay on one outer layer"
+    (layer outer)
+    (constraint track_width (min 0.15mm) (max 0.25mm) (opt 0.20mm))
+    (constraint disallow via)
+    (condition "A.NetName == '/RTC_OSCI' || A.NetName == '/RTC_OSCO'"))
+
+# A schematic DNP must never regain paste just because a footprint flag was
+# missed during synchronization.
+(rule "No paste on board-marked DNP footprints"
+    (constraint solder_paste_abs_margin (opt -50mm))
+    (condition "A.Do_not_Populate"))
+
+# KiCad evaluates custom rules from bottom to top.  Keep these narrow,
+# assembly-proven exceptions last so broader board rules cannot override them.
+(rule "Final USB2 connector fanout clearance"
+    (constraint clearance (min 0.15mm))
+    (condition "(A.NetName == '/USB_CONN_P' && B.NetName == '/USB_CONN_N') || (A.NetName == '/USB_CONN_N' && B.NetName == '/USB_CONN_P')"))
+
+(rule "Final J4 mechanical shell tabs at card edge"
+    (constraint edge_clearance (min -0.20mm))
+    (condition "A.Type == 'Pad' && A.Fabrication_Property == 'Mechanical' && A.Reference == 'J4'"))
