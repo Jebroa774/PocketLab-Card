@@ -1,6 +1,6 @@
-# Work checkpoint — 2026-08-16
+# Work checkpoint — 2026-08-17
 
-## Active PCB routing state — 2026-08-16
+## Active PCB routing state — 2026-08-17
 
 - Work has resumed on the PCB only; firmware and app work remain deferred.
 - The 2026-08-16 continuation corrected the physical internal-contact
@@ -13,7 +13,7 @@
   pad, one redundant west-side GND via was removed, and the retained plane via
   moved 0.20 mm right / 0.10 mm up into a clearance-clean site. U2.3, U2.7 and U2.41 remain
   explicitly connectivity-checked to GND.
-- Current local checkpoint saved on 2026-08-16 at 18:47 Europe/Berlin; the
+- Current local checkpoint saved on 2026-08-17 Europe/Berlin; the
   authoritative PCB, DRC/ERC reports and progress documentation are in sync.
   No commit or remote push was requested in this continuation.
 - LF RFID shares the existing SPI SCK/MOSI/MISO bus. U21 remains the
@@ -24,12 +24,19 @@
   domain while giving all seven U21 GND pads short inner-plane connections.
 - Six global LF/shared-SPI data paths are routed and connectivity-checked:
   SPI_SCK, SPI_MOSI, SPI_MISO, LF_SCLK_5V, LF_DIN_5V and LF_DOUT_5V.
-  The original LF_RFID_EN branch is present, but its newly added U22 enable
-  endpoint is still an explicit ratsnest item; the routing generator now
-  includes that endpoint
-  and will no longer report the older branch alone as complete. The low-current
-  LF_5V branch from the existing distribution via
-  C515 to U21 is also complete, with a reviewed 0.39-mm TSSOP neckdown.
+  The LF_RFID_EN U22 enable endpoint is now complete. A redundant +3V3 fanout
+  via in the dense PN532/U22 field was removed, R109 now joins the retained
+  +3V3 branch directly, and U22.1 reaches the existing LF-enable trunk through
+  a 0.45/0.20-mm via and a reviewed 0.20-mm L3 route. L2 remains plane-only;
+  `scripts/route_lf_enable.py` reproduces and connectivity-checks this stage.
+  The low-current LF_5V branch from the existing distribution via C515 to U21
+  is also complete, with a reviewed 0.39-mm TSSOP neckdown.
+- The dense U8/U11 sensor corridor is now reworked. U8 SCL reaches U1.6
+  through two standard 0.45/0.20-mm through-vias and a short L3 crossing;
+  U8 SDA reaches U11.4 directly on B.Cu. `FG_ALERT_N` and `SPI_MOSI` were
+  rerouted around the corridor, and the local U11.3/U11.5 ground branches were
+  restored. `scripts/route_i2c_sensor_corridor.py` reproduces and checks all
+  six affected endpoint pairs while L2 remains ground-only.
 - The dense-plane cleanup is complete. All GND and +3V3 islands are now
   closed, including the difficult U2.40, C704 and microSD J2.4 fanouts. U2.40
   uses a reviewed local reroute of LF_SCLK_5V/LF_DIN_5V; C704 is connected on
@@ -54,11 +61,11 @@
   complete as well. L2 remains an uninterrupted GND return plane. L3 retains
   the protected power polygons and may also carry ordinary low-speed digital
   traces outside +5V_RAW/+5V_AUX, RF, USB, NFC and LF analogue keepouts.
-- The authoritative PCB now contains 1734 track segments, 327 vias and 23
-  zones. The current ratsnest contains 159 open connection items. GND, +3V3,
+- The authoritative PCB now contains 1854 track segments, 336 vias and 23
+  zones. The current ratsnest contains 146 open connection items. GND, +3V3,
   +5V_RAW and +5V_AUX are all fully connected.
   Accepted DRC-neutral additions include I2C_SDA, EX0/EX1/EX4 interrupt,
-  NFC_I0, SUBGHZ_GDO2, AUX5_EN, I2C_SCL_HDR, GPIO44_MCU, BOOT_N,
+  NFC_I0, SUBGHZ_GDO2, AUX5_EN, I2C_SCL_HDR, SPI_SCK_HDR, GPIO44_MCU, BOOT_N,
   USER_BUTTON_B_N, CHG_DISABLE, USER_BUTTON_SELECT_N, SUB_CS_N, SPI_SCK,
   SD_DETECT_N and AUX5_FAULT_N islands. Both PN532 crystal pins and their
   load-capacitor branches are complete. The two local matching-to-loop paths
@@ -66,6 +73,33 @@
   corridors; the latter use two ordinary vias and short L3 signal sections.
   The three high-output IR LEDs now share a complete 0.50-mm common-cathode
   route along the short board edge.
+- The short PN532 `/NFC_TX2_F` matching branch from L302.2 to C309.1 is now
+  complete with five locked 0.15-mm F.Cu segments and no via. Its narrow
+  corridor retains 0.25 mm to both C301 and the reviewed LF_DIN_5V crossing;
+  `scripts/route_nfc_tx2_matching.py` reproduces and checks this connection.
+- The microSD `/SD_CS_DEV` leg now connects U19.1 to J2.2 through one local
+  0.45/0.20-mm via. The U19.2 GND escape was shifted toward the card edge while
+  retaining the same plane via; `scripts/route_sd_cs_socket.py` reproduces and
+  checks both endpoint groups.
+- The ESP32 `/SPI_MOSI` pad U1.19 now joins the existing U21/R129 shared-bus
+  group through eight locked 0.15-mm F.Cu/B.Cu segments and one 0.45/0.20-mm
+  via. `scripts/route_spi_mosi_mcu.py` reproduces and checks the endpoint pair.
+- The microSD resistor-side `/SPI_MOSI` pad R511.1 now joins that shared group
+  through six locked 0.15-mm L3 segments, one short F.Cu escape and one
+  0.45/0.20-mm via. `scripts/route_spi_mosi_sd_resistor.py` reproduces the
+  route and checks R511.1 against R129.2 after the plane refill.
+- The USB-C `/USB_CC1` receptacle pad J1.A5 now reaches R101.1 through ten
+  locked outer-layer segments and one 0.45/0.20-mm via. U16.4 joins J1.A5
+  through nine locked 0.20-mm F.Cu segments with no additional via, leaving
+  all three CC1 pads in one group. `scripts/route_usb_cc1_resistor.py` and
+  `scripts/route_usb_cc1_esd_branch.py` reproduce the two reviewed stages.
+- The UP-button `/USER_BUTTON_A_N` contact SW3.1 now reaches R608.1 through
+  ten locked 0.15-mm segments, two 0.45/0.20-mm vias and a short reviewed L3
+  crossing. U18.11 remains the second net group;
+  `scripts/route_user_button_a_pullup.py` reproduces the accepted geometry.
+- The back-side `/CELL_POS` monitor input U8.3 now reaches local capacitor
+  C120.1 through four locked, via-free 0.15-mm B.Cu segments;
+  `scripts/route_cell_pos_monitor.py` reproduces and checks this endpoint pair.
 - Schematic/PCB/design-netlist parity passes, every new route passes explicit
   endpoint connectivity checks, and ERC reports 0 errors / 0 warnings. DRC
   reports 16 known non-release findings: 8 existing clearance findings, one
@@ -130,7 +164,7 @@
   rerouted around Y701, and R405 now faces U3 -> antenna. CC2 and the provisional
   Sub-GHz feed are also complete. The subsequent split-5V and dense-plane
   stages formed the earlier 1214-segment checkpoint; the current authoritative
-  board has advanced to 1734 segments, 327 vias and 23 zones.
+  board has advanced to 1854 segments, 336 vias and 23 zones.
 - Two named B.Cu rule areas limit U7's unavoidable 0.20-mm power-pin neckdowns
   to the package exits and the reviewed Kelvin/sense corridor; the power rails
   widen to 0.50 mm outside those areas.
@@ -169,7 +203,7 @@
 - The final saved KiCad checks pass schematic/PCB parity and ERC with 0 errors /
   0 warnings. DRC reports 16 known non-release findings: 8 clearances, one J4
   copper-to-edge finding, six local footprint-library comparison warnings and
-  one positionless B.Cu copper-sliver warning. There are 159 open connection
+  one positionless B.Cu copper-sliver warning. There are 146 open connection
   items, so this remains only a routing checkpoint.
 - Firmware remains at the preceding two-button checkpoint by explicit project
   priority; no firmware file was changed for the new SELECT hardware. That
@@ -185,7 +219,7 @@
 1. Reroute the remaining digital/control nets, including the short U24/U25
    clamp branches, then hand-route the dense ESP_EN, BMI/IO-expander and
    microSD signal corridors that the guarded router correctly skips. Refill
-   planes after each accepted batch and close all 159 ratsnest items.
+   planes after each accepted batch and close all 146 ratsnest items.
 2. Complete the PN532 DVDD and TX matching network with reviewed short RF
    paths; preserve the antenna keepout and tune the populated V1 board.
 3. Confirm the live `JLC04121H-7628` data and recalculate the stack-dependent

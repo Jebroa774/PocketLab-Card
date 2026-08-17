@@ -74,6 +74,9 @@ CONNECTIONS = (
     ("/LF_RFID_EN", "U18", "9", "U17", "3"),
     # U22 was added after the first LF-enable route.  Its OE input belongs to
     # the same gated enable net and needs a second physical connection.
+    # The dense U22 escape is completed by route_lf_enable.py.  Keeping the
+    # endpoint here makes the global pass verify/skip that reviewed branch
+    # instead of treating the older U18-to-U17 trunk as the whole net.
     ("/LF_RFID_EN", "U18", "9", "U22", "1"),
 )
 

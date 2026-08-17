@@ -13,7 +13,7 @@
   switched 5 V, while the ESP32 and ATECC608C remain on 3.3 V.
 - ATECC608C is present in SOIC-8 but intentionally unprovisioned.
 
-## 2026-08-16 generated design
+## 2026-08-17 generated design
 
 - KiCad 10 schematic: 274 symbols, 267 footprints, 181 logical/231 PCB nets.
 - ERC: 0 errors, 0 warnings.
@@ -72,13 +72,44 @@
 - `+5V_RAW` and `+5V_AUX` are fully connected through two narrow L3
   distribution corridors while L2 remains the continuous GND plane. The 36
   requested GND/+3V3 clusters and the reviewed U2.3 GND escape are complete.
-- The board currently contains 1734 track segments, 327 vias and 23 zones.
+- The U8/U11 sensor corridor now carries I2C_SCL from U1.6 to U8.7 through a
+  short L3 crossing and I2C_SDA from U8.8 to U11.4 directly on B.Cu. The
+  displaced `FG_ALERT_N` and `SPI_MOSI` paths and both local U11 ground
+  branches were restored and explicitly connectivity-checked; L2 still has
+  no non-GND signal tracks.
+- The J5 protection checkpoint connects J5.25 to the complete U25/R732
+  `SPI_SCK_HDR` tree and J5.23 to U24.1 on `I2C_SDA_HDR`; the separate R730 SDA
+  clamp branch remains open. The two reviewed low-speed L3 crossings preserve
+  the ground-only L2 plane. One added `+5V_RAW` stitch via restores the power
+  polygon across the SCK clearance slot, and explicit endpoint checks pass for
+  both header routes and the two locally rehomed fanouts.
+- The PN532 `/NFC_TX2_F` branch now connects L302.2 to C309.1 with five locked
+  0.15-mm F.Cu segments, no via and the full reviewed 0.25-mm local clearance.
+- The microSD `/SD_CS_DEV` branch now connects U19.1 to J2.2 through one local
+  0.45/0.20-mm via. U19.2 retains a complete GND connection through its
+  existing plane via after the front escape was shifted toward the card edge.
+- The ESP32 `/SPI_MOSI` branch now joins U1.19 to the routed U21/R129 bus group
+  with eight locked 0.15-mm outer-layer segments and one 0.45/0.20-mm via.
+- The microSD resistor-side `/SPI_MOSI` branch now joins R511.1 to that bus
+  group through six locked 0.15-mm L3 segments, one short F.Cu escape and one
+  0.45/0.20-mm via. L2 remains ground-only and all critical power groups remain
+  connected after the L3 plane refill.
+- The USB-C `/USB_CC1` path now joins J1.A5 to 5.1-kohm pull-down R101.1 with
+  ten locked outer-layer segments and one 0.45/0.20-mm via. Nine additional
+  locked 0.20-mm F.Cu segments join U16.4 to J1.A5 without another via, so all
+  three CC1 pads form one connected group.
+- The UP-button `/USER_BUTTON_A_N` path now joins SW3.1 to pull-up R608.1
+  with ten locked 0.15-mm segments and two 0.45/0.20-mm vias. Its short L3
+  crossing clears the dense LF/RGB fanouts; U18.11 remains the second group.
+- The back-side `/CELL_POS` monitor branch now joins U8.3 to C120.1 with four
+  locked 0.15-mm B.Cu segments and no via.
+- The board currently contains 1854 track segments, 336 vias and 23 zones.
 - J2 is 0.175 mm farther inboard than the prior checkpoint. Its signal and
   shell pads now meet the configured 0.50-mm board-edge clearance without
   reducing the adjacent B.Cu ground-track clearance below 0.20 mm.
 - DRC: 16 documented non-release findings remain, with no track-width, via,
   drill, short, dangling-track or new routing-clearance finding. Schematic
-  parity and ERC are clean; 159 unconnected items remain. GND, +3V3,
+  parity and ERC are clean; 146 unconnected items remain. GND, +3V3,
   +5V_RAW and +5V_AUX are fully connected.
 - The PCB is therefore not order-ready.
 
@@ -97,7 +128,7 @@ firmware below is the preceding two-button checkpoint and has not been changed.
 
 ## Outstanding before an order
 
-1. Route the remaining 159 signal connection items, especially the PN532
+1. Route the remaining 146 signal connection items, especially the PN532
    supply/matching network and the dense MCU, sensor and microSD corridors.
    Refill planes after each batch and close DRC with no unexplained item.
 2. Independently review every footprint, polarity and custom land pattern.
