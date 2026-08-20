@@ -55,7 +55,7 @@ also reach F1 through reviewed local neckdowns and 0.50/0.60-mm B.Cu copper.
 The provisional 868-MHz feed now runs through the correctly oriented pi network
 and makes its sole signal-layer transition before the spring pocket; its F.Cu
 section remains on the narrow PCB bridge outside the notch. The present
-checkpoint has 1881 track segments, 342 vias and 23 zones. Both `+5V_RAW` and
+checkpoint has 1889 track segments, 343 vias and 23 zones. Both `+5V_RAW` and
 `+5V_AUX` are complete on narrow L3 corridors, the requested 36 dense-plane
 clusters are closed, and the reviewed U2.3 GND escape is routed. R405 is
 oriented with pad 1 toward U3 and pad 2 toward the antenna. The microSD socket
@@ -84,6 +84,10 @@ through one short reviewed L3 crossing and two 0.45/0.20-mm vias; U18.11
 remains the explicit second group on that net.
 The back-side `/CELL_POS` monitor input U8.3 now reaches local capacitor C120.1
 through four short, via-free 0.15-mm B.Cu segments.
+The back-side `/CELL_POS` sense input R104.1 now joins the charger/battery
+branch through three locked 0.20-mm B.Cu segments, one 0.45/0.20-mm tented via
+and five locked 0.20-mm F.Cu segments. The route uses the narrow reviewed gap
+between C101 and C117 without cutting any inner-layer power polygon.
 The protected `/GPIO43` output R718.2 now reaches expansion-header pad J5.11
 through three locked 0.15-mm L3 segments and one 0.45/0.20-mm tented via.
 The protected `/SPI_MISO_HDR` branch now joins resistor R734.2 to J5 ESD-array
@@ -99,7 +103,7 @@ escape. The adjacent `/OLED_C1P` segment uses the project-minimum 0.15-mm
 width through that local corridor, while a short same-net L3 bridge preserves
 the complete `+5V_AUX` polygon around the new antipad.
 KiCad DRC retains 16 documented non-release findings and has no
-schematic-parity error; ERC is clean and 142 open items remain. None of these files is an order-ready
+schematic-parity error; ERC is clean and 141 open items remain. None of these files is an order-ready
 fabrication release.
 
 The latest PN532 cleanup connects U2.5/U2.8 with a short via-free DVDD escape
@@ -151,6 +155,9 @@ The reproducible routing helpers are:
 
 # Reproduce the reviewed U8-to-C120 CELL_POS monitor branch
 & "$env:LOCALAPPDATA\Programs\KiCad\10.0\bin\python.exe" scripts/route_cell_pos_monitor.py --input PocketLab-Card.kicad_pcb --output PocketLab-Card-cell-pos-monitor-candidate.kicad_pcb --force
+
+# Reproduce the reviewed R104-to-main CELL_POS sense branch
+& "$env:LOCALAPPDATA\Programs\KiCad\10.0\bin\python.exe" scripts/route_cell_pos_sense_branch.py --input PocketLab-Card.kicad_pcb --output PocketLab-Card-cell-pos-sense-candidate.kicad_pcb --force
 
 # Reproduce the reviewed protected GPIO43-to-header branch
 & "$env:LOCALAPPDATA\Programs\KiCad\10.0\bin\python.exe" scripts/route_gpio43_header.py --input PocketLab-Card.kicad_pcb --output PocketLab-Card-gpio43-header-candidate.kicad_pcb --force
