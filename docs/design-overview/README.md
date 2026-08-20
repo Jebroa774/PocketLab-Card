@@ -1,7 +1,7 @@
 # PocketLab Card design overview
 
 These KiCad renders show the placement of the current design, not the final
-fabrication appearance. Placement is complete, but 145 connection items remain
+fabrication appearance. Placement is complete, but 144 connection items remain
 open. The IR bodies and spring antenna use approximate mechanical preview
 models; the footprint courtyards and board outline remain the manufacturing
 references. RF stitching, several sensitive routes and final enclosure
@@ -59,6 +59,6 @@ received-part and enclosure measurements replace this provisional envelope.
 The current placement and retained routing pass the scripted component/keepout
 audit. Schematic parity and ERC are clean. KiCad DRC reports 16 documented
 non-release findings covering native fine-pitch clearances, one J4 edge-mounted
-copper item, footprint-library checks and one copper-sliver warning. The 145 unconnected
+copper item, footprint-library checks and one copper-sliver warning. The 144 unconnected
 items are the explicit routing blocker, so this revision
 must not be sent to fabrication yet.

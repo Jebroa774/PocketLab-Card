@@ -105,13 +105,16 @@
   locked 0.15-mm B.Cu segments and no via.
 - The protected `/GPIO43` output R718.2 now reaches expansion-header pad J5.11
   through three locked 0.15-mm L3 segments and one 0.45/0.20-mm tented via.
-- The board currently contains 1857 track segments, 337 vias and 23 zones.
+- The protected `/SPI_MISO_HDR` branch now joins R734.2 to J5 ESD-array pad
+  U25.1 with eleven locked 0.15-mm segments, two 0.45/0.20-mm tented vias and
+  a reviewed L3 corridor. L2 remains ground-only.
+- The board currently contains 1868 track segments, 339 vias and 23 zones.
 - J2 is 0.175 mm farther inboard than the prior checkpoint. Its signal and
   shell pads now meet the configured 0.50-mm board-edge clearance without
   reducing the adjacent B.Cu ground-track clearance below 0.20 mm.
 - DRC: 16 documented non-release findings remain, with no track-width, via,
   drill, short, dangling-track or new routing-clearance finding. Schematic
-  parity and ERC are clean; 145 unconnected items remain. GND, +3V3,
+  parity and ERC are clean; 144 unconnected items remain. GND, +3V3,
   +5V_RAW and +5V_AUX are fully connected.
 - The PCB is therefore not order-ready.
 
@@ -130,7 +133,7 @@ firmware below is the preceding two-button checkpoint and has not been changed.
 
 ## Outstanding before an order
 
-1. Route the remaining 145 signal connection items, especially the PN532
+1. Route the remaining 144 signal connection items, especially the PN532
    supply/matching network and the dense MCU, sensor and microSD corridors.
    Refill planes after each batch and close DRC with no unexplained item.
 2. Independently review every footprint, polarity and custom land pattern.
