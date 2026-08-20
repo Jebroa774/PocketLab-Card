@@ -19,7 +19,7 @@ hand where practical.
 
 > [!WARNING]
 > **Engineering prototype — not ready to order.** Placement is complete and
-> critical routing has started, but 144 connection items remain open. RF/LF
+> critical routing has started, but 143 connection items remain open. RF/LF
 > tuning, final DRC/DFM, sourcing review and prototype measurements are still
 > required before fabrication.
 
@@ -82,8 +82,8 @@ height and enclosure clearances must be verified against received components.
 | Physical PCB nets | 231 |
 | ERC | 0 errors / 0 warnings |
 | Placed footprints | 267 / 267 |
-| Routed checkpoint | 1868 track segments / 339 vias / 23 zones |
-| Remaining connection items | 144 |
+| Routed checkpoint | 1878 track segments / 341 vias / 23 zones |
+| Remaining connection items | 143 |
 | Current routed-geometry/parity errors | 0 |
 | Reviewed footprint-library warnings | 6 |
 
