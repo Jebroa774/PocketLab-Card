@@ -61,8 +61,8 @@
   complete as well. L2 remains an uninterrupted GND return plane. L3 retains
   the protected power polygons and may also carry ordinary low-speed digital
   traces outside +5V_RAW/+5V_AUX, RF, USB, NFC and LF analogue keepouts.
-- The authoritative PCB now contains 1878 track segments, 341 vias and 23
-  zones. The current ratsnest contains 143 open connection items. GND, +3V3,
+- The authoritative PCB now contains 1881 track segments, 342 vias and 23
+  zones. The current ratsnest contains 142 open connection items. GND, +3V3,
   +5V_RAW and +5V_AUX are all fully connected.
   Accepted DRC-neutral additions include I2C_SDA, EX0/EX1/EX4 interrupt,
   NFC_I0, SUBGHZ_GDO2, AUX5_EN, I2C_SCL_HDR, SPI_SCK_HDR, GPIO44_MCU, BOOT_N,
@@ -112,6 +112,11 @@
   0.45/0.20-mm vias. Two local LF clock/data jogs preserve those neighboring
   nets while opening the conventional through-via corridor;
   `scripts/route_nfc_tx1_driver.py` reproduces and checks the endpoint pair.
+- The OLED `/OLED_VCC` supply now joins C615/C616 to J8.16 through one
+  0.45/0.20-mm tented via, a 0.15-mm L3 crossing and a short F.Cu escape. The
+  neighboring `/OLED_C1P` corridor is narrowed locally to the project minimum,
+  and one short `+5V_AUX` L3 bridge keeps all five AUX5 pads in one plane group.
+  `scripts/route_oled_vcc.py` reproduces and checks all three affected nets.
 - Schematic/PCB/design-netlist parity passes, every new route passes explicit
   endpoint connectivity checks, and ERC reports 0 errors / 0 warnings. DRC
   reports 16 known non-release findings: 8 existing clearance findings, one
@@ -176,7 +181,7 @@
   rerouted around Y701, and R405 now faces U3 -> antenna. CC2 and the provisional
   Sub-GHz feed are also complete. The subsequent split-5V and dense-plane
   stages formed the earlier 1214-segment checkpoint; the current authoritative
-  board has advanced to 1878 segments, 341 vias and 23 zones.
+  board has advanced to 1881 segments, 342 vias and 23 zones.
 - Two named B.Cu rule areas limit U7's unavoidable 0.20-mm power-pin neckdowns
   to the package exits and the reviewed Kelvin/sense corridor; the power rails
   widen to 0.50 mm outside those areas.
@@ -199,9 +204,9 @@
 - The Sub-GHz pi network is now routed at the provisional 0.36-mm width. C404
   is perpendicular to the feed, `/SUBGHZ_RF_MOD` stays on B.Cu and
   `/SUBGHZ_RF_ANT` makes exactly one 0.60/0.30-mm transition to F.Cu before the
-  spring pocket. The front trace stays outside the antenna notch. `/OLED_VCC`
-  was returned completely to the ratsnest because its old autorouter path ran
-  through C404's corrected ground-shunt position.
+  spring pocket. The front trace stays outside the antenna notch. The obsolete
+  `/OLED_VCC` autorouter path through C404's corrected ground-shunt position was
+  removed and has since been replaced by the reviewed local OLED route above.
 - SW3/SW7/SW4 now form a compact, labeled UP/OK/DOWN row using the same
   KMR221GLFS footprint as RESET/BOOT. R607 is the SELECT pull-up; U9/P07 is the
   SELECT input and BMP390 INT is NC. PAIR remains a separate security button.
@@ -215,7 +220,7 @@
 - The final saved KiCad checks pass schematic/PCB parity and ERC with 0 errors /
   0 warnings. DRC reports 16 known non-release findings: 8 clearances, one J4
   copper-to-edge finding, six local footprint-library comparison warnings and
-  one positionless B.Cu copper-sliver warning. There are 143 open connection
+  one positionless B.Cu copper-sliver warning. There are 142 open connection
   items, so this remains only a routing checkpoint.
 - Firmware remains at the preceding two-button checkpoint by explicit project
   priority; no firmware file was changed for the new SELECT hardware. That
@@ -231,7 +236,7 @@
 1. Reroute the remaining digital/control nets, including the short U24/U25
    clamp branches, then hand-route the dense ESP_EN, BMI/IO-expander and
    microSD signal corridors that the guarded router correctly skips. Refill
-   planes after each accepted batch and close all 143 ratsnest items.
+   planes after each accepted batch and close all 142 ratsnest items.
 2. Complete the PN532 DVDD and TX matching network with reviewed short RF
    paths; preserve the antenna keepout and tune the populated V1 board.
 3. Confirm the live `JLC04121H-7628` data and recalculate the stack-dependent

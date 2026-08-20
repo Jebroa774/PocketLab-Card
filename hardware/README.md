@@ -55,7 +55,7 @@ also reach F1 through reviewed local neckdowns and 0.50/0.60-mm B.Cu copper.
 The provisional 868-MHz feed now runs through the correctly oriented pi network
 and makes its sole signal-layer transition before the spring pocket; its F.Cu
 section remains on the narrow PCB bridge outside the notch. The present
-checkpoint has 1878 track segments, 341 vias and 23 zones. Both `+5V_RAW` and
+checkpoint has 1881 track segments, 342 vias and 23 zones. Both `+5V_RAW` and
 `+5V_AUX` are complete on narrow L3 corridors, the requested 36 dense-plane
 clusters are closed, and the reviewed U2.3 GND escape is routed. R405 is
 oriented with pad 1 toward U3 and pad 2 toward the antenna. The microSD socket
@@ -93,8 +93,13 @@ The PN532 `/NFC_TX1` driver pad U2.4 now reaches matching inductor L301.1
 through two short F.Cu escapes, three locked 0.20-mm L3 segments and two
 0.45/0.20-mm tented vias. Small reviewed jogs in the neighboring LF clock/data
 fanouts preserve their connectivity and keep the dedicated L2 GND plane clean.
+The OLED `/OLED_VCC` branch now joins C615/C616 to display pad J8.16 through
+one 0.45/0.20-mm tented via, a narrow 0.15-mm L3 crossing and a short F.Cu
+escape. The adjacent `/OLED_C1P` segment uses the project-minimum 0.15-mm
+width through that local corridor, while a short same-net L3 bridge preserves
+the complete `+5V_AUX` polygon around the new antipad.
 KiCad DRC retains 16 documented non-release findings and has no
-schematic-parity error; ERC is clean and 143 open items remain. None of these files is an order-ready
+schematic-parity error; ERC is clean and 142 open items remain. None of these files is an order-ready
 fabrication release.
 
 The latest PN532 cleanup connects U2.5/U2.8 with a short via-free DVDD escape
@@ -155,6 +160,9 @@ The reproducible routing helpers are:
 
 # Reproduce the reviewed PN532 TX1 driver-to-inductor branch
 & "$env:LOCALAPPDATA\Programs\KiCad\10.0\bin\python.exe" scripts/route_nfc_tx1_driver.py --input PocketLab-Card.kicad_pcb --output PocketLab-Card-nfc-tx1-candidate.kicad_pcb --force
+
+# Reproduce the reviewed OLED VCC branch and local AUX5 plane bridge
+& "$env:LOCALAPPDATA\Programs\KiCad\10.0\bin\python.exe" scripts/route_oled_vcc.py --input PocketLab-Card.kicad_pcb --output PocketLab-Card-oled-vcc-candidate.kicad_pcb --force
 
 # Reproduce the reviewed USB-C CC1 receptacle-to-pull-down path
 & "$env:LOCALAPPDATA\Programs\KiCad\10.0\bin\python.exe" scripts/route_usb_cc1_resistor.py --input PocketLab-Card.kicad_pcb --output PocketLab-Card-usb-cc1-resistor-candidate.kicad_pcb --force
