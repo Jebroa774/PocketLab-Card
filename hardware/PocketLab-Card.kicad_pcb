@@ -22595,9 +22595,10 @@
 		)
 	)
 	(footprint "TestPoint:TestPoint_Pad_D1.0mm"
+		(locked yes)
 		(layer "F.Cu")
 		(uuid "e3ca1923-e605-4eab-aeaf-a987e1ac6345")
-		(at 36.5473 22.346)
+		(at 98.1 62.2)
 		(descr "SMD pad as test Point, diameter 1.0mm")
 		(tags "test point SMD pad")
 		(property "Reference" "TP101"
