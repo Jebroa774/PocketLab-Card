@@ -1,6 +1,6 @@
-# Work checkpoint — 2026-08-17
+# Work checkpoint — 2026-08-21
 
-## Active PCB routing state — 2026-08-17
+## Active PCB routing state — 2026-08-21
 
 - Work has resumed on the PCB only; firmware and app work remain deferred.
 - The 2026-08-16 continuation corrected the physical internal-contact
@@ -13,7 +13,7 @@
   pad, one redundant west-side GND via was removed, and the retained plane via
   moved 0.20 mm right / 0.10 mm up into a clearance-clean site. U2.3, U2.7 and U2.41 remain
   explicitly connectivity-checked to GND.
-- Current local checkpoint saved on 2026-08-17 Europe/Berlin; the
+- Current local checkpoint saved on 2026-08-21 Europe/Berlin; the
   authoritative PCB, DRC/ERC reports and progress documentation are in sync.
   No commit or remote push was requested in this continuation.
 - LF RFID shares the existing SPI SCK/MOSI/MISO bus. U21 remains the
@@ -61,8 +61,8 @@
   complete as well. L2 remains an uninterrupted GND return plane. L3 retains
   the protected power polygons and may also carry ordinary low-speed digital
   traces outside +5V_RAW/+5V_AUX, RF, USB, NFC and LF analogue keepouts.
-- The authoritative PCB now contains 1881 track segments, 342 vias and 23
-  zones. The current ratsnest contains 142 open connection items. GND, +3V3,
+- The authoritative PCB now contains 1889 track segments, 343 vias and 23
+  zones. The current ratsnest contains 140 open connection items. GND, +3V3,
   +5V_RAW and +5V_AUX are all fully connected.
   Accepted DRC-neutral additions include I2C_SDA, EX0/EX1/EX4 interrupt,
   NFC_I0, SUBGHZ_GDO2, AUX5_EN, I2C_SCL_HDR, SPI_SCK_HDR, GPIO44_MCU, BOOT_N,
@@ -100,6 +100,10 @@
 - The back-side `/CELL_POS` monitor input U8.3 now reaches local capacitor
   C120.1 through four locked, via-free 0.15-mm B.Cu segments;
   `scripts/route_cell_pos_monitor.py` reproduces and checks this endpoint pair.
+- CELL_NEG test point TP102 now sits directly on the existing front-side
+  battery-negative trunk at 103.85,65.75 mm. This closes its isolated group
+  without adding copper; `scripts/place_tp102_cell_neg.py` reproduces the
+  locked placement and is idempotent.
 - The protected `/GPIO43` output R718.2 now reaches expansion-header pad J5.11
   through three locked 0.15-mm L3 segments and one 0.45/0.20-mm tented via;
   `scripts/route_gpio43_header.py` reproduces and checks this endpoint pair.
@@ -181,7 +185,7 @@
   rerouted around Y701, and R405 now faces U3 -> antenna. CC2 and the provisional
   Sub-GHz feed are also complete. The subsequent split-5V and dense-plane
   stages formed the earlier 1214-segment checkpoint; the current authoritative
-  board has advanced to 1881 segments, 342 vias and 23 zones.
+  board has advanced to 1889 segments, 343 vias and 23 zones.
 - Two named B.Cu rule areas limit U7's unavoidable 0.20-mm power-pin neckdowns
   to the package exits and the reviewed Kelvin/sense corridor; the power rails
   widen to 0.50 mm outside those areas.
@@ -220,7 +224,7 @@
 - The final saved KiCad checks pass schematic/PCB parity and ERC with 0 errors /
   0 warnings. DRC reports 16 known non-release findings: 8 clearances, one J4
   copper-to-edge finding, six local footprint-library comparison warnings and
-  one positionless B.Cu copper-sliver warning. There are 142 open connection
+  one positionless B.Cu copper-sliver warning. There are 140 open connection
   items, so this remains only a routing checkpoint.
 - Firmware remains at the preceding two-button checkpoint by explicit project
   priority; no firmware file was changed for the new SELECT hardware. That
@@ -236,7 +240,7 @@
 1. Reroute the remaining digital/control nets, including the short U24/U25
    clamp branches, then hand-route the dense ESP_EN, BMI/IO-expander and
    microSD signal corridors that the guarded router correctly skips. Refill
-   planes after each accepted batch and close all 142 ratsnest items.
+   planes after each accepted batch and close all 140 ratsnest items.
 2. Complete the PN532 DVDD and TX matching network with reviewed short RF
    paths; preserve the antenna keepout and tune the populated V1 board.
 3. Confirm the live `JLC04121H-7628` data and recalculate the stack-dependent
