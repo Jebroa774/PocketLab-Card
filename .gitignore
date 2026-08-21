@@ -33,6 +33,38 @@ hardware/.tmp-*
 hardware/.audit-*
 hardware/.current-*
 
+# Local iterative PCB routing candidates and DRC scratch output.  The accepted
+# board lives at hardware/PocketLab-Card.kicad_pcb and its report is kept in
+# hardware/reports/PocketLab-Card-drc.json.
+hardware/.pre-*.kicad_pcb
+hardware/PocketLab-Card-pre-*.kicad_pcb
+hardware/PocketLab-Card-aux-*
+hardware/PocketLab-Card-*.kicad_*
+hardware/PocketLab-Card-*candidate*
+hardware/PocketLab-Card-*trial*
+hardware/PocketLab-Card-direct-*
+hardware/PocketLab-Card-*scan*
+hardware/trial-*
+hardware/trial2-*
+hardware/active-*
+hardware/auto-*
+hardware/batch-*
+hardware/close-all-*
+hardware/debug-*
+hardware/full-reroute-*
+hardware/manual-*
+hardware/net-assignment-*
+hardware/probe-*
+hardware/special-*
+hardware/special2-*
+hardware/*-attempt.kicad_pcb
+hardware/*-drc.json
+hardware/bmi-region.txt
+hardware/backups/
+hardware/reports/*
+!hardware/reports/PocketLab-Card-drc.json
+hardware/~*.lck
+
 # Manufacturing outputs are generated for tagged releases
 manufacturing/*.zip
 manufacturing/*.zip.sha256

@@ -14,7 +14,7 @@ from pathlib import Path
 import pcbnew
 
 import route_lf_global as maze
-from route_plane_fanouts import B, F, board_rect, existing_obstacles, is_through_pad, item_key, pad_layer
+from route_plane_fanouts import B, F, board_rect, existing_obstacles, is_through_pad, item_key, pad_layer, xy
 from route_remaining_signals import (
     disconnected_pad_group_cache,
     disconnected_pad_groups,
@@ -38,6 +38,104 @@ def common_outer_layers(first: pcbnew.PAD, second: pcbnew.PAD) -> tuple[int, ...
     return ()
 
 
+def compact_path(points: tuple[tuple[float, float], ...]) -> tuple[tuple[float, float], ...]:
+    """Drop repeated and exactly collinear dogleg points."""
+
+    result: list[tuple[float, float]] = []
+    for position in points:
+        if result and position == result[-1]:
+            continue
+        result.append(position)
+        while len(result) >= 3:
+            a, b, c = result[-3:]
+            cross = (b[0] - a[0]) * (c[1] - b[1]) - (b[1] - a[1]) * (c[0] - b[0])
+            if abs(cross) > 1e-9:
+                break
+            result.pop(-2)
+    return tuple(result)
+
+
+def fast_dogleg_paths(
+    start: tuple[float, float],
+    end: tuple[float, float],
+    expansion: float,
+) -> tuple[tuple[tuple[float, float], ...], ...]:
+    """Generate cheap L/Z/offset paths before invoking the grid router."""
+
+    paths: list[tuple[tuple[float, float], ...]] = [
+        (start, end),
+        (start, (end[0], start[1]), end),
+        (start, (start[0], end[1]), end),
+    ]
+    offsets = [0.5 * index for index in range(1, int(expansion / 0.5) + 1)]
+    mid_x = (start[0] + end[0]) / 2.0
+    mid_y = (start[1] + end[1]) / 2.0
+    x_channels = [mid_x]
+    y_channels = [mid_y]
+    for offset in offsets:
+        x_channels.extend((min(start[0], end[0]) - offset, max(start[0], end[0]) + offset))
+        y_channels.extend((min(start[1], end[1]) - offset, max(start[1], end[1]) + offset))
+    for x in x_channels:
+        paths.append((start, (x, start[1]), (x, end[1]), end))
+    for y in y_channels:
+        paths.append((start, (start[0], y), (end[0], y), end))
+
+    dx, dy = end[0] - start[0], end[1] - start[1]
+    length = (dx * dx + dy * dy) ** 0.5
+    if length > 1e-9:
+        nx, ny = -dy / length, dx / length
+        for offset in offsets:
+            for sign in (-1.0, 1.0):
+                ox, oy = nx * offset * sign, ny * offset * sign
+                paths.append(
+                    (
+                        start,
+                        (start[0] + ox, start[1] + oy),
+                        (end[0] + ox, end[1] + oy),
+                        end,
+                    )
+                )
+    unique: list[tuple[tuple[float, float], ...]] = []
+    seen: set[tuple[tuple[float, float], ...]] = set()
+    for path in paths:
+        candidate = compact_path(path)
+        if len(candidate) < 2 or candidate in seen:
+            continue
+        seen.add(candidate)
+        unique.append(candidate)
+    return tuple(unique)
+
+
+def fast_path(
+    *,
+    net_name: str,
+    first: pcbnew.PAD,
+    second: pcbnew.PAD,
+    layer: int,
+    edge,
+    obstacles: list,
+    expansion: float,
+) -> tuple[tuple[float, float], ...] | None:
+    endpoint_ids = {item_key(first), item_key(second)}
+    spatial = maze.SpatialIndex(obstacles)
+    for path in fast_dogleg_paths(xy(first.GetPosition()), xy(second.GetPosition()), expansion):
+        if all(
+            maze.track_segment_is_clear(
+                net_name=net_name,
+                layer=layer,
+                start=a,
+                end=b,
+                width_mm=maze.TRACK_WIDTH_MM,
+                source_pads=endpoint_ids,
+                edge=edge,
+                obstacles=spatial.query_segment(a, b),
+            )
+            for a, b in zip(path, path[1:])
+        ):
+            return path
+    return None
+
+
 def route_one(
     board: pcbnew.BOARD,
     net_name: str,
@@ -46,6 +144,7 @@ def route_one(
     maximum_endpoint_pairs: int,
     expansion: float,
     endpoint_pair: frozenset[str] | None,
+    fast_only: bool,
 ) -> tuple[int, int, str] | None:
     board.BuildConnectivity()
     groups = disconnected_pad_groups(board, net_name)
@@ -62,6 +161,22 @@ def route_one(
     for _, first, second in candidates[:maximum_endpoint_pairs]:
         endpoint_ids = {item_key(first), item_key(second)}
         for layer in common_outer_layers(first, second):
+            quick = fast_path(
+                net_name=net_name,
+                first=first,
+                second=second,
+                layer=layer,
+                edge=edge,
+                obstacles=obstacles,
+                expansion=expansion,
+            )
+            if quick is not None:
+                route = tuple((x, y, layer) for x, y in quick)
+                tracks, vias = maze.add_route(board, net_name, route, obstacles)
+                layer_name = "F.Cu" if layer == F else "B.Cu"
+                return tracks, vias, f"{pad_label(first)} -> {pad_label(second)} on {layer_name} (fast)"
+            if fast_only:
+                continue
             result = maze.find_fixed_layer_path_to_goals(
                 net_name=net_name,
                 start=(pcbnew.ToMM(first.GetPosition().x), pcbnew.ToMM(first.GetPosition().y)),
@@ -100,6 +215,11 @@ def main() -> int:
     parser.add_argument("--track-width", type=float, default=0.20)
     parser.add_argument("--clearance", type=float, default=0.20)
     parser.add_argument("--expansion", type=float, default=8.0)
+    parser.add_argument(
+        "--fast-only",
+        action="store_true",
+        help="try direct geometric doglegs only and skip the expensive grid search",
+    )
     parser.add_argument(
         "--endpoint-pair",
         help="Restrict routing to one unordered pair such as R601.1,R610.1",
@@ -155,6 +275,7 @@ def main() -> int:
                 maximum_endpoint_pairs=args.maximum_endpoint_pairs,
                 expansion=args.expansion,
                 endpoint_pair=endpoint_pair,
+                fast_only=args.fast_only,
             )
             if result is None:
                 break
