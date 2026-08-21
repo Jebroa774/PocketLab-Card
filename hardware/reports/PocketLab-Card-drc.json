@@ -1,7 +1,7 @@
 {
     "$schema": "https://schemas.kicad.org/drc.v1.json",
     "coordinate_units": "mm",
-    "date": "2026-08-21T12:13:19",
+    "date": "2026-08-21T12:16:44",
     "ignored_checks": [
         {
             "description": "Footprint has no courtyard defined",
@@ -44,12 +44,12 @@
                     "uuid": "6ae6c636-842d-4c46-8bfb-40241d18cd4c"
                 },
                 {
-                    "description": "Leiterbahn [/IR_LED_K] auf F.Cu, Länge 2,1213 mm",
+                    "description": "Leiterbahn [/IR_LED_K] auf F.Cu, Länge 0,9000 mm",
                     "pos": {
                         "x": 32.25,
-                        "y": 66.449999
+                        "y": 67.35
                     },
-                    "uuid": "fb990734-46c1-44a0-a4cc-b3b25e9103f4"
+                    "uuid": "67280588-8715-4c7b-9e74-4e5dca29c1cf"
                 }
             ],
             "severity": "error",
@@ -300,9 +300,9 @@
                     "description": "Leiterbahn [/SPI_MOSI] auf PWR, Länge 2,2000 mm",
                     "pos": {
                         "x": 86.2,
-                        "y": 51.2
+                        "y": 53.4
                     },
-                    "uuid": "8ae661cb-a9e2-446e-8816-acbb12a498eb"
+                    "uuid": "5b8d4e42-08af-4833-92f9-73c3a388daf6"
                 }
             ],
             "severity": "error",
@@ -381,20 +381,20 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Leiterbahn [/NFC_LOOP_A] auf F.Cu, Länge 3,7000 mm",
+                    "description": "Leiterbahn [/NFC_LOOP_A] auf F.Cu, Länge 1,0250 mm",
                     "pos": {
                         "x": 72.9,
-                        "y": 39.25
+                        "y": 40.275
                     },
-                    "uuid": "763b90ee-f818-4a15-a204-d22bc6ccfb26"
+                    "uuid": "b5d0cfb9-ab42-48bc-9bfa-b40c611d861b"
                 },
                 {
-                    "description": "Leiterbahn [/NFC_LOOP_A] auf F.Cu, Länge 1,4000 mm",
+                    "description": "Pad 2 [/NFC_LOOP_A] von R303 auf F.Cu",
                     "pos": {
                         "x": 47.9125,
                         "y": 22.2
                     },
-                    "uuid": "19657aab-4736-4283-bf98-338280069513"
+                    "uuid": "cb151edc-32ec-482a-9acf-b18659ad5edb"
                 }
             ],
             "severity": "error",
@@ -412,12 +412,12 @@
                     "uuid": "2962fe0e-7b8b-4369-8e93-9a477143fb83"
                 },
                 {
-                    "description": "Leiterbahn [/NFC_LOOP_B] auf F.Cu, Länge 1,9500 mm",
+                    "description": "Pad 2 [/NFC_LOOP_B] von C310 auf F.Cu",
                     "pos": {
                         "x": 75.0,
                         "y": 40.275
                     },
-                    "uuid": "7dded02d-be67-4c17-8c10-8e74b83c9a42"
+                    "uuid": "038a2b1c-3382-46f8-9463-94382e6f87c8"
                 }
             ],
             "severity": "error",
@@ -450,12 +450,12 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Leiterbahn [/PAIR_N] auf B.Cu, Länge 0,3536 mm",
+                    "description": "Leiterbahn [/PAIR_N] auf B.Cu, Länge 3,0000 mm",
                     "pos": {
-                        "x": 98.3375,
-                        "y": 63.4
+                        "x": 98.0875,
+                        "y": 63.65
                     },
-                    "uuid": "4bc6d03c-f078-4530-bb30-9c7beabf30a9"
+                    "uuid": "fc05b830-bf0c-42e5-b3e5-54eedcd3d0dc"
                 },
                 {
                     "description": "Pad 2 [/PAIR_N] von R606 auf F.Cu",
@@ -749,12 +749,12 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Leiterbahn [/NFC_DVDD] auf F.Cu, Länge 1,3625 mm",
+                    "description": "Pad 5 [/NFC_DVDD] von U2 auf F.Cu",
                     "pos": {
                         "x": 62.0625,
                         "y": 42.35
                     },
-                    "uuid": "7ad6ddff-96da-4a84-9d04-ce802d2ac036"
+                    "uuid": "4cdc26a6-5bf9-4b9f-9bff-63379797bd76"
                 },
                 {
                     "description": "Pad 39 [/NFC_DVDD] von U2 auf F.Cu",
@@ -941,12 +941,12 @@
                     "uuid": "c1cb047b-9fbf-4e87-95c3-68bf2a979adb"
                 },
                 {
-                    "description": "Leiterbahn [/SPI_MISO] auf F.Cu, Länge 0,6497 mm",
+                    "description": "Pad 21 [/SPI_MISO] von U1 auf F.Cu",
                     "pos": {
-                        "x": 93.6,
-                        "y": 44.7125
+                        "x": 93.235,
+                        "y": 45.25
                     },
-                    "uuid": "2cf4b7d3-7237-4247-9001-94bd2bccda33"
+                    "uuid": "21775688-a49b-4234-8f2f-37ac9a909700"
                 }
             ],
             "severity": "error",
@@ -964,12 +964,12 @@
                     "uuid": "99726361-aeb3-4a08-82ec-b1c4d7cafa88"
                 },
                 {
-                    "description": "Leiterbahn [/SPI_MISO] auf F.Cu, Länge 0,6497 mm",
+                    "description": "Pad 21 [/SPI_MISO] von U1 auf F.Cu",
                     "pos": {
-                        "x": 93.6,
-                        "y": 44.7125
+                        "x": 93.235,
+                        "y": 45.25
                     },
-                    "uuid": "2cf4b7d3-7237-4247-9001-94bd2bccda33"
+                    "uuid": "21775688-a49b-4234-8f2f-37ac9a909700"
                 }
             ],
             "severity": "error",
@@ -987,12 +987,12 @@
                     "uuid": "5ab5bc32-c74c-49ac-b896-da9480d5efc5"
                 },
                 {
-                    "description": "Leiterbahn [/SD_MISO] auf B.Cu, Länge 0,5657 mm",
+                    "description": "Leiterbahn [/SD_MISO] auf F.Cu, Länge 1,0000 mm",
                     "pos": {
-                        "x": 103.125,
-                        "y": 35.505
+                        "x": 102.725,
+                        "y": 35.905
                     },
-                    "uuid": "2848e2e5-2a7a-4ddc-9c68-51a3b6835a0c"
+                    "uuid": "2df17dd6-dbaf-4633-9c93-0785a8e74086"
                 }
             ],
             "severity": "error",
@@ -1117,12 +1117,12 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Via [/I2C_SDA] auf F.Cu - B.Cu",
+                    "description": "Leiterbahn [/I2C_SDA] auf B.Cu, Länge 2,5000 mm",
                     "pos": {
                         "x": 70.95,
                         "y": 30.6625
                     },
-                    "uuid": "818e781d-0a7e-4ed2-92bd-acf1bcb3224f"
+                    "uuid": "1f812dce-fed4-4b9c-98a4-3946da1566b1"
                 },
                 {
                     "description": "Pad 14 [/I2C_SDA] von U10 auf B.Cu",
@@ -1209,12 +1209,12 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Leiterbahn [/I2C_SDA] auf F.Cu, Länge 0,6500 mm",
+                    "description": "Pad 13 [/I2C_SDA] von J8 auf F.Cu",
                     "pos": {
                         "x": 85.9,
                         "y": 61.425
                     },
-                    "uuid": "e269e5a1-c568-4db6-908b-ca977027193b"
+                    "uuid": "377cdece-415f-4905-bfb8-44bf808bad8f"
                 },
                 {
                     "description": "Pad 1 [/I2C_SDA] von R730 auf F.Cu",
@@ -1401,12 +1401,12 @@
                     "uuid": "71f3d774-2343-44e1-9c8d-471af9d9df70"
                 },
                 {
-                    "description": "Leiterbahn [/I2C_SCL] auf B.Cu, Länge 0,2236 mm",
+                    "description": "Leiterbahn [/I2C_SCL] auf B.Cu, Länge 1,0050 mm",
                     "pos": {
-                        "x": 80.25,
-                        "y": 36.34
+                        "x": 80.15,
+                        "y": 37.34
                     },
-                    "uuid": "378fc451-4db0-43cf-a1d2-4ac9e0bd2cd1"
+                    "uuid": "083c5776-d5e3-4afb-8c40-885e5ede7242"
                 }
             ],
             "severity": "error",
@@ -1424,12 +1424,12 @@
                     "uuid": "d926137b-b81c-4677-8292-a2a37420356f"
                 },
                 {
-                    "description": "Leiterbahn [/I2C_SCL] auf B.Cu, Länge 1,0050 mm",
+                    "description": "Leiterbahn [/I2C_SCL] auf PWR, Länge 2,5807 mm",
                     "pos": {
-                        "x": 80.15,
-                        "y": 37.34
+                        "x": 82.25,
+                        "y": 35.84
                     },
-                    "uuid": "083c5776-d5e3-4afb-8c40-885e5ede7242"
+                    "uuid": "1ec17c3d-6a3d-48b1-aea1-a36cae67a3b8"
                 }
             ],
             "severity": "error",
@@ -1784,29 +1784,6 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Leiterbahn [/VBUS_USB] auf B.Cu, Länge 1,4000 mm",
-                    "pos": {
-                        "x": 97.7,
-                        "y": 46.4
-                    },
-                    "uuid": "5ae1d76b-61ab-4f37-a9cf-10864733ab93"
-                },
-                {
-                    "description": "Pad 1 [/VBUS_USB] von TP105 auf F.Cu",
-                    "pos": {
-                        "x": 57.547277,
-                        "y": 22.346
-                    },
-                    "uuid": "d12ac028-5eb3-495a-8d3d-0853f0b40ccc"
-                }
-            ],
-            "severity": "error",
-            "type": "unconnected_items"
-        },
-        {
-            "description": "Missing connection between items",
-            "items": [
-                {
                     "description": "Pad 1 [/USB_SHIELD] von R103 auf B.Cu",
                     "pos": {
                         "x": 66.6375,
@@ -1815,12 +1792,12 @@
                     "uuid": "c9e75ef8-4936-424e-b218-e8cff78b4046"
                 },
                 {
-                    "description": "Leiterbahn [/USB_SHIELD] auf F.Cu, Länge 4,1800 mm",
+                    "description": "Durchsteckpad SH [/USB_SHIELD] von J1",
                     "pos": {
-                        "x": 103.65,
+                        "x": 99.47,
                         "y": 47.38
                     },
-                    "uuid": "1db4af2b-c6db-4caa-9c90-572a977bec52"
+                    "uuid": "26d18910-c3ac-4a04-b9f8-bacba78c2de4"
                 }
             ],
             "severity": "error",
@@ -1968,12 +1945,12 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Leiterbahn [/I2C_SDA_HDR] auf PWR, Länge 1,7961 mm",
+                    "description": "Leiterbahn [/I2C_SDA_HDR] auf PWR, Länge 14,8400 mm",
                     "pos": {
-                        "x": 58.54,
+                        "x": 43.7,
                         "y": 68.27
                     },
-                    "uuid": "d7d76009-a0a1-40b7-b3de-152fe844cbc4"
+                    "uuid": "9312d6a9-c45e-4397-8ad6-c295efb5821a"
                 },
                 {
                     "description": "Pad 2 [/I2C_SDA_HDR] von R730 auf F.Cu",
@@ -2773,12 +2750,12 @@
             "description": "Missing connection between items",
             "items": [
                 {
-                    "description": "Leiterbahn [/USER_BUTTON_B_N] auf F.Cu, Länge 0,9862 mm",
+                    "description": "Pad 1 [/USER_BUTTON_B_N] von SW4 auf F.Cu",
                     "pos": {
-                        "x": 64.2,
-                        "y": 54.85
+                        "x": 65.05,
+                        "y": 54.35
                     },
-                    "uuid": "fe8e0ecd-def0-4ff1-83bb-fcdfd3603383"
+                    "uuid": "9230aa63-ff0d-42f5-88fb-10b8695223c7"
                 },
                 {
                     "description": "Pad 12 [/USER_BUTTON_B_N] von U18 auf B.Cu",
@@ -2896,12 +2873,12 @@
                     "uuid": "c71680e2-b3c5-435e-b326-e9977fe16911"
                 },
                 {
-                    "description": "Leiterbahn [/FG_ALERT_N] auf PWR, Länge 3,1890 mm",
+                    "description": "Leiterbahn [/FG_ALERT_N] auf PWR, Länge 0,6000 mm",
                     "pos": {
                         "x": 79.6125,
-                        "y": 36.95
+                        "y": 37.55
                     },
-                    "uuid": "1e00fa6b-6fbc-4324-a0f4-b56e2fbc1b55"
+                    "uuid": "948acd44-7056-474b-92c9-9d4124b282e4"
                 }
             ],
             "severity": "error",
@@ -3235,20 +3212,20 @@
             "description": "Freiraum-Verstoß ( Freiraum 0,2000 mm; tatsächlich 0,1500 mm)",
             "items": [
                 {
+                    "description": "Via [/USB_CONN_P] auf F.Cu - B.Cu",
+                    "pos": {
+                        "x": 97.0,
+                        "y": 51.95
+                    },
+                    "uuid": "42aa09fb-69c8-479a-82c3-cde9575806d9"
+                },
+                {
                     "description": "Leiterbahn [/USB_CONN_N] auf F.Cu, Länge 2,1550 mm",
                     "pos": {
                         "x": 96.4,
                         "y": 51.45
                     },
                     "uuid": "d5b99512-2295-4682-95b6-ed5decaa9689"
-                },
-                {
-                    "description": "Via [/USB_CONN_P] auf F.Cu - B.Cu",
-                    "pos": {
-                        "x": 97.0,
-                        "y": 50.95
-                    },
-                    "uuid": "da288695-7139-4731-88cc-d69299b792c3"
                 }
             ],
             "severity": "error",
@@ -3281,13 +3258,28 @@
             "description": "Freiraum-Verstoß ( Freiraum 0,2000 mm; tatsächlich 0,1500 mm)",
             "items": [
                 {
-                    "description": "Pad 1 [/U7_FB] von U7 auf B.Cu",
+                    "description": "Pad 2 [/BOOST5_EN] von U7 auf B.Cu",
                     "pos": {
                         "x": 82.2125,
-                        "y": 43.5
+                        "y": 44.0
                     },
-                    "uuid": "aad6caa0-2ce5-4c12-be79-901655fc20b0"
+                    "uuid": "9c1ae398-5db6-4896-bc93-c250ca330449"
                 },
+                {
+                    "description": "Pad 3 [/VSYS] von U7 auf B.Cu",
+                    "pos": {
+                        "x": 82.2125,
+                        "y": 44.5
+                    },
+                    "uuid": "a7c1695d-ca3e-4e8d-9898-285375a46e12"
+                }
+            ],
+            "severity": "error",
+            "type": "clearance"
+        },
+        {
+            "description": "Freiraum-Verstoß ( Freiraum 0,2000 mm; tatsächlich 0,1500 mm)",
+            "items": [
                 {
                     "description": "Pad 2 [/BOOST5_EN] von U7 auf B.Cu",
                     "pos": {
@@ -3295,6 +3287,14 @@
                         "y": 44.0
                     },
                     "uuid": "9c1ae398-5db6-4896-bc93-c250ca330449"
+                },
+                {
+                    "description": "Pad 1 [/U7_FB] von U7 auf B.Cu",
+                    "pos": {
+                        "x": 82.2125,
+                        "y": 43.5
+                    },
+                    "uuid": "aad6caa0-2ce5-4c12-be79-901655fc20b0"
                 }
             ],
             "severity": "error",
@@ -3327,28 +3327,13 @@
             "description": "Freiraum-Verstoß ( Freiraum 0,2000 mm; tatsächlich 0,1500 mm)",
             "items": [
                 {
-                    "description": "Pad 3 [/VSYS] von U7 auf B.Cu",
+                    "description": "Pad 4 [/GND] von U7 auf B.Cu",
                     "pos": {
-                        "x": 82.2125,
+                        "x": 80.7875,
                         "y": 44.5
                     },
-                    "uuid": "a7c1695d-ca3e-4e8d-9898-285375a46e12"
+                    "uuid": "20e377be-fde8-494b-879f-fb9baae03c5a"
                 },
-                {
-                    "description": "Pad 2 [/BOOST5_EN] von U7 auf B.Cu",
-                    "pos": {
-                        "x": 82.2125,
-                        "y": 44.0
-                    },
-                    "uuid": "9c1ae398-5db6-4896-bc93-c250ca330449"
-                }
-            ],
-            "severity": "error",
-            "type": "clearance"
-        },
-        {
-            "description": "Freiraum-Verstoß ( Freiraum 0,2000 mm; tatsächlich 0,1500 mm)",
-            "items": [
                 {
                     "description": "Pad 5 [/U7_SW] von U7 auf B.Cu",
                     "pos": {
@@ -3356,14 +3341,6 @@
                         "y": 44.0
                     },
                     "uuid": "8e6f0521-e397-4f6c-b685-80494a5b9ec3"
-                },
-                {
-                    "description": "Pad 4 [/GND] von U7 auf B.Cu",
-                    "pos": {
-                        "x": 80.7875,
-                        "y": 44.5
-                    },
-                    "uuid": "20e377be-fde8-494b-879f-fb9baae03c5a"
                 }
             ],
             "severity": "error",
@@ -3396,20 +3373,20 @@
             "description": "Freiraum-Verstoß ( Freiraum 0,2000 mm; tatsächlich 0,1500 mm)",
             "items": [
                 {
-                    "description": "Pad 3 [/CELL_NEG] von Q2 auf B.Cu",
-                    "pos": {
-                        "x": 96.64,
-                        "y": 72.13
-                    },
-                    "uuid": "ae538cae-90fc-4f96-949d-cb76f6fe7da2"
-                },
-                {
                     "description": "Pad 4 [/BAT_DOUT] von Q2 auf B.Cu",
                     "pos": {
                         "x": 96.64,
                         "y": 72.77
                     },
                     "uuid": "760a98fb-759d-43a7-b137-b665158a6a60"
+                },
+                {
+                    "description": "Pad 3 [/CELL_NEG] von Q2 auf B.Cu",
+                    "pos": {
+                        "x": 96.64,
+                        "y": 72.13
+                    },
+                    "uuid": "ae538cae-90fc-4f96-949d-cb76f6fe7da2"
                 }
             ],
             "severity": "error",
