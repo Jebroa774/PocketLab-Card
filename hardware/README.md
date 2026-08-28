@@ -98,13 +98,14 @@ The PN532 `/NFC_TX1` driver pad U2.4 now reaches matching inductor L301.1
 through two short F.Cu escapes, three locked 0.20-mm L3 segments and two
 0.45/0.20-mm tented vias. Small reviewed jogs in the neighboring LF clock/data
 fanouts preserve their connectivity and keep the dedicated L2 GND plane clean.
-The active routing checkpoint contains 2824 track segments, 578 vias and 31 zones.
-Five repeated KiCad DRC runs report zero open connections and a median of 1151
-remaining violations. The last cleanup removes the PWR copper sliver and both
+The active routing checkpoint contains 2823 track segments, 576 vias and 31 zones.
+Repeated KiCad DRC runs report zero open connections and totals between 1142 and
+1157 remaining violations. The last cleanup removes the PWR copper sliver and both
 GPIO8-to-rounded-corner edge findings without introducing a keepout violation. It
-also merges redundant BAT_SENSE, NFC_SVDD and SD_SCK via pairs, reducing the
-hole-to-hole findings from seven to four. The remaining violations still require
-grouped cleanup; the board is therefore not an order-ready fabrication release.
+also merges redundant BAT_SENSE, NFC_SVDD and SD_SCK via pairs and makes the local
+USB_CONN_P join via-free, reducing the hole-to-hole findings from seven to three.
+The remaining violations still require grouped cleanup; the board is therefore not
+an order-ready fabrication release.
 The matching machine-readable report is `reports/PocketLab-Card-drc.json`.
 
 The latest PN532 cleanup connects U2.5/U2.8 with a short via-free DVDD escape
