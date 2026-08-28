@@ -1,9 +1,10 @@
-"""Bridge power-plane islands cut apart by a reviewed In2 signal route.
+"""Bridge power-plane islands cut apart by a reviewed inner-layer signal route.
 
 The long-signal router may carve a continuous channel through an In2 power
 zone.  This pass detects filled polygons on opposite sides of the selected
-signal segments and reconnects the affected power islands with two through
-vias plus one short outer-layer track.  In1/GND remains plane-only.
+signal segments and reconnects the affected power islands with two adjacent-
+layer vias plus one short bridge track.  An internal bridge is supported for
+dense areas where neither outer layer has a legal local crossing.
 """
 
 from __future__ import annotations
@@ -119,6 +120,15 @@ def microvia_obstacles(
     """Return only copper touched by the selected adjacent-layer microvia."""
 
     layers = {plane_layer, bridge_layer}
+    adjacent_pairs = {
+        frozenset((pcbnew.F_Cu, pcbnew.In1_Cu)),
+        frozenset((pcbnew.In1_Cu, pcbnew.In2_Cu)),
+        frozenset((pcbnew.In2_Cu, pcbnew.B_Cu)),
+    }
+    if frozenset(layers) not in adjacent_pairs:
+        # A non-adjacent inner-to-outer transition is implemented as a normal
+        # through via, so every copper layer must participate in clearance.
+        return list(obstacles)
     result: list[CopperObstacle] = []
     for obstacle in obstacles:
         if obstacle.kind == "pad":
@@ -156,6 +166,21 @@ def bridge_candidates(
     zone = filled_zone(board, net_name, plane_layer)
     polygons = zone.GetFilledPolysList(plane_layer)
     outline_groups = outline_group_map(board, net_name, polygons)
+    print(
+        f"ZONE {net_name}: outlines={polygons.OutlineCount()} "
+        f"mapped={sorted(outline_groups.items())}",
+        flush=True,
+    )
+    for outline_index, group_index in sorted(outline_groups.items()):
+        if outline_index > 1:
+            continue
+        box = polygons.Outline(outline_index).BBox()
+        print(
+            f"  group={group_index} outline={outline_index} bbox="
+            f"{pcbnew.ToMM(box.GetX()):.3f},{pcbnew.ToMM(box.GetY()):.3f},"
+            f"{pcbnew.ToMM(box.GetRight()):.3f},{pcbnew.ToMM(box.GetBottom()):.3f}",
+            flush=True,
+        )
     edge = board_rect(board)
     result: dict[tuple[int, int, int], Bridge] = {}
     open_pairs: dict[
@@ -384,7 +409,17 @@ def add_bridge(
         via.SetPosition(point(*position))
         via.SetWidth(pcbnew.FromMM(via_diameter))
         via.SetDrill(pcbnew.FromMM(via_drill))
-        via.SetViaType(pcbnew.VIATYPE_MICROVIA)
+        layer_pair = {plane_layer, bridge.layer}
+        if layer_pair == {pcbnew.In1_Cu, pcbnew.In2_Cu}:
+            via.SetViaType(pcbnew.VIATYPE_BURIED)
+        elif layer_pair in (
+            {pcbnew.F_Cu, pcbnew.In1_Cu},
+            {pcbnew.In2_Cu, pcbnew.B_Cu},
+        ):
+            via.SetViaType(pcbnew.VIATYPE_MICROVIA)
+        else:
+            via.SetViaType(pcbnew.VIATYPE_THROUGH)
+            via.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
         via.SetLayerPair(plane_layer, bridge.layer)
         via.SetNet(net)
         via.SetLocked(True)
@@ -433,13 +468,18 @@ def main() -> int:
     parser.add_argument("--maximum-offset", type=float, default=5.00)
     parser.add_argument("--sample-step", type=float, default=0.25)
     parser.add_argument(
+        "--allow-partial",
+        action="store_true",
+        help="Save the safe spanning bridges found even if not every group can be joined",
+    )
+    parser.add_argument(
         "--plane-layer",
         choices=("In1.Cu", "In2.Cu"),
         default="In2.Cu",
     )
     parser.add_argument(
         "--bridge-layer",
-        choices=("F.Cu", "B.Cu"),
+        choices=("F.Cu", "In1.Cu", "B.Cu"),
         default="B.Cu",
     )
     parser.add_argument("--force", action="store_true")
@@ -470,8 +510,15 @@ def main() -> int:
         frozenset((pcbnew.In1_Cu, pcbnew.In2_Cu)),
         frozenset((pcbnew.In2_Cu, pcbnew.B_Cu)),
     }
-    if frozenset((plane_layer, bridge_layer)) not in adjacent_pairs:
-        raise RuntimeError("Plane and bridge layers must be adjacent copper layers")
+    layer_pair = frozenset((plane_layer, bridge_layer))
+    through_pairs = {
+        frozenset((pcbnew.In1_Cu, pcbnew.B_Cu)),
+        frozenset((pcbnew.F_Cu, pcbnew.In2_Cu)),
+    }
+    if layer_pair not in adjacent_pairs | through_pairs:
+        raise RuntimeError(
+            "Plane and bridge layers must use an adjacent or inner-to-outer via pair"
+        )
     maze.ROUTING_LAYERS = (bridge_layer,)
     board = pcbnew.LoadBoard(str(args.input.resolve()))
     board.BuildConnectivity()
@@ -496,11 +543,16 @@ def main() -> int:
             bridge_layer=bridge_layer,
         )
         selected = select_spanning_bridges(len(groups), candidates)
-        if len(selected) != len(groups) - 1:
+        if len(selected) != len(groups) - 1 and not (args.allow_partial and selected):
             pairs = sorted({(item.left_group, item.right_group) for item in candidates})
             raise RuntimeError(
                 f"Could not span {net_name}: groups={len(groups)}, "
                 f"selected={len(selected)}, candidate_pairs={pairs}"
+            )
+        if len(selected) != len(groups) - 1:
+            print(
+                f"PARTIAL {net_name}: groups={len(groups)}, selected={len(selected)}",
+                flush=True,
             )
         for bridge in selected:
             add_bridge(

@@ -120,7 +120,7 @@ def main() -> int:
 
     for layer in (pcbnew.B_Cu, pcbnew.F_Cu):
         via_obstacles = (
-            microvia_obstacles(obstacles)
+            microvia_obstacles(obstacles, pcbnew.In2_Cu, pcbnew.B_Cu)
             if layer == pcbnew.B_Cu
             else layer_microvia_obstacles(obstacles, layer)
         )

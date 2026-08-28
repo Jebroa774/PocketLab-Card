@@ -37,7 +37,6 @@ J2,Molex,104031-0811,PROCUREMENT_GAP,Connector_Card:microSD_HC_Molex_104031-0811
 J3,Generic,1x02_P2.54mm,N/A,PinHeader_1x02_P2.54mm_Vertical,Removable 400uH LF antenna coil,MANUAL_THT,Fit only after measuring coil inductance and selecting C506/C507/C508
 J4,JST,S2B-PH-SM4-TB,PROCUREMENT_GAP,JST_PH_side_entry,Protected 1S LiPo connector,PCBA_FACTORY_OR_HAND,Back-side mounted and rotated 90deg left from prior front view; verify cable exit and polarity before connection
 J5,Generic,30pin_6x5_P2.54mm,N/A,PocketLab_Custom:Dupont_Grid_6x5_P2.54mm,Dupont expansion and optional NTC on pins 28/30,MANUAL_THT,Ships unpopulated; accepts individual Dupont leads or breakaway strips but not one monolithic 2x15 housing; cut SJ1 before external NTC use
-J8,EastRising,ER-OLED0.42-1W,DIRECT_BUY,PocketLab_Custom:EastRising_ER-OLED0.42-1W_SolderFPC,0.42in 72x40 white OLED,MANUAL_FINE_PITCH,Solder and inspect 16-way 0.65mm FPC before folding/bonding glass; verify pin 1 and contact side
 U21,Texas Instruments,SN74AHCT125PWR,C36365,TSSOP-14,LF SCLK and DIN 3.3V-to-5V translation,PCBA_FACTORY,Two unused channels disabled
 U22,Texas Instruments,SN74LVC1G17DBVR,C7836,SOT-23-5_HandSoldering,LF DOUT 5V-to-3.3V Schmitt buffer,PCBA_FACTORY_OR_HAND,5.5V-tolerant input
 U23,Microchip,ATECC608C-SSHDA-T,C28975195,SOIC-8_3.9x4.9mm_P1.27mm,Secure identity and future owner keys,PCBA_FACTORY_OR_HAND,Ship unprovisioned; zone locking is a separate irreversible release step
@@ -46,6 +45,7 @@ R736,UNI-ROYAL,0603WAF1002T5E,C25804,0603,Board-temperature divider bias,PCBA_FA
 Y501,YXC,4MHz_5V_CMOS,C42448900,Oscillator_SMD_3.2x2.5mm,HTRC110 external clock,PCBA_FACTORY,Verify 40-60 percent duty cycle
 SW6,C&K,KMR221GLFS,C72443,SW_Push_1P1T_NO_CK_KMR2,Dedicated physical PAIR button,PCBA_FACTORY,Active low on GPIO38
 SW3/SW4/SW7,C&K,KMR221GLFS,C72443,SW_Push_1P1T_NO_CK_KMR2,UP DOWN and SELECT navigation buttons,PCBA_FACTORY,Three adjacent labeled 4.6x2.8mm switches; SELECT uses U9 P07 and does not share PAIR
+SW8,C&K,KXT311LHS,PROCUREMENT_GAP,Button_Switch_SMD:SW_SPST_CK_KXT3,Firmware-configurable AUX button on GPIO21,PCBA_FACTORY,Active low; firmware must enable the ESP32-S3 GPIO21 internal pull-up
 C503/C504,Qualified_sources,100nF_X7R,PROCUREMENT_GAP,0805,HTRC CEXT and QGND bypass,PCBA_FACTORY_OR_HAND,Keep local to U4
 C505-C508,Qualified_sources,C0G_LF_tuning,PROCUREMENT_GAP,0805_plus_0603,Protected LF resonance network,PCBA_FACTORY_OR_HAND,C506 3.9nF starting value; C507/C508 DNP until measured tuning
 R502,Qualified_sources,47R_0.5W_pulse,PROCUREMENT_GAP,1210,LF antenna current limiter,PCBA_FACTORY_OR_HAND,Validate current and temperature with final coil
@@ -55,7 +55,6 @@ SW5,SHOUHAN,MSK12C02,C431540,SW_SPDT_Shouhan_MSK12C02,Low-current main power ena
 D1-D3,Vishay,TSAL6200,C55528,PocketLab_Custom:TSAL6200_LayFlat_Inboard,Three 940nm IR emitters,MANUAL_THT,Use one forming jig across each transverse 2.54mm lead pair; bend both pins 90 degrees on the same line and lay the body flat with its optical face 0.5mm inside the short edge
 R601/R610/R611,Qualified_sources,39R_0.5W_1percent,PROCUREMENT_GAP,1210,Independent IR LED current limit resistors,PCBA_FACTORY_OR_HAND,One resistor per emitter; hand-solderable 1210 size is pulse-rated for the bounded IR burst duty; do not bridge or replace with one shared resistor
 C607/C617/C608,Qualified_sources,2x22uF_10V_X5R_plus_100nF,PROCUREMENT_GAP,1206_plus_0805,Local 5V IR pulse buffer,PCBA_FACTORY_OR_HAND,Place directly at the three LED branches and Q1 hot loop; verify effective capacitance at 5V
-C610-C616,Qualified_sources,1uF_4.7uF_2.2uF_100nF_X7R_X5R,PROCUREMENT_GAP,0805,OLED charge pump and local decoupling,PCBA_FACTORY_OR_HAND,Keep values and nets exactly as schematic; place beside folded FPC lands
 LED1-LED4,Worldsemi,WS2812B-2020,C965555,LED_2020,Compact 5V addressable RGB LEDs,PCBA_FACTORY,2.0mm package is not intended for routine hand placement; pin-1 and JLC assembly-view review required
 R/C_general,Qualified_sources,1percent_X7R_X5R,PROCUREMENT_GAP,0805,General passives,PCBA_FACTORY,Exact MPN and LCSC population remains release-gated
 RF_passives,Qualified_sources,C0G_high_Q,PROCUREMENT_GAP,0603,NFC and RF matching,PCBA_FACTORY,C310-C312 remain DNP until measurement

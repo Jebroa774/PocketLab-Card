@@ -33,7 +33,7 @@ hand where practical.
 | Sub-GHz | E07-900MM10S/CC1101 module, tuneable pi network and inboard 868 MHz spring antenna |
 | Infrared | Three independent high-power 940 nm emitters plus a 38 kHz receiver |
 | Storage and security | microSD, ATECC608C secure element and physical PAIR button |
-| User interface | 0.42-inch 72 x 40 OLED, four RGB LEDs and UP/OK/DOWN buttons |
+| User interface | Four RGB LEDs, UP/SELECT/DOWN controls and a firmware-configurable AUX button |
 | Sensors | Optional 6-axis IMU, barometer, RTC, fuel gauge and board-temperature monitor |
 | Power | USB-C, 1-cell LiPo input, charging/power path, regulated 3.3 V and switchable 5 V |
 | Expansion | Protected 2.54 mm breakout matrix with eleven direct expansion GPIOs |

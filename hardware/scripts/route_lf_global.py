@@ -52,6 +52,8 @@ VIA_DRILL_MM = 0.30
 GRID_MM = 0.25
 ROUTE_EXPANSION_MM = 20.0
 MAX_ROUTE_SEARCH_STATES = 600_000
+MAX_FIXED_LAYER_SEARCH_STATES = 140_000
+INNER_LAYER_COST_MULTIPLIER = 1.0
 ROUTING_LAYERS = (F, B)
 AVOID_L3_ZONE_POLYS: tuple[pcbnew.SHAPE_POLY_SET, ...] = ()
 ROUTE_PRIORITY = {
@@ -360,7 +362,7 @@ def find_escape_paths(
     results: list[tuple[tuple[float, float], ...]] = []
     result_positions: list[tuple[float, float]] = []
     directions = ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1))
-    while queue and len(cost) < 80_000:
+    while queue and len(cost) < MAX_FIXED_LAYER_SEARCH_STATES:
         current_cost, ix, iy = heapq.heappop(queue)
         key = (ix, iy)
         if current_cost > cost.get(key, math.inf) + 1e-9:
@@ -441,7 +443,7 @@ def find_fixed_layer_path(
     cost: dict[tuple[int, int], float] = {start_state: 0.0}
     previous: dict[tuple[int, int], tuple[int, int]] = {}
     directions = ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1))
-    while queue and len(cost) < 140_000:
+    while queue and len(cost) < MAX_FIXED_LAYER_SEARCH_STATES:
         _, current_cost, state = heapq.heappop(queue)
         if current_cost > cost.get(state, math.inf) + 1e-9:
             continue
@@ -483,6 +485,8 @@ def find_fixed_layer_path(
             ):
                 continue
             step_cost = GRID_MM * (math.sqrt(2.0) if dx_index and dy_index else 1.0)
+            if layer in {pcbnew.In1_Cu, pcbnew.In2_Cu}:
+                step_cost *= INNER_LAYER_COST_MULTIPLIER
             candidate_cost = current_cost + step_cost
             if candidate_cost + 1e-9 >= cost.get(next_state, math.inf):
                 continue
@@ -505,6 +509,7 @@ def find_fixed_layer_path_to_goals(
     edge: Rect,
     obstacles: list[CopperObstacle],
     expansion: float = 8.0,
+    debug_label: str | None = None,
 ) -> tuple[tuple[tuple[float, float], ...], int] | None:
     """Route from one escape to any compatible escape in one A* pass."""
     if not ends:
@@ -528,7 +533,7 @@ def find_fixed_layer_path_to_goals(
     cost: dict[tuple[int, int], float] = {start_state: 0.0}
     previous: dict[tuple[int, int], tuple[int, int]] = {}
     directions = ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1))
-    while queue and len(cost) < 140_000:
+    while queue and len(cost) < MAX_FIXED_LAYER_SEARCH_STATES:
         _, current_cost, state = heapq.heappop(queue)
         if current_cost > cost.get(state, math.inf) + 1e-9:
             continue
@@ -575,6 +580,8 @@ def find_fixed_layer_path_to_goals(
             ):
                 continue
             step_cost = GRID_MM * (math.sqrt(2.0) if dx_index and dy_index else 1.0)
+            if layer in {pcbnew.In1_Cu, pcbnew.In2_Cu}:
+                step_cost *= INNER_LAYER_COST_MULTIPLIER
             candidate_cost = current_cost + step_cost
             if candidate_cost + 1e-9 >= cost.get(next_state, math.inf):
                 continue
@@ -582,6 +589,19 @@ def find_fixed_layer_path_to_goals(
             previous[next_state] = state
             estimate = candidate_cost + min(distance(next_position, end) for end in ends)
             heapq.heappush(queue, (estimate, candidate_cost, next_state))
+    if debug_label:
+        positions = [
+            (start[0] + state[0] * GRID_MM, start[1] + state[1] * GRID_MM)
+            for state in cost
+        ]
+        closest = min(
+            min(distance(position, end) for end in ends) for position in positions
+        )
+        print(
+            f"SEARCH_FAILED {debug_label} layer={layer} states={len(cost)} "
+            f"closest={closest:.3f} queue={len(queue)}",
+            flush=True,
+        )
     return None
 
 
@@ -801,6 +821,8 @@ def find_route(
             ):
                 continue
             step_cost = GRID_MM * (math.sqrt(2.0) if dx_index and dy_index else 1.0)
+            if layer in {pcbnew.In1_Cu, pcbnew.In2_Cu}:
+                step_cost *= INNER_LAYER_COST_MULTIPLIER
             candidate_cost = current_cost + step_cost
             if candidate_cost + 1e-9 >= cost.get(next_state, math.inf):
                 continue
@@ -930,8 +952,17 @@ def add_route(
             via.SetPosition(point(start[0], start[1]))
             via.SetWidth(pcbnew.FromMM(VIA_DIAMETER_MM))
             via.SetDrill(pcbnew.FromMM(VIA_DRILL_MM))
-            via.SetViaType(pcbnew.VIATYPE_THROUGH)
-            via.SetLayerPair(F, B)
+            layer_pair = {start[2], end[2]}
+            if layer_pair in (
+                {pcbnew.F_Cu, pcbnew.In1_Cu},
+                {pcbnew.In2_Cu, pcbnew.B_Cu},
+            ):
+                via.SetViaType(pcbnew.VIATYPE_MICROVIA)
+            elif layer_pair == {pcbnew.In1_Cu, pcbnew.In2_Cu}:
+                via.SetViaType(pcbnew.VIATYPE_BURIED)
+            else:
+                via.SetViaType(pcbnew.VIATYPE_THROUGH)
+            via.SetLayerPair(start[2], end[2])
             via.SetNet(net)
             via.SetLocked(True)
             board.Add(via)

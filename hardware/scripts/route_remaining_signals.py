@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import math
 from pathlib import Path
+import shutil
 
 import pcbnew
 
@@ -125,6 +126,7 @@ def route_one_island(
     use_decomposed: bool,
     decomposed_only: bool,
     endpoint_pair: frozenset[str] | None,
+    reverse_endpoints: bool,
 ) -> tuple[int, int, str] | None:
     # A previously accepted island route changes the connectivity graph, so
     # rebuild only at the point where a new route is actually attempted.
@@ -142,6 +144,8 @@ def route_one_island(
             if frozenset((pad_label(candidate[1]), pad_label(candidate[2]))) == endpoint_pair
         ]
     for _, start_pad, end_pad in candidates[:maximum_endpoint_pairs]:
+        if reverse_endpoints:
+            start_pad, end_pad = end_pad, start_pad
         start_fixed_layer = pad_layer(start_pad)
         end_fixed_layer = pad_layer(end_pad)
         if (
@@ -218,6 +222,12 @@ def main() -> int:
     parser.add_argument("--route-expansion", type=float, default=12.0)
     parser.add_argument("--max-search-states", type=int, default=150_000)
     parser.add_argument(
+        "--inner-layer-cost",
+        type=float,
+        default=1.0,
+        help="per-step cost multiplier for routes on In1.Cu or In2.Cu",
+    )
+    parser.add_argument(
         "--skip-decomposed",
         action="store_true",
         help="skip the expensive analogue-style endpoint escape search",
@@ -231,6 +241,26 @@ def main() -> int:
         "--allow-power-layer",
         action="store_true",
         help="also permit short ordinary-signal routes on L3/PWR; L2/GND remains plane-only",
+    )
+    parser.add_argument(
+        "--allow-ground-layer",
+        action="store_true",
+        help="also permit ordinary-signal routes on L2/GND for candidate-only escape tests",
+    )
+    parser.add_argument(
+        "--reverse-endpoints",
+        action="store_true",
+        help="reverse each selected endpoint pair before the maze search",
+    )
+    parser.add_argument(
+        "--back-inner-only",
+        action="store_true",
+        help="with one enabled inner layer, route only on that layer and B.Cu",
+    )
+    parser.add_argument(
+        "--allow-power-zone-crossing",
+        action="store_true",
+        help="permit candidate signal vias and tracks to cross existing In2 power fills",
     )
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
@@ -253,10 +283,24 @@ def main() -> int:
     fanout.DIFFERENT_NET_CLEARANCE_MM = args.clearance
     maze.ROUTE_EXPANSION_MM = args.route_expansion
     maze.MAX_ROUTE_SEARCH_STATES = args.max_search_states
-    maze.ROUTING_LAYERS = (F, pcbnew.In2_Cu, B) if args.allow_power_layer else (F, B)
+    maze.INNER_LAYER_COST_MULTIPLIER = args.inner_layer_cost
+    if args.back_inner_only and args.allow_power_layer and not args.allow_ground_layer:
+        maze.ROUTING_LAYERS = (pcbnew.In2_Cu, B)
+    elif args.back_inner_only and args.allow_ground_layer and not args.allow_power_layer:
+        maze.ROUTING_LAYERS = (pcbnew.In1_Cu, B)
+    elif args.back_inner_only:
+        raise RuntimeError("--back-inner-only requires exactly one enabled inner layer")
+    elif args.allow_power_layer and args.allow_ground_layer:
+        maze.ROUTING_LAYERS = (F, pcbnew.In1_Cu, pcbnew.In2_Cu, B)
+    elif args.allow_power_layer:
+        maze.ROUTING_LAYERS = (F, pcbnew.In2_Cu, B)
+    elif args.allow_ground_layer:
+        maze.ROUTING_LAYERS = (F, pcbnew.In1_Cu, B)
+    else:
+        maze.ROUTING_LAYERS = (F, B)
 
     board = pcbnew.LoadBoard(str(input_path))
-    maze.AVOID_L3_ZONE_POLYS = tuple(
+    maze.AVOID_L3_ZONE_POLYS = () if args.allow_power_zone_crossing else tuple(
         zone.GetFilledPolysList(pcbnew.In2_Cu)
         for zone in board.Zones()
         if zone.GetNetname() in {"/+5V_RAW", "/+5V_AUX"}
@@ -284,6 +328,7 @@ def main() -> int:
     routed = 0
     total_tracks = 0
     total_vias = 0
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     endpoint_pair = None
     if args.endpoint_pair:
         labels = [item.strip() for item in args.endpoint_pair.split(",") if item.strip()]
@@ -303,6 +348,7 @@ def main() -> int:
                 use_decomposed=not args.skip_decomposed,
                 decomposed_only=args.decomposed_only,
                 endpoint_pair=endpoint_pair,
+                reverse_endpoints=args.reverse_endpoints,
             )
             if result is None:
                 print(f"SKIPPED {net_name}", flush=True)
@@ -315,10 +361,15 @@ def main() -> int:
                 f"ROUTED {net_name}: {endpoints}; segments={tracks}; vias={vias}",
                 flush=True,
             )
+            # Keep every accepted route even when a later maze search reaches
+            # the command time limit.  Zone filling is intentionally deferred
+            # to the normal final save because it is comparatively expensive.
+            pcbnew.SaveBoard(str(output_path), board)
 
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
-    output_path.parent.mkdir(parents=True, exist_ok=True)
     pcbnew.SaveBoard(str(output_path), board)
+    for suffix in (".kicad_pro", ".kicad_dru"):
+        shutil.copyfile(hardware_dir / f"PocketLab-Card{suffix}", output_path.with_suffix(suffix))
     print(
         f"Saved ordinary-signal candidate: {output_path}; routes={routed}; "
         f"segments={total_tracks}; vias={total_vias}"

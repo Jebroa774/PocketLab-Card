@@ -264,6 +264,7 @@ def main() -> int:
         endpoint_pair = frozenset(labels)
     routed = 0
     total_tracks = 0
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     for net_name in selected:
         for _ in range(args.repeat_per_net):
             if routed >= args.max_routes:
@@ -283,11 +284,11 @@ def main() -> int:
             routed += 1
             total_tracks += tracks
             print(f"ROUTED {net_name}: {endpoints}; segments={tracks}; vias={vias}", flush=True)
+            pcbnew.SaveBoard(str(output_path), board)
         if routed >= args.max_routes:
             break
 
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
-    output_path.parent.mkdir(parents=True, exist_ok=True)
     pcbnew.SaveBoard(str(output_path), board)
     print(f"Saved fixed-layer candidate: {output_path}; routes={routed}; segments={total_tracks}")
     return 0

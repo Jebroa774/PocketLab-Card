@@ -40,14 +40,18 @@
       "lib_id": "Device:R",
       "reference": "R101",
       "value": "5.1k 1%",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 101.6,
       "y": 50.8,
       "pins": {
         "1": "USB_CC1",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF5101TCE",
+        "LCSC": "C25905"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -57,14 +61,18 @@
       "lib_id": "Device:R",
       "reference": "R102",
       "value": "5.1k 1%",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 114.3,
       "y": 50.8,
       "pins": {
         "1": "USB_CC2",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF5101TCE",
+        "LCSC": "C25905"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -74,14 +82,18 @@
       "lib_id": "Device:R",
       "reference": "R103",
       "value": "1M",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 127.0,
       "y": 50.8,
       "pins": {
         "1": "USB_SHIELD",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1004TCE",
+        "LCSC": "C26083"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -98,7 +110,11 @@
         "1": "USB_SHIELD",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "KEMET",
+        "MPN": "C0805C472KDRAC7800",
+        "LCSC": "C5565742"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -115,7 +131,11 @@
         "1": "VBUS_USB",
         "2": "VBUS_FUSED"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Littelfuse",
+        "MPN": "1206L075/13.2WR",
+        "LCSC": "C207036"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -134,7 +154,8 @@
       },
       "fields": {
         "Manufacturer": "Littelfuse",
-        "MPN": "SMF5.0A"
+        "MPN": "SMF5.0A",
+        "LCSC": "C151296"
       },
       "dnp": false,
       "in_bom": true,
@@ -158,7 +179,8 @@
       },
       "fields": {
         "Manufacturer": "ST",
-        "MPN": "USBLC6-4SC6Y"
+        "MPN": "USBLC6-4SC6Y",
+        "LCSC": "C435848"
       },
       "dnp": false,
       "in_bom": true,
@@ -178,7 +200,8 @@
       },
       "fields": {
         "Manufacturer": "JST",
-        "MPN": "S2B-PH-SM4-TB"
+        "MPN": "S2B-PH-SM4-TB(LF)(SN)",
+        "LCSC": "C295747"
       },
       "dnp": false,
       "in_bom": true,
@@ -202,7 +225,8 @@
       },
       "fields": {
         "Manufacturer": "TI",
-        "MPN": "BQ29700DSER"
+        "MPN": "BQ29700DSER",
+        "LCSC": "C183096"
       },
       "dnp": false,
       "in_bom": true,
@@ -215,14 +239,18 @@
       "lib_id": "Device:R",
       "reference": "R104",
       "value": "330R",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 127.0,
       "y": 114.3,
       "pins": {
         "1": "CELL_POS",
         "2": "BAT_SENSE"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF3300TCE",
+        "LCSC": "C25104"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -232,14 +260,18 @@
       "lib_id": "Device:C",
       "reference": "C102",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 139.7,
       "y": 114.3,
       "pins": {
         "1": "BAT_SENSE",
         "2": "CELL_NEG"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -256,7 +288,11 @@
         "1": "BAT_VMINUS",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0805W8F2201T5E",
+        "LCSC": "C17520"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -278,7 +314,8 @@
       },
       "fields": {
         "Manufacturer": "TI",
-        "MPN": "CSD16406Q3"
+        "MPN": "CSD16406Q3",
+        "LCSC": "C2861720"
       },
       "dnp": false,
       "in_bom": true,
@@ -301,7 +338,8 @@
       },
       "fields": {
         "Manufacturer": "TI",
-        "MPN": "CSD16406Q3"
+        "MPN": "CSD16406Q3",
+        "LCSC": "C2861720"
       },
       "dnp": false,
       "in_bom": true,
@@ -312,14 +350,18 @@
       "lib_id": "Device:R",
       "reference": "R106",
       "value": "5.1M",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 127.0,
       "y": 165.1,
       "pins": {
         "1": "BAT_DOUT",
         "2": "CELL_NEG"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF5104TCE",
+        "LCSC": "C270595"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -329,14 +371,18 @@
       "lib_id": "Device:R",
       "reference": "R107",
       "value": "5.1M",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 152.4,
       "y": 165.1,
       "pins": {
         "1": "BAT_COUT",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF5104TCE",
+        "LCSC": "C270595"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -470,7 +516,11 @@
         "1": "CHG_TS_FIXED",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0805W8F1002T5E",
+        "LCSC": "C17414"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -480,14 +530,18 @@
       "lib_id": "Device:R",
       "reference": "R109",
       "value": "100k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 190.5,
       "y": 127.0,
       "pins": {
         "1": "CHARGER_PGOOD_N",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1003TCE",
+        "LCSC": "C25741"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -497,14 +551,18 @@
       "lib_id": "Device:R",
       "reference": "R110",
       "value": "100k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 203.2,
       "y": 127.0,
       "pins": {
         "1": "CHARGER_CHG_N",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1003TCE",
+        "LCSC": "C25741"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -514,14 +572,18 @@
       "lib_id": "Device:R",
       "reference": "R111",
       "value": "3.48k 1%",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 215.9,
       "y": 127.0,
       "pins": {
         "1": "CHG_ILIM",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF3481TCE",
+        "LCSC": "C22065"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -531,14 +593,18 @@
       "lib_id": "Device:R",
       "reference": "R112",
       "value": "3.01k 1%",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 228.6,
       "y": 127.0,
       "pins": {
         "1": "CHG_ITERM",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF3011TCE",
+        "LCSC": "C25889"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -548,14 +614,18 @@
       "lib_id": "Device:R",
       "reference": "R113",
       "value": "1.78k 1%",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 241.3,
       "y": 127.0,
       "pins": {
         "1": "CHG_ISET",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1781TCE",
+        "LCSC": "C113478"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -565,14 +635,18 @@
       "lib_id": "Device:R",
       "reference": "R114",
       "value": "68.1k 1%",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 254.0,
       "y": 127.0,
       "pins": {
         "1": "CHG_TMR",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF6812TCE",
+        "LCSC": "C11537"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -582,14 +656,18 @@
       "lib_id": "Device:R",
       "reference": "R115",
       "value": "100k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 266.7,
       "y": 127.0,
       "pins": {
         "1": "BQ_EN1",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1003TCE",
+        "LCSC": "C25741"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -599,14 +677,18 @@
       "lib_id": "Device:R",
       "reference": "R126",
       "value": "100k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 279.4,
       "y": 127.0,
       "pins": {
         "1": "CHG_DISABLE",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1003TCE",
+        "LCSC": "C25741"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -616,14 +698,18 @@
       "lib_id": "Device:R",
       "reference": "R128",
       "value": "100k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 292.1,
       "y": 127.0,
       "pins": {
         "1": "BQ_EN2",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1003TCE",
+        "LCSC": "C25741"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -633,14 +719,18 @@
       "lib_id": "Device:C",
       "reference": "C103",
       "value": "4.7uF 10V",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
       "x": 177.8,
       "y": 152.4,
       "pins": {
         "1": "VBUS_FUSED",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL10A475KO8NNNC",
+        "LCSC": "C19666"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -657,7 +747,11 @@
         "1": "CELL_POS",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "CCTC",
+        "MPN": "TCC0805X5R226K100FT",
+        "LCSC": "C380336"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -667,14 +761,18 @@
       "lib_id": "Device:C",
       "reference": "C105",
       "value": "4.7uF 10V",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
       "x": 203.2,
       "y": 152.4,
       "pins": {
         "1": "VSYS",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL10A475KO8NNNC",
+        "LCSC": "C19666"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -684,14 +782,18 @@
       "lib_id": "Device:C",
       "reference": "C106",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 215.9,
       "y": 152.4,
       "pins": {
         "1": "VBUS_FUSED",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -701,14 +803,18 @@
       "lib_id": "Device:C",
       "reference": "C121",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 228.6,
       "y": 152.4,
       "pins": {
         "1": "CELL_POS",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -718,14 +824,18 @@
       "lib_id": "Device:C",
       "reference": "C122",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 241.3,
       "y": 152.4,
       "pins": {
         "1": "VSYS",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -770,15 +880,19 @@
       "block": "01 USB / BATTERY / POWER",
       "lib_id": "Device:L",
       "reference": "L6",
-      "value": "1.5uH XFL4020-152ME",
-      "footprint": "PocketLab_Custom:Coilcraft_XFL4020",
+      "value": "1.5uH 5.2A SMHT4020",
+      "footprint": "PocketLab_Custom:ShunXiangNuo_SMHT4020",
       "x": 101.6,
       "y": 203.2,
       "pins": {
         "1": "U6_L1",
         "2": "U6_L2"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Shun Xiang Nuo",
+        "MPN": "SMHT4020-1R5MT",
+        "LCSC": "C46469583"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -788,14 +902,18 @@
       "lib_id": "Device:R",
       "reference": "R116",
       "value": "10k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 114.3,
       "y": 203.2,
       "pins": {
         "1": "VSYS",
         "2": "PWR_SW_ON"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1002TCE",
+        "LCSC": "C25744"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -834,7 +952,11 @@
         "1": "U6_PS_SYNC",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0805W8F1003T5E",
+        "LCSC": "C149504"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -844,14 +966,18 @@
       "lib_id": "Device:R",
       "reference": "R117",
       "value": "470k 1%",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 127.0,
       "y": 203.2,
       "pins": {
         "1": "+3V3",
         "2": "U6_FB"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF4703TCE",
+        "LCSC": "C25790"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -861,14 +987,18 @@
       "lib_id": "Device:R",
       "reference": "R118",
       "value": "150k 1%",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 139.7,
       "y": 203.2,
       "pins": {
         "1": "U6_FB",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1503TCE",
+        "LCSC": "C25755"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -885,7 +1015,11 @@
         "1": "PWR_3V3_PG",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0805W8F1002T5E",
+        "LCSC": "C17414"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -895,14 +1029,18 @@
       "lib_id": "Device:C",
       "reference": "C107",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 101.6,
       "y": 228.6,
       "pins": {
         "1": "U6_VAUX",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -919,7 +1057,11 @@
         "1": "VSYS",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL21A106KAYNNNE",
+        "LCSC": "C15850"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -937,7 +1079,10 @@
         "2": "GND"
       },
       "fields": {
-        "DNP": "true"
+        "DNP": "true",
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL21A106KAYNNNE",
+        "LCSC": "C15850"
       },
       "dnp": true,
       "in_bom": true,
@@ -955,7 +1100,11 @@
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "CCTC",
+        "MPN": "TCC0805X5R226K100FT",
+        "LCSC": "C380336"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -972,7 +1121,11 @@
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "CCTC",
+        "MPN": "TCC0805X5R226K100FT",
+        "LCSC": "C380336"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -989,7 +1142,11 @@
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "CCTC",
+        "MPN": "TCC0805X5R226K100FT",
+        "LCSC": "C380336"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -999,14 +1156,18 @@
       "lib_id": "Device:C",
       "reference": "C123",
       "value": "10uF 25V X5R HF",
-      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
       "x": 177.8,
       "y": 228.6,
       "pins": {
         "1": "VSYS",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL21A106KAYNNNE",
+        "LCSC": "C15850"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1016,14 +1177,18 @@
       "lib_id": "Device:C",
       "reference": "C124",
       "value": "10uF 25V X5R HF",
-      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
       "x": 190.5,
       "y": 228.6,
       "pins": {
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL21A106KAYNNNE",
+        "LCSC": "C15850"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1057,15 +1222,19 @@
       "block": "01 USB / BATTERY / POWER",
       "lib_id": "Device:L",
       "reference": "L7",
-      "value": "1uH HBME042A",
-      "footprint": "PocketLab_Custom:Cyntec_HBME042A-1R0MS",
+      "value": "1uH 4.15A SLW4030S",
+      "footprint": "PocketLab_Custom:Sunltech_SLW4030S",
       "x": 241.3,
       "y": 203.2,
       "pins": {
         "1": "VSYS",
         "2": "U7_SW"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Sunltech",
+        "MPN": "SLW4030S1R0NST",
+        "LCSC": "C206354"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1075,14 +1244,18 @@
       "lib_id": "Device:R",
       "reference": "R120",
       "value": "732k 1%",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 254.0,
       "y": 203.2,
       "pins": {
         "1": "+5V_RAW",
         "2": "U7_FB"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF7323TCE",
+        "LCSC": "C27016"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1092,14 +1265,18 @@
       "lib_id": "Device:R",
       "reference": "R121",
       "value": "100k 1%",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 266.7,
       "y": 203.2,
       "pins": {
         "1": "U7_FB",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1003TCE",
+        "LCSC": "C25741"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1109,14 +1286,18 @@
       "lib_id": "Device:R",
       "reference": "R122",
       "value": "100k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 279.4,
       "y": 203.2,
       "pins": {
         "1": "BOOST5_EN",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1003TCE",
+        "LCSC": "C25741"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1133,7 +1314,11 @@
         "1": "+5V_RAW",
         "2": "U7_FB"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL10C221JB8NNNC",
+        "LCSC": "C27675"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1150,7 +1335,11 @@
         "1": "VSYS",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL21A106KAYNNNE",
+        "LCSC": "C15850"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1167,7 +1356,11 @@
         "1": "+5V_RAW",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "CCTC",
+        "MPN": "TCC0805X5R226K100FT",
+        "LCSC": "C380336"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1184,7 +1377,11 @@
         "1": "+5V_RAW",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "CCTC",
+        "MPN": "TCC0805X5R226K100FT",
+        "LCSC": "C380336"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1228,7 +1425,8 @@
       },
       "fields": {
         "Manufacturer": "TI",
-        "MPN": "TPS2553DBVR"
+        "MPN": "TPS2553DBVR",
+        "LCSC": "C55266"
       },
       "dnp": false,
       "in_bom": true,
@@ -1239,14 +1437,18 @@
       "lib_id": "Device:R",
       "reference": "R123",
       "value": "60.4k 1%",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 241.3,
       "y": 254.0,
       "pins": {
         "1": "U15_ILIM",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF6042TCE",
+        "LCSC": "C25911"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1256,14 +1458,18 @@
       "lib_id": "Device:R",
       "reference": "R124",
       "value": "100k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 254.0,
       "y": 254.0,
       "pins": {
         "1": "AUX5_FAULT_N",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1003TCE",
+        "LCSC": "C25741"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1273,14 +1479,18 @@
       "lib_id": "Device:R",
       "reference": "R127",
       "value": "100k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 254.0,
       "y": 266.7,
       "pins": {
         "1": "AUX5_EN",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1003TCE",
+        "LCSC": "C25741"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1297,7 +1507,11 @@
         "1": "+5V_RAW",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL21A106KAYNNNE",
+        "LCSC": "C15850"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1307,14 +1521,18 @@
       "lib_id": "Device:C",
       "reference": "C118",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 279.4,
       "y": 254.0,
       "pins": {
         "1": "+5V_AUX",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1331,7 +1549,11 @@
         "1": "+5V_AUX",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL21A106KAYNNNE",
+        "LCSC": "C15850"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1371,14 +1593,18 @@
       "lib_id": "Device:R",
       "reference": "R125",
       "value": "10k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 127.0,
       "y": 266.7,
       "pins": {
         "1": "FG_ALERT_N",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1002TCE",
+        "LCSC": "C25744"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1388,14 +1614,18 @@
       "lib_id": "Device:C",
       "reference": "C120",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 139.7,
       "y": 266.7,
       "pins": {
         "1": "CELL_POS",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1413,7 +1643,7 @@
       },
       "fields": {},
       "dnp": false,
-      "in_bom": true,
+      "in_bom": false,
       "no_connect_nets": {}
     },
     {
@@ -1429,7 +1659,7 @@
       },
       "fields": {},
       "dnp": false,
-      "in_bom": true,
+      "in_bom": false,
       "no_connect_nets": {}
     },
     {
@@ -1445,7 +1675,7 @@
       },
       "fields": {},
       "dnp": false,
-      "in_bom": true,
+      "in_bom": false,
       "no_connect_nets": {}
     },
     {
@@ -1461,7 +1691,7 @@
       },
       "fields": {},
       "dnp": false,
-      "in_bom": true,
+      "in_bom": false,
       "no_connect_nets": {}
     },
     {
@@ -1477,7 +1707,7 @@
       },
       "fields": {},
       "dnp": false,
-      "in_bom": true,
+      "in_bom": false,
       "no_connect_nets": {}
     },
     {
@@ -1493,7 +1723,7 @@
       },
       "fields": {},
       "dnp": false,
-      "in_bom": true,
+      "in_bom": false,
       "no_connect_nets": {}
     },
     {
@@ -1509,7 +1739,7 @@
       },
       "fields": {},
       "dnp": false,
-      "in_bom": true,
+      "in_bom": false,
       "no_connect_nets": {}
     },
     {
@@ -1639,7 +1869,7 @@
         "20": "SPI_SCK",
         "21": "SPI_MISO",
         "22": "SUBGHZ_CS_N",
-        "23": null,
+        "23": "USER_BUTTON_AUX_N",
         "24": "GPIO47_MCU",
         "25": "GPIO48_MCU",
         "26": "STRAP_VDD_SPI_TP",
@@ -1668,7 +1898,6 @@
       "in_bom": true,
       "no_connect_nets": {
         "11": "unconnected-(U1-IO18-Pad11)",
-        "23": "unconnected-(U1-IO21-Pad23)",
         "28": "unconnected-(U1-IO35-Pad28)"
       }
     },
@@ -1684,7 +1913,11 @@
         "1": "USB_CONN_N",
         "2": "USB_D_N"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0805W8F220JT5E",
+        "LCSC": "C17561"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1701,7 +1934,11 @@
         "1": "USB_CONN_P",
         "2": "USB_D_P"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0805W8F220JT5E",
+        "LCSC": "C17561"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1711,14 +1948,18 @@
       "lib_id": "Device:R",
       "reference": "R203",
       "value": "10k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 342.9,
       "y": 177.8,
       "pins": {
         "1": "ESP_EN",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1002TCE",
+        "LCSC": "C25744"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1728,14 +1969,18 @@
       "lib_id": "Device:R",
       "reference": "R204",
       "value": "10k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 355.6,
       "y": 177.8,
       "pins": {
         "1": "BOOT_N",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1002TCE",
+        "LCSC": "C25744"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1745,14 +1990,18 @@
       "lib_id": "Device:C",
       "reference": "C201",
       "value": "1uF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 368.3,
       "y": 177.8,
       "pins": {
         "1": "ESP_EN",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05A105KA5NQNC",
+        "LCSC": "C52923"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1762,14 +2011,18 @@
       "lib_id": "Device:C",
       "reference": "C202",
       "value": "10uF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
       "x": 381.0,
       "y": 177.8,
       "pins": {
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL10A106KP8NNNC",
+        "LCSC": "C19702"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1779,14 +2032,18 @@
       "lib_id": "Device:C",
       "reference": "C203",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 393.7,
       "y": 177.8,
       "pins": {
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1796,7 +2053,7 @@
       "lib_id": "Switch:SW_Push",
       "reference": "SW1",
       "value": "RESET",
-      "footprint": "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KMR2",
+      "footprint": "PocketLab_Custom:SW_HYP_1TS015A_3.0x2.0mm",
       "x": 342.9,
       "y": 203.2,
       "pins": {
@@ -1804,9 +2061,9 @@
         "2": "GND"
       },
       "fields": {
-        "Manufacturer": "C&K",
-        "MPN": "KMR221GLFS",
-        "LCSC": "C72443"
+        "Manufacturer": "HYP",
+        "MPN": "1TS015A-1600-0600-CT",
+        "LCSC": "C256104"
       },
       "dnp": false,
       "in_bom": true,
@@ -1817,7 +2074,7 @@
       "lib_id": "Switch:SW_Push",
       "reference": "SW2",
       "value": "BOOT",
-      "footprint": "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KMR2",
+      "footprint": "PocketLab_Custom:SW_HYP_1TS015A_3.0x2.0mm",
       "x": 368.3,
       "y": 203.2,
       "pins": {
@@ -1825,9 +2082,9 @@
         "2": "GND"
       },
       "fields": {
-        "Manufacturer": "C&K",
-        "MPN": "KMR221GLFS",
-        "LCSC": "C72443"
+        "Manufacturer": "HYP",
+        "MPN": "1TS015A-1600-0600-CT",
+        "LCSC": "C256104"
       },
       "dnp": false,
       "in_bom": true,
@@ -1963,14 +2220,18 @@
       "lib_id": "Device:R",
       "reference": "R301",
       "value": "10k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 482.6,
       "y": 177.8,
       "pins": {
         "1": "NFC_I0",
         "2": "NFC_DVDD"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1002TCE",
+        "LCSC": "C25744"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1980,14 +2241,18 @@
       "lib_id": "Device:R",
       "reference": "R302",
       "value": "10k RESET default asserted",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 495.3,
       "y": 177.8,
       "pins": {
         "1": "NFC_RESET_N",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1002TCE",
+        "LCSC": "C25744"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -1997,14 +2262,18 @@
       "lib_id": "Device:C",
       "reference": "C301",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 508.0,
       "y": 177.8,
       "pins": {
         "1": "NFC_VMID",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2014,14 +2283,18 @@
       "lib_id": "Device:C",
       "reference": "C302",
       "value": "100nF AVDD",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 520.7,
       "y": 177.8,
       "pins": {
         "1": "NFC_DVDD",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2031,14 +2304,18 @@
       "lib_id": "Device:C",
       "reference": "C303",
       "value": "4.7uF VBAT bulk",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
       "x": 533.4,
       "y": 177.8,
       "pins": {
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL10A475KO8NNNC",
+        "LCSC": "C19666"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2048,14 +2325,18 @@
       "lib_id": "Device:C",
       "reference": "C304",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 546.1,
       "y": 177.8,
       "pins": {
         "1": "NFC_DVDD",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2065,14 +2346,18 @@
       "lib_id": "Device:C",
       "reference": "C305",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 558.8,
       "y": 177.8,
       "pins": {
         "1": "NFC_SVDD",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2082,14 +2367,18 @@
       "lib_id": "Device:C",
       "reference": "C313",
       "value": "10uF DVDD bulk",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
       "x": 596.9,
       "y": 177.8,
       "pins": {
         "1": "NFC_DVDD",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL10A106KP8NNNC",
+        "LCSC": "C19702"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2099,14 +2388,18 @@
       "lib_id": "Device:C",
       "reference": "C314",
       "value": "100nF TVDD",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 609.6,
       "y": 177.8,
       "pins": {
         "1": "NFC_DVDD",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2116,14 +2409,18 @@
       "lib_id": "Device:C",
       "reference": "C315",
       "value": "4.7uF TVDD bulk",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
       "x": 622.3,
       "y": 177.8,
       "pins": {
         "1": "NFC_DVDD",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL10A475KO8NNNC",
+        "LCSC": "C19666"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2133,14 +2430,18 @@
       "lib_id": "Device:C",
       "reference": "C316",
       "value": "100nF PVDD",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 635.0,
       "y": 177.8,
       "pins": {
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2150,14 +2451,18 @@
       "lib_id": "Device:C",
       "reference": "C317",
       "value": "100nF VBAT",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 647.7,
       "y": 177.8,
       "pins": {
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2176,7 +2481,11 @@
         "3": "NFC_OSCOUT",
         "4": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "TAITIEN",
+        "MPN": "XXDBBCNANF-27.12M",
+        "LCSC": "C124317"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2193,7 +2502,11 @@
         "1": "NFC_OSCIN",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL10C220JB8NNNC",
+        "LCSC": "C1653"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2210,7 +2523,11 @@
         "1": "NFC_OSCOUT",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL10C220JB8NNNC",
+        "LCSC": "C1653"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2227,7 +2544,11 @@
         "1": "NFC_TX1",
         "2": "NFC_TX1_F"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "FH",
+        "MPN": "FHW0805UFR56JST",
+        "LCSC": "C304279"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2244,7 +2565,11 @@
         "1": "NFC_TX2",
         "2": "NFC_TX2_F"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "FH",
+        "MPN": "FHW0805UFR56JST",
+        "LCSC": "C304279"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2261,7 +2586,11 @@
         "1": "NFC_TX1_F",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL10C221JB8NNNC",
+        "LCSC": "C27675"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2278,7 +2607,11 @@
         "1": "NFC_TX2_F",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL10C221JB8NNNC",
+        "LCSC": "C27675"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2288,14 +2621,18 @@
       "lib_id": "Device:R",
       "reference": "R303",
       "value": "0R MATCH",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
       "x": 533.4,
       "y": 241.3,
       "pins": {
         "1": "NFC_TX1_F",
         "2": "NFC_LOOP_A"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0603WAF0000T5E",
+        "LCSC": "C21189"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2305,14 +2642,18 @@
       "lib_id": "Device:R",
       "reference": "R304",
       "value": "0R MATCH",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
       "x": 546.1,
       "y": 241.3,
       "pins": {
         "1": "NFC_TX2_F",
         "2": "NFC_LOOP_B"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0603WAF0000T5E",
+        "LCSC": "C21189"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2379,14 +2720,18 @@
       "lib_id": "Device:R",
       "reference": "R305",
       "value": "2.7k RX TAP",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
       "x": 533.4,
       "y": 266.7,
       "pins": {
         "1": "NFC_LOOP_A",
         "2": "NFC_RX_AC"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0603WAF2701T5E",
+        "LCSC": "C13167"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2403,7 +2748,11 @@
         "1": "NFC_RX_AC",
         "2": "NFC_RX"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL10C102JB8NNNC",
+        "LCSC": "C163508"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2413,14 +2762,18 @@
       "lib_id": "Device:R",
       "reference": "R306",
       "value": "1k VMID BIAS",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
       "x": 558.8,
       "y": 266.7,
       "pins": {
         "1": "NFC_VMID",
         "2": "NFC_RX"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0603WAF1001T5E",
+        "LCSC": "C21190"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2514,14 +2867,18 @@
       "lib_id": "Device:C",
       "reference": "C401",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 660.4,
       "y": 165.1,
       "pins": {
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2531,14 +2888,18 @@
       "lib_id": "Device:C",
       "reference": "C402",
       "value": "4.7uF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
       "x": 673.1,
       "y": 165.1,
       "pins": {
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL10A475KO8NNNC",
+        "LCSC": "C19666"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2548,14 +2909,18 @@
       "lib_id": "Device:R",
       "reference": "R401",
       "value": "22R",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 685.8,
       "y": 165.1,
       "pins": {
         "1": "SPI_SCK",
         "2": "SUB_SCK"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF220JTCE",
+        "LCSC": "C25092"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2565,14 +2930,18 @@
       "lib_id": "Device:R",
       "reference": "R402",
       "value": "22R",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 698.5,
       "y": 165.1,
       "pins": {
         "1": "SPI_MOSI_JMP",
         "2": "SUB_MOSI"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF220JTCE",
+        "LCSC": "C25092"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2582,14 +2951,18 @@
       "lib_id": "Device:R",
       "reference": "R403",
       "value": "22R",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 711.2,
       "y": 165.1,
       "pins": {
         "1": "SPI_MISO",
         "2": "SUB_MISO"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF220JTCE",
+        "LCSC": "C25092"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2599,14 +2972,18 @@
       "lib_id": "Device:R",
       "reference": "R404",
       "value": "22R",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 723.9,
       "y": 165.1,
       "pins": {
         "1": "SUBGHZ_CS_N",
         "2": "SUB_CS_N"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF220JTCE",
+        "LCSC": "C25092"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2616,14 +2993,18 @@
       "lib_id": "Device:R",
       "reference": "R406",
       "value": "100k CS SAFE-HIGH",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 736.6,
       "y": 165.1,
       "pins": {
         "1": "SUB_CS_N",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1003TCE",
+        "LCSC": "C25741"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2633,7 +3014,7 @@
       "lib_id": "Device:C",
       "reference": "C403",
       "value": "DNP SUBGHZ MATCH",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
       "x": 660.4,
       "y": 190.5,
       "pins": {
@@ -2652,14 +3033,18 @@
       "lib_id": "Device:R",
       "reference": "R405",
       "value": "0R SUBGHZ MATCH",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
       "x": 685.8,
       "y": 190.5,
       "pins": {
         "1": "SUBGHZ_RF_MOD",
         "2": "SUBGHZ_RF_ANT"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0603WAF0000T5E",
+        "LCSC": "C21189"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2669,7 +3054,7 @@
       "lib_id": "Device:C",
       "reference": "C404",
       "value": "DNP SUBGHZ MATCH",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
       "x": 711.2,
       "y": 190.5,
       "pins": {
@@ -2701,7 +3086,7 @@
         "Assembly": "MANUAL_EDGE_SOLDER"
       },
       "dnp": false,
-      "in_bom": true,
+      "in_bom": false,
       "no_connect_nets": {}
     },
     {
@@ -2770,14 +3155,18 @@
       "lib_id": "Device:R",
       "reference": "R501",
       "value": "100R QOD discharge",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 825.5,
       "y": 165.1,
       "pins": {
         "1": "LF_QOD",
         "2": "LF_5V"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2787,14 +3176,18 @@
       "lib_id": "Device:R",
       "reference": "R506",
       "value": "100k SAFE-OFF",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 838.2,
       "y": 165.1,
       "pins": {
         "1": "LF_RFID_EN",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1003TCE",
+        "LCSC": "C25741"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2804,14 +3197,18 @@
       "lib_id": "Device:C",
       "reference": "C501",
       "value": "100nF HTRC supply",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 850.9,
       "y": 165.1,
       "pins": {
         "1": "LF_5V",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2828,7 +3225,11 @@
         "1": "LF_5V",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL21A106KAYNNNE",
+        "LCSC": "C15850"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2838,7 +3239,7 @@
       "lib_id": "Connector_Generic:Conn_01x04",
       "reference": "Y501",
       "value": "4MHz 5V CMOS OSCILLATOR",
-      "footprint": "Oscillator:Oscillator_SMD_EuroQuartz_XO32-4Pin_3.2x2.5mm_RotB_HandSoldering",
+      "footprint": "Oscillator:Oscillator_SMD_EuroQuartz_XO32-4Pin_3.2x2.5mm_RotB",
       "x": 876.3,
       "y": 165.1,
       "pins": {
@@ -2861,14 +3262,18 @@
       "lib_id": "Device:C",
       "reference": "C513",
       "value": "100nF OSC supply",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 889.0,
       "y": 165.1,
       "pins": {
         "1": "LF_5V",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2878,14 +3283,18 @@
       "lib_id": "Device:C",
       "reference": "C503",
       "value": "100nF CEXT",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 901.7,
       "y": 165.1,
       "pins": {
         "1": "LF_CEXT",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2895,14 +3304,18 @@
       "lib_id": "Device:C",
       "reference": "C504",
       "value": "100nF QGND",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 914.4,
       "y": 165.1,
       "pins": {
         "1": "LF_QGND",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2912,14 +3325,18 @@
       "lib_id": "Device:C",
       "reference": "C505",
       "value": "100nF C0G COIL ISOLATION",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_1206_3216Metric",
       "x": 812.8,
       "y": 203.2,
       "pins": {
         "1": "LF_TX1",
         "2": "LF_ANT_A"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "FH",
+        "MPN": "1206CG104J500NT",
+        "LCSC": "C46348"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2929,14 +3346,18 @@
       "lib_id": "Device:R",
       "reference": "R503",
       "value": "1k LF EMI RETURN",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 825.5,
       "y": 203.2,
       "pins": {
         "1": "LF_ANT_A",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1001TCE",
+        "LCSC": "C11702"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2957,7 +3378,7 @@
         "Assembly": "MANUAL_COIL_CONNECTOR"
       },
       "dnp": false,
-      "in_bom": true,
+      "in_bom": false,
       "no_connect_nets": {}
     },
     {
@@ -2972,7 +3393,11 @@
         "1": "LF_ANT_B",
         "2": "LF_TAP"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "1210W2F470JT5E",
+        "LCSC": "C474213"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -2989,7 +3414,11 @@
         "1": "LF_TAP",
         "2": "LF_TX2"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL21C392JBFNNNE",
+        "LCSC": "C307553"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -3007,7 +3436,10 @@
         "2": "LF_TX2"
       },
       "fields": {
-        "DNP": "true"
+        "DNP": "true",
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL10C101JB8NNNC",
+        "LCSC": "C14858"
       },
       "dnp": true,
       "in_bom": true,
@@ -3026,7 +3458,10 @@
         "2": "LF_TX2"
       },
       "fields": {
-        "DNP": "true"
+        "DNP": "true",
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL10C221JB8NNNC",
+        "LCSC": "C27675"
       },
       "dnp": true,
       "in_bom": true,
@@ -3037,14 +3472,18 @@
       "lib_id": "Device:R",
       "reference": "R504",
       "value": "150k 1% RX DIVIDER",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 901.7,
       "y": 203.2,
       "pins": {
         "1": "LF_TAP",
         "2": "LF_RX"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1503TCE",
+        "LCSC": "C25755"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -3062,7 +3501,10 @@
         "2": "LF_QGND"
       },
       "fields": {
-        "DNP": "true"
+        "DNP": "true",
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL10C100JB8NNNC",
+        "LCSC": "C1634"
       },
       "dnp": true,
       "in_bom": true,
@@ -3125,14 +3567,18 @@
       "lib_id": "Device:C",
       "reference": "C515",
       "value": "100nF LV-AT supply",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 838.2,
       "y": 228.6,
       "pins": {
         "1": "LF_5V",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -3142,7 +3588,7 @@
       "lib_id": "74xGxx:74LVC1G126",
       "reference": "U22",
       "value": "SN74LVC1G126DBVR LF 5V-TO-3V3 TRI-STATE",
-      "footprint": "Package_TO_SOT_SMD:SOT-23-5_HandSoldering",
+      "footprint": "Package_TO_SOT_SMD:SOT-23-5",
       "x": 863.6,
       "y": 228.6,
       "pins": {
@@ -3166,14 +3612,18 @@
       "lib_id": "Device:C",
       "reference": "C516",
       "value": "100nF LVC supply",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 889.0,
       "y": 228.6,
       "pins": {
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -3215,14 +3665,18 @@
       "lib_id": "Device:C",
       "reference": "C517",
       "value": "100nF secure element",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 939.8,
       "y": 228.6,
       "pins": {
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -3232,7 +3686,7 @@
       "lib_id": "Switch:SW_Push",
       "reference": "SW6",
       "value": "PAIR",
-      "footprint": "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KMR2",
+      "footprint": "PocketLab_Custom:SW_HYP_1TS015A_3.0x2.0mm",
       "x": 965.2,
       "y": 228.6,
       "pins": {
@@ -3240,9 +3694,9 @@
         "2": "GND"
       },
       "fields": {
-        "Manufacturer": "C&K",
-        "MPN": "KMR221GLFS",
-        "LCSC": "C72443"
+        "Manufacturer": "HYP",
+        "MPN": "1TS015A-1600-0600-CT",
+        "LCSC": "C256104"
       },
       "dnp": false,
       "in_bom": true,
@@ -3253,14 +3707,18 @@
       "lib_id": "Device:R",
       "reference": "R509",
       "value": "10k PAIR pull-up",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 990.6,
       "y": 228.6,
       "pins": {
         "1": "PAIR_N",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1002TCE",
+        "LCSC": "C25744"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -3286,7 +3744,11 @@
         "10": "SD_DETECT_N",
         "SH": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Molex",
+        "MPN": "104031-0811",
+        "LCSC": "C585350"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -3296,14 +3758,18 @@
       "lib_id": "Device:R",
       "reference": "R510",
       "value": "22R",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 876.3,
       "y": 254.0,
       "pins": {
         "1": "SD_CS_N",
         "2": "SD_CS_DEV"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF220JTCE",
+        "LCSC": "C25092"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -3313,14 +3779,18 @@
       "lib_id": "Device:R",
       "reference": "R511",
       "value": "22R",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 889.0,
       "y": 254.0,
       "pins": {
         "1": "SPI_MOSI",
         "2": "SD_MOSI"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF220JTCE",
+        "LCSC": "C25092"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -3330,14 +3800,18 @@
       "lib_id": "Device:R",
       "reference": "R512",
       "value": "22R",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 901.7,
       "y": 254.0,
       "pins": {
         "1": "SPI_SCK",
         "2": "SD_SCK"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF220JTCE",
+        "LCSC": "C25092"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -3347,14 +3821,18 @@
       "lib_id": "Device:R",
       "reference": "R513",
       "value": "22R",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 914.4,
       "y": 254.0,
       "pins": {
         "1": "SPI_MISO",
         "2": "SD_MISO"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF220JTCE",
+        "LCSC": "C25092"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -3364,14 +3842,18 @@
       "lib_id": "Device:R",
       "reference": "R514",
       "value": "47k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 876.3,
       "y": 279.4,
       "pins": {
         "1": "SD_DAT2",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF4702TCE",
+        "LCSC": "C25792"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -3381,14 +3863,18 @@
       "lib_id": "Device:R",
       "reference": "R515",
       "value": "47k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 889.0,
       "y": 279.4,
       "pins": {
         "1": "SD_CS_DEV",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF4702TCE",
+        "LCSC": "C25792"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -3398,14 +3884,18 @@
       "lib_id": "Device:R",
       "reference": "R516",
       "value": "47k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 901.6999999999999,
       "y": 279.4,
       "pins": {
         "1": "SD_MOSI",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF4702TCE",
+        "LCSC": "C25792"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -3415,14 +3905,18 @@
       "lib_id": "Device:R",
       "reference": "R517",
       "value": "47k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 914.4,
       "y": 279.4,
       "pins": {
         "1": "SD_MISO",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF4702TCE",
+        "LCSC": "C25792"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -3432,14 +3926,18 @@
       "lib_id": "Device:R",
       "reference": "R518",
       "value": "47k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 927.0999999999999,
       "y": 279.4,
       "pins": {
         "1": "SD_DAT1",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF4702TCE",
+        "LCSC": "C25792"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -3449,14 +3947,18 @@
       "lib_id": "Device:R",
       "reference": "R519",
       "value": "10k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 939.8,
       "y": 279.4,
       "pins": {
         "1": "SD_DETECT_N",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1002TCE",
+        "LCSC": "C25744"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -3466,14 +3968,18 @@
       "lib_id": "Device:C",
       "reference": "C510",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 876.3,
       "y": 304.8,
       "pins": {
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -3483,14 +3989,18 @@
       "lib_id": "Device:C",
       "reference": "C511",
       "value": "10uF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
       "x": 889.0,
       "y": 304.8,
       "pins": {
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL10A106KP8NNNC",
+        "LCSC": "C19702"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -3500,7 +4010,7 @@
       "lib_id": "Device:C",
       "reference": "C512",
       "value": "47uF 6.3V LOW-ESR",
-      "footprint": "Capacitor_SMD:C_1210_3225Metric",
+      "footprint": "Capacitor_SMD:C_1206_3216Metric",
       "x": 901.7,
       "y": 304.8,
       "pins": {
@@ -3508,8 +4018,9 @@
         "2": "GND"
       },
       "fields": {
-        "Manufacturer": "Murata",
-        "MPN": "GRM32ER60J476ME20L"
+        "Manufacturer": "Yageo",
+        "MPN": "CC1206MKX5R5BB476",
+        "LCSC": "C110047"
       },
       "dnp": false,
       "in_bom": true,
@@ -3533,14 +4044,15 @@
       },
       "fields": {
         "Manufacturer": "onsemi",
-        "MPN": "SRV05-4MR6T1G"
+        "MPN": "SRV05-4MR6T1G",
+        "LCSC": "C604719"
       },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:C",
       "reference": "C607",
       "value": "22uF 10V X5R IR BUFFER",
@@ -3551,13 +4063,17 @@
         "1": "+5V_RAW",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "CCTC",
+        "MPN": "TCC1206X5R226K100HT",
+        "LCSC": "C7393980"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:C",
       "reference": "C617",
       "value": "22uF 10V X5R IR BUFFER",
@@ -3568,51 +4084,63 @@
         "1": "+5V_RAW",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "CCTC",
+        "MPN": "TCC1206X5R226K100HT",
+        "LCSC": "C7393980"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:C",
       "reference": "C608",
       "value": "100nF IR HF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 63.5,
       "y": 406.4,
       "pins": {
         "1": "+5V_RAW",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:R",
       "reference": "R601",
-      "value": "39R 0.5W pulse-rated",
-      "footprint": "Resistor_SMD:R_1210_3225Metric",
+      "value": "68R 0.25W anti-surge",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
       "x": 88.9,
       "y": 393.7,
       "pins": {
         "1": "+5V_RAW",
         "2": "IR_LED_A1"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "AS03W4J0680T5E",
+        "LCSC": "C966162"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:LED",
       "reference": "D1",
-      "value": "TSAL6200 940nm",
-      "footprint": "PocketLab_Custom:TSAL6200_LayFlat_Inboard",
+      "value": "VSMY14940 940nm side-view",
+      "footprint": "PocketLab_Custom:LED_Vishay_VSMY14940_SideView",
       "x": 114.3,
       "y": 393.7,
       "pins": {
@@ -3621,37 +4149,40 @@
       },
       "fields": {
         "Manufacturer": "Vishay",
-        "MPN": "TSAL6200",
-        "LCSC": "C55528",
-        "Assembly": "MANUAL_EDGE_BEND"
+        "MPN": "VSMY14940",
+        "LCSC": "C511069"
       },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:R",
       "reference": "R610",
-      "value": "39R 0.5W pulse-rated",
-      "footprint": "Resistor_SMD:R_1210_3225Metric",
+      "value": "68R 0.25W anti-surge",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
       "x": 88.9,
       "y": 406.4,
       "pins": {
         "1": "+5V_RAW",
         "2": "IR_LED_A2"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "AS03W4J0680T5E",
+        "LCSC": "C966162"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:LED",
       "reference": "D2",
-      "value": "TSAL6200 940nm",
-      "footprint": "PocketLab_Custom:TSAL6200_LayFlat_Inboard",
+      "value": "VSMY14940 940nm side-view",
+      "footprint": "PocketLab_Custom:LED_Vishay_VSMY14940_SideView",
       "x": 114.3,
       "y": 406.4,
       "pins": {
@@ -3660,37 +4191,40 @@
       },
       "fields": {
         "Manufacturer": "Vishay",
-        "MPN": "TSAL6200",
-        "LCSC": "C55528",
-        "Assembly": "MANUAL_EDGE_BEND"
+        "MPN": "VSMY14940",
+        "LCSC": "C511069"
       },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:R",
       "reference": "R611",
-      "value": "39R 0.5W pulse-rated",
-      "footprint": "Resistor_SMD:R_1210_3225Metric",
+      "value": "68R 0.25W anti-surge",
+      "footprint": "Resistor_SMD:R_0603_1608Metric",
       "x": 88.9,
       "y": 419.1,
       "pins": {
         "1": "+5V_RAW",
         "2": "IR_LED_A3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "AS03W4J0680T5E",
+        "LCSC": "C966162"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:LED",
       "reference": "D3",
-      "value": "TSAL6200 940nm",
-      "footprint": "PocketLab_Custom:TSAL6200_LayFlat_Inboard",
+      "value": "VSMY14940 940nm side-view",
+      "footprint": "PocketLab_Custom:LED_Vishay_VSMY14940_SideView",
       "x": 114.3,
       "y": 419.1,
       "pins": {
@@ -3699,16 +4233,15 @@
       },
       "fields": {
         "Manufacturer": "Vishay",
-        "MPN": "TSAL6200",
-        "LCSC": "C55528",
-        "Assembly": "MANUAL_EDGE_BEND"
+        "MPN": "VSMY14940",
+        "LCSC": "C511069"
       },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Transistor_FET:AO3400A",
       "reference": "Q1",
       "value": "AO3400A IR DRIVER",
@@ -3730,41 +4263,49 @@
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:R",
       "reference": "R602",
       "value": "100R",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 152.4,
       "y": 381.0,
       "pins": {
         "1": "IR_TX",
         "2": "IR_GATE"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:R",
       "reference": "R603",
       "value": "100k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 152.4,
       "y": 406.4,
       "pins": {
         "1": "IR_GATE",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1003TCE",
+        "LCSC": "C25741"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Connector_Generic:Conn_01x04",
       "reference": "U13",
       "value": "TSOP75338WTR 38kHz",
@@ -3779,65 +4320,78 @@
       },
       "fields": {
         "Manufacturer": "Vishay",
-        "MPN": "TSOP75338WTR"
+        "MPN": "TSOP75338WTR",
+        "LCSC": "C7365598"
       },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:R",
       "reference": "R604",
       "value": "100R",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 228.6,
       "y": 381.0,
       "pins": {
         "1": "+3V3",
         "2": "IR_RX_VS"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:C",
       "reference": "C601",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 228.6,
       "y": 393.7,
       "pins": {
         "1": "IR_RX_VS",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:C",
       "reference": "C602",
       "value": "4.7uF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0603_1608Metric",
       "x": 228.6,
       "y": 406.4,
       "pins": {
         "1": "IR_RX_VS",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL10A475KO8NNNC",
+        "LCSC": "C19666"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "74xGxx:74AHCT1G126",
       "reference": "U20",
       "value": "SN74AHCT1G126DBVR RGB LEVEL SHIFT",
@@ -3861,24 +4415,28 @@
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:C",
       "reference": "C609",
       "value": "100nF X7R",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 50.8,
       "y": 482.6,
       "pins": {
         "1": "+5V_RAW",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "LED:WS2812B",
       "reference": "LED1",
       "value": "WS2812B-2020",
@@ -3901,24 +4459,28 @@
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:C",
       "reference": "C603",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 76.2,
       "y": 482.6,
       "pins": {
         "1": "+5V_RAW",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "LED:WS2812B",
       "reference": "LED2",
       "value": "WS2812B-2020",
@@ -3941,24 +4503,28 @@
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:C",
       "reference": "C604",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 114.3,
       "y": 482.6,
       "pins": {
         "1": "+5V_RAW",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "LED:WS2812B",
       "reference": "LED3",
       "value": "WS2812B-2020",
@@ -3981,24 +4547,28 @@
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:C",
       "reference": "C605",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 152.4,
       "y": 482.6,
       "pins": {
         "1": "+5V_RAW",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "LED:WS2812B",
       "reference": "LED4",
       "value": "WS2812B-2020",
@@ -4023,216 +4593,74 @@
       }
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:C",
       "reference": "C606",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 190.5,
       "y": 482.6,
       "pins": {
         "1": "+5V_RAW",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:R",
       "reference": "R605",
       "value": "68R",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 63.5,
       "y": 457.2,
       "pins": {
         "1": "RGB_BUF_5V",
         "2": "RGB_DIN1"
       },
-      "fields": {},
-      "dnp": false,
-      "in_bom": true,
-      "no_connect_nets": {}
-    },
-    {
-      "block": "06 IR / RGB / BUTTONS / OLED",
-      "lib_id": "Connector_Generic:Conn_01x16",
-      "reference": "J8",
-      "value": "ER-OLED0.42-1W 72x40 SSD1306B",
-      "footprint": "PocketLab_Custom:EastRising_ER-OLED0.42-1W_SolderFPC",
-      "x": 76.2,
-      "y": 533.4,
-      "pins": {
-        "1": "OLED_C2P",
-        "2": "OLED_C2N",
-        "3": "OLED_C1P",
-        "4": "OLED_C1N",
-        "5": "+3V3",
-        "6": "GND",
-        "7": "+3V3",
-        "8": "+3V3",
-        "9": "GND",
-        "10": "ESP_EN",
-        "11": "GND",
-        "12": "I2C_SCL",
-        "13": "I2C_SDA",
-        "14": "I2C_SDA",
-        "15": "OLED_VCOMH",
-        "16": "OLED_VCC"
-      },
       "fields": {
-        "Manufacturer": "EastRising",
-        "MPN": "ER-OLED0.42-1W",
-        "Assembly": "MANUAL_SOLDER_FPC_FOLD"
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF680JTCE",
+        "LCSC": "C25131"
       },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
-      "lib_id": "Device:C",
-      "reference": "C610",
-      "value": "1uF X7R",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
-      "x": 63.5,
-      "y": 520.7,
-      "pins": {
-        "1": "OLED_C2P",
-        "2": "OLED_C2N"
-      },
-      "fields": {},
-      "dnp": false,
-      "in_bom": true,
-      "no_connect_nets": {}
-    },
-    {
-      "block": "06 IR / RGB / BUTTONS / OLED",
-      "lib_id": "Device:C",
-      "reference": "C611",
-      "value": "1uF X7R",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
-      "x": 76.2,
-      "y": 520.7,
-      "pins": {
-        "1": "OLED_C1P",
-        "2": "OLED_C1N"
-      },
-      "fields": {},
-      "dnp": false,
-      "in_bom": true,
-      "no_connect_nets": {}
-    },
-    {
-      "block": "06 IR / RGB / BUTTONS / OLED",
-      "lib_id": "Device:C",
-      "reference": "C612",
-      "value": "100nF X7R",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
-      "x": 88.9,
-      "y": 520.7,
-      "pins": {
-        "1": "+3V3",
-        "2": "GND"
-      },
-      "fields": {},
-      "dnp": false,
-      "in_bom": true,
-      "no_connect_nets": {}
-    },
-    {
-      "block": "06 IR / RGB / BUTTONS / OLED",
-      "lib_id": "Device:C",
-      "reference": "C613",
-      "value": "4.7uF X5R",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
-      "x": 101.6,
-      "y": 520.7,
-      "pins": {
-        "1": "+3V3",
-        "2": "GND"
-      },
-      "fields": {},
-      "dnp": false,
-      "in_bom": true,
-      "no_connect_nets": {}
-    },
-    {
-      "block": "06 IR / RGB / BUTTONS / OLED",
-      "lib_id": "Device:C",
-      "reference": "C614",
-      "value": "2.2uF X7R",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
-      "x": 63.5,
-      "y": 546.1,
-      "pins": {
-        "1": "OLED_VCOMH",
-        "2": "GND"
-      },
-      "fields": {},
-      "dnp": false,
-      "in_bom": true,
-      "no_connect_nets": {}
-    },
-    {
-      "block": "06 IR / RGB / BUTTONS / OLED",
-      "lib_id": "Device:C",
-      "reference": "C615",
-      "value": "4.7uF X5R",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
-      "x": 76.2,
-      "y": 546.1,
-      "pins": {
-        "1": "OLED_VCC",
-        "2": "GND"
-      },
-      "fields": {},
-      "dnp": false,
-      "in_bom": true,
-      "no_connect_nets": {}
-    },
-    {
-      "block": "06 IR / RGB / BUTTONS / OLED",
-      "lib_id": "Device:C",
-      "reference": "C616",
-      "value": "100nF X7R",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
-      "x": 88.9,
-      "y": 546.1,
-      "pins": {
-        "1": "OLED_VCC",
-        "2": "GND"
-      },
-      "fields": {},
-      "dnp": false,
-      "in_bom": true,
-      "no_connect_nets": {}
-    },
-    {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:R",
       "reference": "R606",
       "value": "100R PAIR GPIO PROTECTION",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 127.0,
       "y": 520.7,
       "pins": {
         "1": "GPIO38_MCU",
         "2": "PAIR_N"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Switch:SW_Push",
       "reference": "SW3",
       "value": "UP",
-      "footprint": "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KMR2",
+      "footprint": "PocketLab_Custom:SW_HYP_1TS015A_3.0x2.0mm",
       "x": 177.8,
       "y": 533.4,
       "pins": {
@@ -4240,20 +4668,20 @@
         "2": "GND"
       },
       "fields": {
-        "Manufacturer": "C&K",
-        "MPN": "KMR221GLFS",
-        "LCSC": "C72443"
+        "Manufacturer": "HYP",
+        "MPN": "1TS015A-1600-0600-CT",
+        "LCSC": "C256104"
       },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Switch:SW_Push",
       "reference": "SW7",
       "value": "SELECT",
-      "footprint": "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KMR2",
+      "footprint": "PocketLab_Custom:SW_HYP_1TS015A_3.0x2.0mm",
       "x": 203.2,
       "y": 533.4,
       "pins": {
@@ -4261,20 +4689,20 @@
         "2": "GND"
       },
       "fields": {
-        "Manufacturer": "C&K",
-        "MPN": "KMR221GLFS",
-        "LCSC": "C72443"
+        "Manufacturer": "HYP",
+        "MPN": "1TS015A-1600-0600-CT",
+        "LCSC": "C256104"
       },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Switch:SW_Push",
       "reference": "SW4",
       "value": "DOWN",
-      "footprint": "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KMR2",
+      "footprint": "PocketLab_Custom:SW_HYP_1TS015A_3.0x2.0mm",
       "x": 228.6,
       "y": 533.4,
       "pins": {
@@ -4282,61 +4710,95 @@
         "2": "GND"
       },
       "fields": {
-        "Manufacturer": "C&K",
-        "MPN": "KMR221GLFS",
-        "LCSC": "C72443"
+        "Manufacturer": "HYP",
+        "MPN": "1TS015A-1600-0600-CT",
+        "LCSC": "C256104"
       },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
+      "lib_id": "Switch:SW_Push",
+      "reference": "SW8",
+      "value": "AUX CONFIG",
+      "footprint": "Button_Switch_SMD:SW_SPST_CK_KXT3",
+      "x": 254.0,
+      "y": 533.4,
+      "pins": {
+        "1": "USER_BUTTON_AUX_N",
+        "2": "GND"
+      },
+      "fields": {
+        "Manufacturer": "C&K",
+        "MPN": "KXT311LHS",
+        "Assembly": "PCBA_FACTORY",
+        "Function": "Firmware-configurable AUX button; GPIO21 internal pull-up required"
+      },
+      "dnp": false,
+      "in_bom": true,
+      "no_connect_nets": {}
+    },
+    {
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:R",
       "reference": "R607",
       "value": "10k",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 203.2,
       "y": 558.8,
       "pins": {
         "1": "USER_BUTTON_SELECT_N",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1002TCE",
+        "LCSC": "C25744"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:R",
       "reference": "R608",
       "value": "10k",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 177.8,
       "y": 558.8,
       "pins": {
         "1": "USER_BUTTON_A_N",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1002TCE",
+        "LCSC": "C25744"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
     },
     {
-      "block": "06 IR / RGB / BUTTONS / OLED",
+      "block": "06 IR / RGB / BUTTONS",
       "lib_id": "Device:R",
       "reference": "R609",
       "value": "10k",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 228.6,
       "y": 558.8,
       "pins": {
         "1": "USER_BUTTON_B_N",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1002TCE",
+        "LCSC": "C25744"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4396,7 +4858,11 @@
         "1": "I2C_SDA",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0805W8F3301T5E",
+        "LCSC": "C26010"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4406,14 +4872,18 @@
       "lib_id": "Device:R",
       "reference": "R702",
       "value": "3.3k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 330.2,
       "y": 495.3,
       "pins": {
         "1": "I2C_SCL",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF3301TCE",
+        "LCSC": "C25890"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4423,14 +4893,18 @@
       "lib_id": "Device:R",
       "reference": "R703",
       "value": "10k",
-      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 342.9,
       "y": 495.3,
       "pins": {
         "1": "IOEXP_INT_N",
         "2": "+3V3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1002TCE",
+        "LCSC": "C25744"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4440,14 +4914,18 @@
       "lib_id": "Device:C",
       "reference": "C701",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 355.6,
       "y": 495.3,
       "pins": {
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4480,7 +4958,8 @@
       },
       "fields": {
         "Manufacturer": "TI",
-        "MPN": "TCA9534PWR"
+        "MPN": "TCA9534PWR",
+        "LCSC": "C783615"
       },
       "dnp": false,
       "in_bom": true,
@@ -4491,14 +4970,18 @@
       "lib_id": "Device:C",
       "reference": "C707",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 647.7,
       "y": 482.6,
       "pins": {
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4546,14 +5029,18 @@
       "lib_id": "Device:C",
       "reference": "C702",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 419.1,
       "y": 482.6,
       "pins": {
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4563,14 +5050,18 @@
       "lib_id": "Device:C",
       "reference": "C703",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 431.8,
       "y": 482.6,
       "pins": {
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4611,14 +5102,18 @@
       "lib_id": "Device:C",
       "reference": "C704",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 482.6,
       "y": 482.6,
       "pins": {
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4628,14 +5123,18 @@
       "lib_id": "Device:C",
       "reference": "C705",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0603_1608Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 495.3,
       "y": 482.6,
       "pins": {
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4684,7 +5183,8 @@
       },
       "fields": {
         "Manufacturer": "Abracon",
-        "MPN": "ABS07-32.768KHZ-7-T"
+        "MPN": "ABS07-32.768KHZ-7-T",
+        "LCSC": "C276424"
       },
       "dnp": false,
       "in_bom": true,
@@ -4695,14 +5195,18 @@
       "lib_id": "Device:C",
       "reference": "C706",
       "value": "100nF",
-      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
       "x": 571.5,
       "y": 482.6,
       "pins": {
         "1": "+3V3",
         "2": "GND"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "Samsung Electro-Mechanics",
+        "MPN": "CL05B104KO5NNNC",
+        "LCSC": "C1525"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4712,7 +5216,7 @@
       "lib_id": "Device:R",
       "reference": "R736",
       "value": "10k 1% BOARD TEMP BIAS",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 622.3,
       "y": 495.3,
       "pins": {
@@ -4721,8 +5225,8 @@
       },
       "fields": {
         "Manufacturer": "UNI-ROYAL",
-        "MPN": "0603WAF1002T5E",
-        "LCSC": "C25804"
+        "MPN": "0402WGF1002TCE",
+        "LCSC": "C25744"
       },
       "dnp": false,
       "in_bom": true,
@@ -4754,14 +5258,18 @@
       "lib_id": "Device:R",
       "reference": "R710",
       "value": "100R",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 317.5,
       "y": 546.1,
       "pins": {
         "1": "GPIO1_MCU",
         "2": "GPIO1"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4771,14 +5279,18 @@
       "lib_id": "Device:R",
       "reference": "R711",
       "value": "100R",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 342.9,
       "y": 546.1,
       "pins": {
         "1": "GPIO2_MCU",
         "2": "GPIO2"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4788,14 +5300,18 @@
       "lib_id": "Device:R",
       "reference": "R712",
       "value": "100R",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 368.3,
       "y": 546.1,
       "pins": {
         "1": "GPIO4_MCU",
         "2": "GPIO4"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4805,14 +5321,18 @@
       "lib_id": "Device:R",
       "reference": "R713",
       "value": "100R",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 393.7,
       "y": 546.1,
       "pins": {
         "1": "GPIO8_MCU",
         "2": "GPIO8"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4822,14 +5342,18 @@
       "lib_id": "Device:R",
       "reference": "R714",
       "value": "100R BOARD TEMP PROBE",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 419.1,
       "y": 546.1,
       "pins": {
         "1": "BOARD_TEMP_ADC",
         "2": "BOARD_TEMP_HDR"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4839,14 +5363,18 @@
       "lib_id": "Device:R",
       "reference": "R715",
       "value": "100R",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 444.5,
       "y": 546.1,
       "pins": {
         "1": "GPIO40_MCU",
         "2": "GPIO40"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4856,14 +5384,18 @@
       "lib_id": "Device:R",
       "reference": "R716",
       "value": "100R",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 317.5,
       "y": 571.5,
       "pins": {
         "1": "GPIO41_MCU",
         "2": "GPIO41"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4873,14 +5405,18 @@
       "lib_id": "Device:R",
       "reference": "R717",
       "value": "100R",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 342.9,
       "y": 571.5,
       "pins": {
         "1": "GPIO42_MCU",
         "2": "GPIO42"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4890,14 +5426,18 @@
       "lib_id": "Device:R",
       "reference": "R718",
       "value": "100R",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 368.3,
       "y": 571.5,
       "pins": {
         "1": "GPIO43_MCU",
         "2": "GPIO43"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4907,14 +5447,18 @@
       "lib_id": "Device:R",
       "reference": "R719",
       "value": "100R",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 393.7,
       "y": 571.5,
       "pins": {
         "1": "GPIO44_MCU",
         "2": "GPIO44"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4924,14 +5468,18 @@
       "lib_id": "Device:R",
       "reference": "R720",
       "value": "100R",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 419.1,
       "y": 571.5,
       "pins": {
         "1": "GPIO47_MCU",
         "2": "GPIO47"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4941,14 +5489,18 @@
       "lib_id": "Device:R",
       "reference": "R721",
       "value": "100R",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 444.5,
       "y": 571.5,
       "pins": {
         "1": "GPIO48_MCU",
         "2": "GPIO48"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4958,14 +5510,18 @@
       "lib_id": "Device:R",
       "reference": "R722",
       "value": "220R EXPANSION PROTECTION",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 317.5,
       "y": 596.9,
       "pins": {
         "1": "EX0_INT",
         "2": "EX0"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF2200TCE",
+        "LCSC": "C25091"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4975,14 +5531,18 @@
       "lib_id": "Device:R",
       "reference": "R723",
       "value": "220R EXPANSION PROTECTION",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 342.9,
       "y": 596.9,
       "pins": {
         "1": "EX1_INT",
         "2": "EX1"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF2200TCE",
+        "LCSC": "C25091"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -4992,14 +5552,18 @@
       "lib_id": "Device:R",
       "reference": "R724",
       "value": "220R EXPANSION PROTECTION",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 368.3,
       "y": 596.9,
       "pins": {
         "1": "EX2_INT",
         "2": "EX2"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF2200TCE",
+        "LCSC": "C25091"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -5009,14 +5573,18 @@
       "lib_id": "Device:R",
       "reference": "R725",
       "value": "220R EXPANSION PROTECTION",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 393.7,
       "y": 596.9,
       "pins": {
         "1": "EX3_INT",
         "2": "EX3"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF2200TCE",
+        "LCSC": "C25091"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -5026,14 +5594,18 @@
       "lib_id": "Device:R",
       "reference": "R726",
       "value": "220R EXPANSION PROTECTION",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 317.5,
       "y": 622.3,
       "pins": {
         "1": "EX4_INT",
         "2": "EX4"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF2200TCE",
+        "LCSC": "C25091"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -5043,14 +5615,18 @@
       "lib_id": "Device:R",
       "reference": "R727",
       "value": "220R EXPANSION PROTECTION",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 342.9,
       "y": 622.3,
       "pins": {
         "1": "EX5_INT",
         "2": "EX5"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF2200TCE",
+        "LCSC": "C25091"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -5060,14 +5636,18 @@
       "lib_id": "Device:R",
       "reference": "R728",
       "value": "220R EXPANSION PROTECTION",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 368.3,
       "y": 622.3,
       "pins": {
         "1": "EX6_INT",
         "2": "EX6"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF2200TCE",
+        "LCSC": "C25091"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -5077,14 +5657,18 @@
       "lib_id": "Device:R",
       "reference": "R729",
       "value": "220R EXPANSION PROTECTION",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 393.7,
       "y": 622.3,
       "pins": {
         "1": "EX7_INT",
         "2": "EX7"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF2200TCE",
+        "LCSC": "C25091"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -5094,14 +5678,18 @@
       "lib_id": "Device:R",
       "reference": "R730",
       "value": "100R",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 431.8,
       "y": 622.3,
       "pins": {
         "1": "I2C_SDA",
         "2": "I2C_SDA_HDR"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -5111,14 +5699,18 @@
       "lib_id": "Device:R",
       "reference": "R731",
       "value": "100R",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 457.2,
       "y": 622.3,
       "pins": {
         "1": "I2C_SCL",
         "2": "I2C_SCL_HDR"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -5128,14 +5720,18 @@
       "lib_id": "Device:R",
       "reference": "R732",
       "value": "100R",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 482.6,
       "y": 622.3,
       "pins": {
         "1": "SPI_SCK",
         "2": "SPI_SCK_HDR"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -5145,14 +5741,18 @@
       "lib_id": "Device:R",
       "reference": "R733",
       "value": "100R",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 508.0,
       "y": 622.3,
       "pins": {
         "1": "SPI_MOSI",
         "2": "SPI_MOSI_HDR"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -5162,14 +5762,18 @@
       "lib_id": "Device:R",
       "reference": "R734",
       "value": "100R",
-      "footprint": "Resistor_SMD:R_0603_1608Metric",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
       "x": 533.4,
       "y": 622.3,
       "pins": {
         "1": "SPI_MISO",
         "2": "SPI_MISO_HDR"
       },
-      "fields": {},
+      "fields": {
+        "Manufacturer": "UNI-ROYAL",
+        "MPN": "0402WGF1000TCE",
+        "LCSC": "C25076"
+      },
       "dnp": false,
       "in_bom": true,
       "no_connect_nets": {}
@@ -5192,7 +5796,8 @@
       },
       "fields": {
         "Manufacturer": "onsemi",
-        "MPN": "SRV05-4MR6T1G"
+        "MPN": "SRV05-4MR6T1G",
+        "LCSC": "C604719"
       },
       "dnp": false,
       "in_bom": true,
@@ -5219,7 +5824,8 @@
       },
       "fields": {
         "Manufacturer": "onsemi",
-        "MPN": "SRV05-4MR6T1G"
+        "MPN": "SRV05-4MR6T1G",
+        "LCSC": "C604719"
       },
       "dnp": false,
       "in_bom": true,
@@ -5269,12 +5875,12 @@
       },
       "fields": {},
       "dnp": false,
-      "in_bom": true,
+      "in_bom": false,
       "no_connect_nets": {}
     }
   ],
   "net_usage": {
-    "GND": 193,
+    "GND": 186,
     "VBUS_USB": 6,
     "USB_CC1": 3,
     "USB_CONN_P": 4,
@@ -5301,7 +5907,7 @@
     "CHG_ITERM": 2,
     "CHG_ISET": 2,
     "CHG_TS_FIXED": 2,
-    "+3V3": 77,
+    "+3V3": 72,
     "U6_PS_SYNC": 4,
     "PWR_3V3_PG": 2,
     "U6_VAUX": 2,
@@ -5320,10 +5926,10 @@
     "U15_ILIM": 2,
     "+5V_AUX": 6,
     "FG_ALERT_N": 3,
-    "I2C_SCL": 12,
-    "I2C_SDA": 13,
+    "I2C_SCL": 11,
+    "I2C_SDA": 11,
     "LF_5V": 11,
-    "ESP_EN": 5,
+    "ESP_EN": 4,
     "GPIO4_MCU": 2,
     "NFC_IRQ_N": 2,
     "SUBGHZ_GDO0": 2,
@@ -5339,6 +5945,7 @@
     "SPI_SCK": 5,
     "SPI_MISO": 5,
     "SUBGHZ_CS_N": 2,
+    "USER_BUTTON_AUX_N": 2,
     "GPIO47_MCU": 2,
     "GPIO48_MCU": 2,
     "STRAP_VDD_SPI_TP": 2,
@@ -5409,12 +6016,6 @@
     "RGB_DIN1": 2,
     "RGB_D2_3": 2,
     "RGB_D3_4": 2,
-    "OLED_C2P": 2,
-    "OLED_C2N": 2,
-    "OLED_C1P": 2,
-    "OLED_C1N": 2,
-    "OLED_VCOMH": 2,
-    "OLED_VCC": 3,
     "USER_BUTTON_A_N": 3,
     "USER_BUTTON_SELECT_N": 3,
     "USER_BUTTON_B_N": 3,

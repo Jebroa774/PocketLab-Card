@@ -10,13 +10,13 @@
 | 03_NFC | PN532, clock, matching/RX networks and four-turn PCB loop |
 | 04_SUBGHZ | E07-900MM10S CC1101 module, tuneable pi network and inboard spring antenna |
 | 05_LF_RFID_SD | HTRC110, removable 125 kHz coil, level shifting, ATECC608C, PAIR and microSD |
-| 06_IR_UI | IR transmitter/receiver, RGB LEDs, buttons and bare OLED |
+| 06_IR_UI | IR transmitter/receiver, RGB LEDs and buttons |
 | 07_SENSORS_IO | IMU, barometer, RTC, fuel gauge, U9/U18 and headers |
 
 KiCad 10 is installed locally. `PocketLab-Card.kicad_pro` is the project entry
 point and the PCB scaffold contains the exact credit-card outline. The current
-generated schematic comprises 274 symbols, 267 assigned footprints and 181
-named logical nets (231 physical PCB nets); `reports/erc-current.rpt` reports zero
+generated schematic comprises 267 symbols and 176 named logical nets; the
+OLED-free PCB candidate contains 260 footprints. `reports/erc-nooled-aux.rpt` reports zero
 errors and zero warnings.
 
 The schematic and its machine-readable net description are reproducible with
@@ -33,11 +33,12 @@ all-copper-layer keep-out. Its matching is intentionally not a release value:
 measure and tune the populated prototype with the final stack-up, enclosure and
 battery using a VNA or suitable NFC fixture.
 
-The tracked `PocketLab-Card.kicad_pcb` is the only authoritative PCB checkpoint.
-Generated placement, plane, autorouter and routing-progress boards are deliberately
-not versioned because the scripts below recreate them from the schematic,
-mechanical template and current rules. This avoids presenting an old intermediate
-board as a second design source.
+The tracked `PocketLab-Card.kicad_pcb` remains the authoritative design source.
+`PocketLab-Card-routing-working.kicad_pcb` is the explicitly named active routing
+checkpoint and is kept only so the verified zero-open state can be resumed without
+promoting it prematurely. Other generated placement, plane, autorouter and
+routing-progress boards are deliberately not versioned because the scripts below
+recreate them from the schematic, mechanical template and current rules.
 
 The current PCB contains the guarded digital autorouter fanout plus reviewed local U6/L6,
 U7/L7, converter input/output, U7-feedback, RTC-crystal and complete native USB
@@ -97,14 +98,11 @@ The PN532 `/NFC_TX1` driver pad U2.4 now reaches matching inductor L301.1
 through two short F.Cu escapes, three locked 0.20-mm L3 segments and two
 0.45/0.20-mm tented vias. Small reviewed jogs in the neighboring LF clock/data
 fanouts preserve their connectivity and keep the dedicated L2 GND plane clean.
-The OLED `/OLED_VCC` branch now joins C615/C616 to display pad J8.16 through
-one 0.45/0.20-mm tented via, a narrow 0.15-mm L3 crossing and a short F.Cu
-escape. The adjacent `/OLED_C1P` segment uses the project-minimum 0.15-mm
-width through that local corridor, while a short same-net L3 bridge preserves
-the complete `+5V_AUX` polygon around the new antipad.
-KiCad DRC retains 16 documented non-release findings and has no
-schematic-parity error; ERC is clean and 141 open items remain. None of these files is an order-ready
-fabrication release.
+The active routing checkpoint contains 2823 track segments, 581 vias and 31 zones.
+Five repeated KiCad DRC runs report zero open connections and a median of 1152
+remaining violations. These violations still require grouped cleanup; the board is
+therefore not an order-ready fabrication release. The matching machine-readable
+report is `reports/PocketLab-Card-drc.json`.
 
 The latest PN532 cleanup connects U2.5/U2.8 with a short via-free DVDD escape
 and replaces the old west-side U2.3 GND detour with a direct exposed-pad
@@ -168,9 +166,6 @@ The reproducible routing helpers are:
 # Reproduce the reviewed PN532 TX1 driver-to-inductor branch
 & "$env:LOCALAPPDATA\Programs\KiCad\10.0\bin\python.exe" scripts/route_nfc_tx1_driver.py --input PocketLab-Card.kicad_pcb --output PocketLab-Card-nfc-tx1-candidate.kicad_pcb --force
 
-# Reproduce the reviewed OLED VCC branch and local AUX5 plane bridge
-& "$env:LOCALAPPDATA\Programs\KiCad\10.0\bin\python.exe" scripts/route_oled_vcc.py --input PocketLab-Card.kicad_pcb --output PocketLab-Card-oled-vcc-candidate.kicad_pcb --force
-
 # Reproduce the reviewed USB-C CC1 receptacle-to-pull-down path
 & "$env:LOCALAPPDATA\Programs\KiCad\10.0\bin\python.exe" scripts/route_usb_cc1_resistor.py --input PocketLab-Card.kicad_pcb --output PocketLab-Card-usb-cc1-resistor-candidate.kicad_pcb --force
 
@@ -212,7 +207,7 @@ reviewed result is promoted to `PocketLab-Card.kicad_pcb`.
 - R736/RT701 10-kohm divider on GPIO9 for local power-zone temperature
 - 220 ohm series protection on all eight expander GPIOs
 - optional external 10-kohm NTC on J5 pins 28/30, selected by cutting SJ1
-- ER-OLED0.42-1W FPC pinout, fold direction and seven local 0805 capacitors
+- SW8/KXT311LHS active-low AUX input on ESP32-S3 GPIO21; firmware enables the internal pull-up
 - SW5 low-current main switch on the TPS63070 enable path
 - three independent TSAL6200 current-limit branches and fully inboard formed leads/lenses
 - VBUS_USB, VBUS_FUSED, VSYS, +3V3, +5V_RAW and +5V_AUX test points

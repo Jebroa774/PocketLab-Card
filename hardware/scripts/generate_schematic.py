@@ -463,7 +463,7 @@ def build_mcu() -> None:
          "10": "SD_CS_N", "11": NC, "12": "GPIO8_MCU", "13": "USB_D_N",
          "14": "USB_D_P", "15": "JTAG_STRAP_TP", "16": "STRAP_BOOT_TP", "17": "BOARD_TEMP_ADC",
          "18": "RGB_DATA", "19": "SPI_MOSI", "20": "SPI_SCK", "21": "SPI_MISO",
-         "22": "SUBGHZ_CS_N", "23": NC, "24": "GPIO47_MCU",
+         "22": "SUBGHZ_CS_N", "23": "USER_BUTTON_AUX_N", "24": "GPIO47_MCU",
          "25": "GPIO48_MCU", "26": "STRAP_VDD_SPI_TP", "27": "BOOT_N",
          "28": NC, "29": "IR_TX", "30": "IR_RX", "31": "GPIO38_MCU",
          "32": "IOEXP_INT_N", "33": "GPIO40_MCU", "34": "GPIO41_MCU", "35": "GPIO42_MCU",
@@ -711,7 +711,7 @@ def build_lf_rfid_sd() -> None:
 
 
 def build_ir_ui() -> None:
-    b = "06 IR / RGB / BUTTONS / OLED"
+    b = "06 IR / RGB / BUTTONS"
     passive(b, "C607", "22uF 10V X5R IR BUFFER", C1206,
             63.5, 381.0, "+5V_RAW", "GND", Manufacturer="CCTC",
             MPN="TCC1206X5R226K100HT", LCSC="C7393980")
@@ -768,26 +768,6 @@ def build_ir_ui() -> None:
             Manufacturer="Worldsemi", MPN="WS2812B-2020", LCSC="C965555")
         passive(b, f"C{602 + index}", "100nF", C0805, x, 482.6, "+5V_RAW", "GND")
     passive(b, "R605", "68R", R0603, 63.5, 457.2, "RGB_BUF_5V", "RGB_DIN1")
-    # The bare 0.42-inch panel is soldered by its 16-way, 0.65-mm-pitch FPC
-    # and then folded over the land pattern.  This is substantially smaller
-    # than a carrier module while the supporting charge-pump capacitors stay
-    # in hand-reworkable 0805 packages.  SSD1306B I2C mode uses BS1=VDD,
-    # CS=D/C=GND and ties D2 to SDA.  ESP_EN supplies the required power-on
-    # reset without consuming another GPIO.
-    add(b, "Connector_Generic:Conn_01x16", "J8", "ER-OLED0.42-1W 72x40 SSD1306B",
-        "PocketLab_Custom:EastRising_ER-OLED0.42-1W_SolderFPC", 76.2, 533.4,
-        {"1": "OLED_C2P", "2": "OLED_C2N", "3": "OLED_C1P", "4": "OLED_C1N",
-         "5": "+3V3", "6": "GND", "7": "+3V3", "8": "+3V3",
-         "9": "GND", "10": "ESP_EN", "11": "GND", "12": "I2C_SCL",
-         "13": "I2C_SDA", "14": "I2C_SDA", "15": "OLED_VCOMH", "16": "OLED_VCC"},
-        Manufacturer="EastRising", MPN="ER-OLED0.42-1W", Assembly="MANUAL_SOLDER_FPC_FOLD")
-    passive(b, "C610", "1uF X7R", C0805, 63.5, 520.7, "OLED_C2P", "OLED_C2N")
-    passive(b, "C611", "1uF X7R", C0805, 76.2, 520.7, "OLED_C1P", "OLED_C1N")
-    passive(b, "C612", "100nF X7R", C0805, 88.9, 520.7, "+3V3", "GND")
-    passive(b, "C613", "4.7uF X5R", C0805, 101.6, 520.7, "+3V3", "GND")
-    passive(b, "C614", "2.2uF X7R", C0805, 63.5, 546.1, "OLED_VCOMH", "GND")
-    passive(b, "C615", "4.7uF X5R", C0805, 76.2, 546.1, "OLED_VCC", "GND")
-    passive(b, "C616", "100nF X7R", C0805, 88.9, 546.1, "OLED_VCC", "GND")
     passive(b, "R606", "100R PAIR GPIO PROTECTION", R0603, 127.0, 520.7,
             "GPIO38_MCU", "PAIR_N")
     # Three compact, identical UI buttons provide deterministic UP/DOWN/OK
@@ -802,6 +782,13 @@ def build_ir_ui() -> None:
         add(b, "Switch:SW_Push", reference, value, FACTORY_TACT_SWITCH, x, 533.4,
             {"1": net, "2": "GND"}, Manufacturer="HYP",
             MPN="1TS015A-1600-0600-CT", LCSC="C256104")
+    # Compact fourth input on ESP32-S3 GPIO21.  It is active low and relies on
+    # the firmware-enabled internal pull-up, avoiding another resistor.
+    add(b, "Switch:SW_Push", "SW8", "AUX CONFIG",
+        "Button_Switch_SMD:SW_SPST_CK_KXT3", 254.0, 533.4,
+        {"1": "USER_BUTTON_AUX_N", "2": "GND"}, Manufacturer="C&K",
+        MPN="KXT311LHS", Assembly="PCBA_FACTORY",
+        Function="Firmware-configurable AUX button; GPIO21 internal pull-up required")
     passive(b, "R607", "10k", R0603, 203.2, 558.8,
             "USER_BUTTON_SELECT_N", "+3V3")
     passive(b, "R608", "10k", R0603, 177.8, 558.8, "USER_BUTTON_A_N", "+3V3")
@@ -999,7 +986,7 @@ def emit_schematic(output: Path, design_json: Path, allow_isolated: bool = False
         "03 PN532 NFC / TUNABLE LOOP": (482.6, 38.1),
         "04 E07 CC1101 SUB-GHZ": (660.4, 38.1),
         "05 LF RFID / SECURITY / MICROSD": (812.8, 38.1),
-        "06 IR / RGB / BUTTONS / OLED": (50.8, 355.6),
+        "06 IR / RGB / BUTTONS": (50.8, 355.6),
         "07 SENSORS / RTC / IO EXPANSION": (317.5, 355.6),
     }
     for title, pos in titles.items():

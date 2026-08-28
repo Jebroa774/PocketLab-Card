@@ -272,6 +272,111 @@ def promote_selected_wiring(source: str, selected: frozenset[str]) -> tuple[str,
     return "".join(pieces), promoted
 
 
+def via_padstack_shapes(source: str) -> dict[str, tuple[tuple[str, str], ...]]:
+    """Return circular copper shapes for every via-capable padstack."""
+    shapes: dict[str, tuple[tuple[str, str], ...]] = {}
+    for match in re.finditer(r"(?m)^\s*\(padstack\s+", source):
+        start = source.find("(", match.start())
+        end = dsn_expression_end(source, start)
+        _, offset = dsn_atom(source, start + 1)
+        name, _ = dsn_atom(source, offset)
+        if not name.startswith("Via["):
+            continue
+        child = source[start:end]
+        circles = tuple(
+            (shape.group(1), shape.group(2))
+            for shape in re.finditer(
+                r"\(shape\s+\(circle\s+(\S+)\s+(\S+)\)\)", child
+            )
+        )
+        if circles:
+            shapes[name] = circles
+    return shapes
+
+
+def obstacleize_unselected_wiring(
+    source: str,
+    selected: frozenset[str],
+    include_wires: bool = True,
+    include_vias: bool = True,
+    keep_selected: bool = True,
+) -> tuple[str, int, int]:
+    """Replace unselected fixed copper with router-only keepout geometry."""
+    padstacks = via_padstack_shapes(source)
+    matches = list(re.finditer(r"(?m)^\s*\(wiring\b", source))
+    if len(matches) != 1:
+        raise RuntimeError(f"Expected one wiring section, found {len(matches)}")
+    wiring_start = source.find("(", matches[0].start())
+    wiring_end = dsn_expression_end(source, wiring_start)
+    head, cursor = dsn_atom(source, wiring_start + 1)
+    if head != "wiring":
+        raise RuntimeError(f"Expected wiring expression, got {head!r}")
+
+    pieces = [source[:cursor]]
+    copy_from = cursor
+    obstacle_shapes: list[str] = []
+    wire_count = 0
+    via_count = 0
+    while cursor < wiring_end - 1:
+        while cursor < wiring_end - 1 and source[cursor].isspace():
+            cursor += 1
+        if cursor >= wiring_end - 1:
+            break
+        child_start = cursor
+        child_end = dsn_expression_end(source, child_start)
+        child = source[child_start:child_end]
+        child_head, atom_offset = dsn_atom(source, child_start + 1)
+        net_match = re.search(r"\(net\s+", child)
+        net_name = None
+        if net_match:
+            net_name, _ = dsn_atom(child, net_match.end())
+
+        pieces.append(source[copy_from:child_start])
+        if net_name is None or (keep_selected and net_name in selected):
+            pieces.append(child)
+        elif child_head == "wire" and include_wires:
+            path_start = child.find("(path")
+            if path_start < 0:
+                raise RuntimeError(f"Wire for {net_name} has no path")
+            path_end = dsn_expression_end(child, path_start)
+            obstacle_shapes.append(child[path_start:path_end])
+            wire_count += 1
+        elif child_head == "via" and include_vias:
+            padstack, via_offset = dsn_atom(source, atom_offset)
+            x, via_offset = dsn_atom(source, via_offset)
+            y, _ = dsn_atom(source, via_offset)
+            circles = padstacks.get(padstack)
+            if not circles:
+                raise RuntimeError(f"No circular shapes found for via padstack {padstack}")
+            obstacle_shapes.extend(
+                f"(circle {layer} {diameter} {x} {y})"
+                for layer, diameter in circles
+            )
+            via_count += 1
+        elif child_head in ("wire", "via"):
+            # Deliberately omit the disabled obstacle category from the router copy.
+            pass
+        else:
+            pieces.append(child)
+        copy_from = child_end
+        cursor = child_end
+    pieces.append(source[copy_from:])
+    result = "".join(pieces)
+
+    structure_matches = list(re.finditer(r"(?m)^\s*\(structure\b", result))
+    if len(structure_matches) != 1:
+        raise RuntimeError(
+            f"Expected one structure section, found {len(structure_matches)}"
+        )
+    structure_start = result.find("(", structure_matches[0].start())
+    structure_end = dsn_expression_end(result, structure_start)
+    insertion = "".join(
+        f'    (keepout "" {shape})\n' for shape in obstacle_shapes
+    )
+    result = result[: structure_end - 1] + insertion + result[structure_end - 1 :]
+    return result, wire_count, via_count
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", type=Path, required=True)
@@ -281,6 +386,11 @@ def main() -> int:
     parser.add_argument("--make-selected-routable", action="store_true")
     parser.add_argument("--stub-unselected", action="store_true")
     parser.add_argument("--split-classes", action="store_true")
+    parser.add_argument("--obstacle-unselected", action="store_true")
+    parser.add_argument("--obstacle-wires-only", action="store_true")
+    parser.add_argument("--obstacle-vias-only", action="store_true")
+    parser.add_argument("--drop-unselected-wiring", action="store_true")
+    parser.add_argument("--drop-all-wiring", action="store_true")
     args = parser.parse_args()
     input_path = args.input.resolve()
     output_path = args.output.resolve()
@@ -290,6 +400,20 @@ def main() -> int:
         raise RuntimeError(f"Output exists; use --force to replace it: {output_path}")
     if args.stub_unselected and args.split_classes:
         raise RuntimeError("Choose either --stub-unselected or --split-classes")
+    if args.obstacle_unselected and not args.stub_unselected:
+        raise RuntimeError("--obstacle-unselected requires --stub-unselected")
+    if args.drop_unselected_wiring and not args.stub_unselected:
+        raise RuntimeError("--drop-unselected-wiring requires --stub-unselected")
+    if args.drop_all_wiring and not args.stub_unselected:
+        raise RuntimeError("--drop-all-wiring requires --stub-unselected")
+    if args.drop_unselected_wiring and args.obstacle_unselected:
+        raise RuntimeError("Choose either dropping or obstacleizing unselected wiring")
+    if args.drop_all_wiring and (args.drop_unselected_wiring or args.obstacle_unselected):
+        raise RuntimeError("Choose only one unselected-wiring handling mode")
+    if args.obstacle_wires_only and args.obstacle_vias_only:
+        raise RuntimeError("Choose either --obstacle-wires-only or --obstacle-vias-only")
+    if (args.obstacle_wires_only or args.obstacle_vias_only) and not args.obstacle_unselected:
+        raise RuntimeError("Obstacle filtering requires --obstacle-unselected")
     selected = frozenset(normalize(name) for name in args.net)
     ignored_classes: tuple[str, ...] = ()
     source = input_path.read_text(encoding="utf-8")
@@ -300,11 +424,34 @@ def main() -> int:
     promoted = 0
     if args.make_selected_routable:
         result, promoted = promote_selected_wiring(result, selected)
+    obstacle_wires = 0
+    obstacle_vias = 0
+    if args.obstacle_unselected:
+        result, obstacle_wires, obstacle_vias = obstacleize_unselected_wiring(
+            result,
+            selected,
+            include_wires=not args.obstacle_vias_only,
+            include_vias=not args.obstacle_wires_only,
+        )
+    elif args.drop_unselected_wiring:
+        result, _, _ = obstacleize_unselected_wiring(
+            result, selected, include_wires=False, include_vias=False
+        )
+    elif args.drop_all_wiring:
+        result, _, _ = obstacleize_unselected_wiring(
+            result,
+            selected,
+            include_wires=False,
+            include_vias=False,
+            keep_selected=False,
+        )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(result, encoding="utf-8", newline="\n")
     print(
         f"Saved selected-net DSN: {output_path}; nets={len(selected)}; "
-        f"promoted={promoted}; ignore_classes={','.join(ignored_classes)}"
+        f"promoted={promoted}; obstacle_wires={obstacle_wires}; "
+        f"obstacle_vias={obstacle_vias}; "
+        f"ignore_classes={','.join(ignored_classes)}"
     )
     return 0
 

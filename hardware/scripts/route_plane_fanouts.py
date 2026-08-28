@@ -498,14 +498,22 @@ def track_segment_is_clear(
             assert isinstance(pad, pcbnew.PAD)
             if item_key(pad) in source_pads:
                 continue
-            if layer not in set(pad.GetLayerSet().Seq()):
+            drill = pad.GetDrillSize()
+            has_hole = max(mm(drill.x), mm(drill.y)) > 0.0
+            if layer not in set(pad.GetLayerSet().Seq()) and not has_hole:
                 continue
             pad_rect = obstacle.geometry
             assert isinstance(pad_rect, Rect)
             if segment_intersects_rect(
                 start,
                 end,
-                pad_rect.expanded(width_mm / 2.0 + plane_track_pad_clearance(net_name, pad)),
+                pad_rect.expanded(
+                    width_mm / 2.0
+                    + max(
+                        plane_track_pad_clearance(net_name, pad),
+                        0.25 if has_hole else 0.0,
+                    )
+                ),
             ):
                 return False
         elif obstacle.kind == "via":
