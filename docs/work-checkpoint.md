@@ -1,4 +1,27 @@
-# Work checkpoint — 2026-08-21
+# Work checkpoint — 2026-08-30
+
+## Routing/DRC continuation — 2026-08-30
+
+- The active board is `hardware/PocketLab-Card-routing-working.kicad_pcb`.
+  It contains 2,827 track segments, 575 conventional through-vias and 23
+  zones. KiCad connectivity reports 0 open connection items.
+- This continuation reassigned ten reviewed long signal segments between the
+  two inner copper layers. Every accepted change was tested separately and in
+  combination; no track coordinates, footprints, vias or net assignments were
+  changed.
+- Three final full-board DRC runs reported 1,145, 1,149 and 1,151 findings.
+  The saved median report has 500 clearance, 4 copper-edge, 200 hole-clearance,
+  5 footprint-library comparison, 200 shorting, 106 solder-mask bridge and
+  134 crossing findings. Crossing counts are not fully deterministic between
+  otherwise identical KiCad CLI runs, so local repeated checks are used when
+  accepting a routing-layer change.
+- The stale AE1 NFC-loop library rule now matches the intentional board
+  keepout and no longer causes a footprint mismatch. The remaining comparison
+  findings include project-specific board geometry on U1/U3 plus current
+  KiCad standard-library differences; they are documented rather than
+  overwritten blindly.
+- This is a saved engineering checkpoint, not an order-ready fabrication
+  release.
 
 ## Active PCB routing state — 2026-08-21
 

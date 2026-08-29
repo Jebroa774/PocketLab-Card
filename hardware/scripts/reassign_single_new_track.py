@@ -41,6 +41,7 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--rank", type=int, required=True)
     parser.add_argument("--layer", choices=tuple(LAYER_BY_NAME), required=True)
+    parser.add_argument("--skip-fill-zones", action="store_true")
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
 
@@ -110,7 +111,8 @@ def main() -> int:
     old_layer = selected.GetLayer()
     new_layer = LAYER_BY_NAME[args.layer]
     selected.SetLayer(new_layer)
-    pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+    if not args.skip_fill_zones:
+        pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     pcbnew.SaveBoard(str(args.output.resolve()), board)
     for suffix in (".kicad_pro", ".kicad_dru"):
         shutil.copyfile(

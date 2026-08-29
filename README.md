@@ -18,10 +18,11 @@ hand where practical.
 > measurements have been independently checked.
 
 > [!WARNING]
-> **Engineering prototype — not ready to order.** Placement is complete and
-> critical routing has started, but 138 connection items remain open. RF/LF
-> tuning, final DRC/DFM, sourcing review and prototype measurements are still
-> required before fabrication.
+> **Engineering prototype — not ready to order.** Placement and electrical
+> connectivity are complete: the current routing checkpoint has 0 open
+> connection items. It still has 1,149 DRC findings in the saved median run,
+> so DRC/DFM cleanup, RF/LF tuning, sourcing review and prototype measurements
+> remain required before fabrication.
 
 ## Current hardware
 
@@ -82,24 +83,24 @@ height and enclosure clearances must be verified against received components.
 | Physical PCB nets | 231 |
 | ERC | 0 errors / 0 warnings |
 | Placed footprints | 267 / 267 |
-| Routed checkpoint | 1889 track segments / 343 vias / 23 zones |
-| Remaining connection items | 138 |
-| Current routed-geometry/parity errors | 0 |
-| Reviewed footprint-library warnings | 6 |
+| Routed checkpoint | 2827 track segments / 575 vias / 23 zones |
+| Remaining connection items | 0 |
+| DRC findings (median of three runs) | 1149 |
+| Footprint-library comparison findings | 5 |
 
 Completed design work includes the full schematic, mechanical placement,
 four-layer stack definition, native USB pair, local converter routes, RTC
 crystal routes, the provisional Sub-GHz feed/pi network and the via-free
-back-side LF RFID analog island. Sensitive digital nets that conflicted with
-the accepted USB, button and LF placement were cleanly returned to the ratsnest
-instead of leaving partial copper behind.
+back-side LF RFID analog island. All logical connection items are now closed;
+the active work is reducing the remaining clearance, hole-clearance, short,
+crossing, solder-mask and board-edge DRC findings.
 
 ### Before the first PCB order
 
 - Confirm the live JLCPCB stack and recalculate USB/Sub-GHz geometry.
-- Complete the remaining LF support connections and route NFC manually.
-- Complete digital routing, protection branches, ground stitching and planes.
-- Close the remaining connection items and run final KiCad DRC/parity checks.
+- Review the completed LF/NFC and digital routing against the schematic.
+- Finish DRC cleanup, ground stitching and plane review.
+- Re-run final KiCad DRC/parity checks from a clean checkout.
 - Review every footprint, BOM and placement entry against current supplier data.
 - Reconfirm PN532 availability because the part is NRND, and qualify an
   alternative before any production revision.
