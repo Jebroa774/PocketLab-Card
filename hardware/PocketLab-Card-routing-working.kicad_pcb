@@ -73676,7 +73676,7 @@
 	)
 	(segment
 		(start 47.275 22.4)
-		(end 60 22.4)
+		(end 59 22.4)
 		(width 0.15)
 		(locked yes)
 		(layer "B.Cu")
@@ -73684,13 +73684,22 @@
 		(uuid "a883355d-7132-4b9f-9728-36d22e0a7c15")
 	)
 	(segment
-		(start 60 22.4)
+		(start 59 22.4)
+		(end 59 52.8)
+		(width 0.15)
+		(locked yes)
+		(layer "B.Cu")
+		(net "/EX5")
+		(uuid "0ba5c9e1-f5db-4f4f-8c9a-97b556df4242")
+	)
+	(segment
+		(start 59 52.8)
 		(end 60 52.8)
 		(width 0.15)
 		(locked yes)
 		(layer "B.Cu")
 		(net "/EX5")
-		(uuid "cc4a1b5f-5ea4-4a46-a221-02b34f642c8d")
+		(uuid "288c81f2-daef-4447-97b0-4832bb02e43f")
 	)
 	(segment
 		(start 47.275 21.82)

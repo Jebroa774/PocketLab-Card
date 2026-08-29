@@ -98,10 +98,10 @@ The PN532 `/NFC_TX1` driver pad U2.4 now reaches matching inductor L301.1
 through two short F.Cu escapes, three locked 0.20-mm L3 segments and two
 0.45/0.20-mm tented vias. Small reviewed jogs in the neighboring LF clock/data
 fanouts preserve their connectivity and keep the dedicated L2 GND plane clean.
-The active routing checkpoint contains 2842 track segments, 575 ordinary through
+The active routing checkpoint contains 2843 track segments, 575 ordinary through
 vias and 23 zones. Three fresh KiCad DRC runs report zero open connections and
-totals between 1148 and 1161 remaining violations (median 1154). The latest cleanup
-reroutes EX4, CHG_TS_FIXED, GPIO8_MCU and SD_DETECT_N, reassigns CHARGER_CHG_N,
+totals between 1162 and 1166 remaining violations (median 1164). The latest cleanup
+reroutes EX4, EX5, CHG_TS_FIXED, GPIO8_MCU and SD_DETECT_N, reassigns CHARGER_CHG_N,
 and rehomes the AUX5_FAULT_N and BAT_SENSE vias while preserving connectivity.
 The earlier cleanup merges one
 redundant same-net NFC_OSCOUT via pair, rehomes two crowded GND vias and eliminates
