@@ -98,12 +98,17 @@ The PN532 `/NFC_TX1` driver pad U2.4 now reaches matching inductor L301.1
 through two short F.Cu escapes, three locked 0.20-mm L3 segments and two
 0.45/0.20-mm tented vias. Small reviewed jogs in the neighboring LF clock/data
 fanouts preserve their connectivity and keep the dedicated L2 GND plane clean.
-The active routing checkpoint contains 2823 track segments, 576 vias and 31 zones.
-Repeated KiCad DRC runs report zero open connections and totals between 1142 and
-1157 remaining violations. The last cleanup removes the PWR copper sliver and both
-GPIO8-to-rounded-corner edge findings without introducing a keepout violation. It
-also merges redundant BAT_SENSE, NFC_SVDD and SD_SCK via pairs and makes the local
-USB_CONN_P join via-free, reducing the hole-to-hole findings from seven to three.
+The active routing checkpoint contains 2827 track segments, 575 ordinary through
+vias and 31 zones. Three fresh KiCad DRC runs report zero open connections and
+totals between 1139 and 1148 remaining violations. The latest cleanup merges one
+redundant same-net NFC_OSCOUT via pair, rehomes two crowded GND vias and eliminates
+the remaining hole-to-hole findings (three to zero). A CHG_TS L3 detour reduces the
+copper-to-edge findings from five to four. Small conventional-through-via rehomes
+also improve CHG_ITERM, NFC_DVDD and IR_TX while preserving the long IR_TX inner
+trace; no blind or microvias were introduced. The earlier cleanup removes the PWR
+copper sliver and both GPIO8-to-rounded-corner edge findings without introducing a
+keepout violation. It also merges redundant BAT_SENSE, NFC_SVDD and SD_SCK via
+pairs and makes the local USB_CONN_P join via-free.
 The remaining violations still require grouped cleanup; the board is therefore not
 an order-ready fabrication release.
 The matching machine-readable report is `reports/PocketLab-Card-drc.json`.
