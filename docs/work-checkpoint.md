@@ -3,15 +3,18 @@
 ## Routing/DRC continuation — 2026-08-30
 
 - The active board is `hardware/PocketLab-Card-routing-working.kicad_pcb`.
-  It contains 2,827 track segments, 575 conventional through-vias and 23
+  It contains 2,830 track segments, 575 conventional through-vias and 23
   zones. KiCad connectivity reports 0 open connection items.
 - This continuation reassigned ten reviewed long signal segments between the
   two inner copper layers. Every accepted change was tested separately and in
   combination; no track coordinates, footprints, vias or net assignments were
   changed.
-- Three final full-board DRC runs reported 1,145, 1,149 and 1,151 findings.
+- One additional USER_BUTTON_A_N diagonal was replaced by a four-segment,
+  obstacle-aware path on the same inner layer. This reduced its local median
+  from 20 to 18 findings without adding a via or an open connection.
+- Three final full-board DRC runs reported 1,142, 1,148 and 1,151 findings.
   The saved median report has 500 clearance, 4 copper-edge, 200 hole-clearance,
-  5 footprint-library comparison, 200 shorting, 106 solder-mask bridge and
+  5 footprint-library comparison, 199 shorting, 106 solder-mask bridge and
   134 crossing findings. Crossing counts are not fully deterministic between
   otherwise identical KiCad CLI runs, so local repeated checks are used when
   accepting a routing-layer change.

@@ -20,7 +20,7 @@ hand where practical.
 > [!WARNING]
 > **Engineering prototype — not ready to order.** Placement and electrical
 > connectivity are complete: the current routing checkpoint has 0 open
-> connection items. It still has 1,149 DRC findings in the saved median run,
+> connection items. It still has 1,148 DRC findings in the saved median run,
 > so DRC/DFM cleanup, RF/LF tuning, sourcing review and prototype measurements
 > remain required before fabrication.
 
@@ -83,9 +83,9 @@ height and enclosure clearances must be verified against received components.
 | Physical PCB nets | 231 |
 | ERC | 0 errors / 0 warnings |
 | Placed footprints | 267 / 267 |
-| Routed checkpoint | 2827 track segments / 575 vias / 23 zones |
+| Routed checkpoint | 2830 track segments / 575 vias / 23 zones |
 | Remaining connection items | 0 |
-| DRC findings (median of three runs) | 1149 |
+| DRC findings (median of three runs) | 1148 |
 | Footprint-library comparison findings | 5 |
 
 Completed design work includes the full schematic, mechanical placement,
