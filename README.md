@@ -10,11 +10,19 @@ small local user interface. The hardware is designed around a four-layer PCB,
 a single-cell LiPo supply and parts that can be assembled by JLCPCB or fitted by
 hand where practical.
 
+> [!NOTE]
+> **Proudly vibe-coded.** The project grows through hands-on experimentation,
+> rapid idea-driven iteration and AI-assisted engineering. Here, vibe coding
+> does not mean blindly trusting generated output: the hardware remains an
+> engineering prototype until its schematic, PCB, DRC/DFM results and physical
+> measurements have been independently checked.
+
 > [!WARNING]
-> **Engineering prototype — not ready to order.** Placement is complete and
-> critical routing has started, but 499 connection items remain open. RF/LF
-> tuning, final DRC/DFM, sourcing review and prototype measurements are still
-> required before fabrication.
+> **Engineering prototype — not ready to order.** Placement and electrical
+> connectivity are complete: the current routing checkpoint has 0 open
+> connection items. It still has 1,164 DRC findings in the saved median run,
+> so DRC/DFM cleanup, RF/LF tuning, sourcing review and prototype measurements
+> remain required before fabrication.
 
 ## Current hardware
 
@@ -26,7 +34,7 @@ hand where practical.
 | Sub-GHz | E07-900MM10S/CC1101 module, tuneable pi network and inboard 868 MHz spring antenna |
 | Infrared | Three independent high-power 940 nm emitters plus a 38 kHz receiver |
 | Storage and security | microSD, ATECC608C secure element and physical PAIR button |
-| User interface | 0.42-inch 72 x 40 OLED, four RGB LEDs and UP/OK/DOWN buttons |
+| User interface | Four RGB LEDs, UP/SELECT/DOWN controls and a firmware-configurable AUX button |
 | Sensors | Optional 6-axis IMU, barometer, RTC, fuel gauge and board-temperature monitor |
 | Power | USB-C, 1-cell LiPo input, charging/power path, regulated 3.3 V and switchable 5 V |
 | Expansion | Protected 2.54 mm breakout matrix with eleven direct expansion GPIOs |
@@ -69,29 +77,30 @@ height and enclosure clearances must be verified against received components.
 
 | Check | Current result |
 |---|---:|
-| Schematic symbols | 273 |
-| Assigned footprints | 266 |
-| Named logical nets | 183 |
+| Schematic symbols | 274 |
+| Assigned footprints | 267 |
+| Named logical nets | 181 |
 | Physical PCB nets | 231 |
 | ERC | 0 errors / 0 warnings |
-| Placed footprints | 266 / 266 |
-| Routed checkpoint | 498 track segments / 29 vias |
-| Remaining connection items | 499 |
-| Current routed-geometry/parity errors | 0 |
-| Reviewed footprint-library warnings | 6 |
+| Placed footprints | 267 / 267 |
+| Routed checkpoint | 2843 track segments / 575 vias / 23 zones |
+| Remaining connection items | 0 |
+| DRC findings (median of three runs) | 1164 |
+| Footprint-library comparison findings | 5 |
 
 Completed design work includes the full schematic, mechanical placement,
 four-layer stack definition, native USB pair, local converter routes, RTC
-crystal routes and the provisional Sub-GHz feed/pi network. Sensitive digital
-nets that conflicted with the accepted USB and button placement were cleanly
-returned to the ratsnest instead of leaving partial copper behind.
+crystal routes, the provisional Sub-GHz feed/pi network and the via-free
+back-side LF RFID analog island. All logical connection items are now closed;
+the active work is reducing the remaining clearance, hole-clearance, short,
+crossing, solder-mask and board-edge DRC findings.
 
 ### Before the first PCB order
 
 - Confirm the live JLCPCB stack and recalculate USB/Sub-GHz geometry.
-- Resolve the LF front/back placement transition and route LF/NFC manually.
-- Complete digital routing, protection branches, ground stitching and planes.
-- Close the remaining connection items and run final KiCad DRC/parity checks.
+- Review the completed LF/NFC and digital routing against the schematic.
+- Finish DRC cleanup, ground stitching and plane review.
+- Re-run final KiCad DRC/parity checks from a clean checkout.
 - Review every footprint, BOM and placement entry against current supplier data.
 - Reconfirm PN532 availability because the part is NRND, and qualify an
   alternative before any production revision.

@@ -22,7 +22,7 @@ must verify regulator temperature, battery current and RF noise in every mode.
 | Four RGB LEDs, full white | 5 V | 240 mA |
 | CC1101 transmit | 3.3 V | 40 mA |
 | HTRC110 logic plus antenna bridge | 5 V | up to about 140 mA; measure final coil |
-| Sensors, RTC, expanders and OLED | 3.3 V | 100 mA |
+| Sensors, RTC and expanders | 3.3 V | 90 mA |
 | Board-temperature divider | 3.3 V | about 0.17 mA at 25 degrees C |
 | IR transmitter, current V1 default | 5 V | approximately 100 mA pulsed |
 

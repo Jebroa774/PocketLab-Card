@@ -128,6 +128,13 @@ SUBGHZ_NOTCH_LEFT = 66.2
 SUBGHZ_NOTCH_RIGHT = 85.0
 SUBGHZ_NOTCH_TOP = 67.4
 
+# U17 and its hand-solderable support parts share this front-side island with
+# the 0.50-mm LF_5V distribution escape.  Keep unrelated auto-placed GPIO and
+# header resistors out so a regenerated placement cannot silently block the
+# reviewed power corridor.
+LF_SUPPORT_ROUTING_RESERVE = Box(34.0, 53.0, 47.4, 61.1)
+LF_SUPPORT_REFERENCES = frozenset({"U17", "R501", "C501", "C502", "R506", "U24"})
+
 
 FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     FixedPlacement("AE1", "F", 40.9, 38.0, 0.0, False, False, True),
@@ -135,34 +142,49 @@ FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     # Shift U1 0.40 mm left to create a manufacturable front-side microSD
     # protection strip.  R203 follows by the same amount.
     FixedPlacement("U1", "F", 92.6, 32.75, 0.0, True, True, False),
-    # The hand-solderable HTRC110 occupies the lower-left component strip. Its
-    # removable 400-uH coil connector stays on the back so the
-    # high-voltage resonant path can be kept short and away from the controls.
-    FixedPlacement("U4", "F", 41.5, 59.5, 180.0),
-    FixedPlacement("U17", "B", 40.5, 55.5),
+    # Keep the complete HTRC110 resonant/RX island on the back.  The custom
+    # rules deliberately forbid vias on these sensitive nets, so U4 must share
+    # a side with the removable 400-uH coil connector and every analogue part.
+    # Vertical SO14 orientation puts TX1/TX2/CLK on the coil side and the
+    # three analogue conditioning pins on the open right edge.  Raising the
+    # package to the NFC-reserve boundary leaves a straight tuning bank below.
+    FixedPlacement("U4", "B", 43.0, 57.22, 180.0),
+    # The LF 5-V switch is not part of the resonant loop and uses the front-side
+    # pocket vacated by U4; its power/control nets may use ordinary vias.
+    FixedPlacement("U17", "F", 40.5, 55.5),
     FixedPlacement("J3", "B", 36.2, 63.5, 0.0, False, False, False),
-    # LF 5-V load-switch support. Back-side angles are chosen so the
-    # serialized physical orientations match after KiCad's footprint flip.
-    FixedPlacement("R501", "B", 37.85, 55.175, 90.0),
-    FixedPlacement("C501", "B", 39.0, 58.4, 180.0),
-    FixedPlacement("C502", "B", 42.7, 58.4, 180.0),
-    FixedPlacement("R506", "B", 44.8, 54.0, 180.0),
-    # Keep the complete LF analogue loop around U4/J3 instead of allowing the
-    # density placer to scatter its tuning parts.  The two fitted resonance
-    # parts and RX divider are on the back beside the coil pads; the CEXT and
-    # QGND bypasses sit immediately above U4.  Small DNP trim pads remain
-    # accessible on the front without entering the Dupont courtyard.
-    FixedPlacement("R502", "B", 40.8, 61.8),
-    FixedPlacement("C505", "B", 46.23, 60.30),
-    FixedPlacement("C506", "B", 45.23, 62.80),
-    FixedPlacement("R503", "B", 40.23, 64.80),
-    FixedPlacement("R504", "F", 35.80, 57.55),
-    FixedPlacement("C503", "F", 38.20, 53.77),
-    FixedPlacement("C504", "F", 41.75, 53.77),
-    FixedPlacement("C507", "F", 46.85, 61.77),
-    FixedPlacement("C508", "F", 46.85, 63.77),
-    FixedPlacement("C509", "F", 35.45, 60.05),
-    FixedPlacement("TP502", "F", 46.35, 59.05),
+    # Front-side LF 5-V load-switch support, arranged for short hand-solderable
+    # power and control escapes inside the reserved corridor.
+    FixedPlacement("R501", "F", 43.75, 55.5),
+    FixedPlacement("C501", "F", 39.0, 59.5, 180.0),
+    FixedPlacement("C502", "F", 44.50, 58.8, 180.0),
+    FixedPlacement("R506", "F", 36.5, 55.5, 180.0),
+    # Fitted resonance parts form the shortest possible path from J3 to U4.
+    # CEXT/QGND/RX conditioning sits immediately above the SO14, while the two
+    # optional tuning capacitors remain accessible along its right edge.
+    FixedPlacement("R502", "B", 40.37, 64.2, 180.0),
+    FixedPlacement("C505", "B", 35.7, 58.0, 90.0),
+    # Three parallel tuning capacitors form two straight buses below U4:
+    # TX2 on their upper pads, TAP on their lower pads.  C507/C508 are DNP.
+    FixedPlacement("C506", "B", 43.74, 64.2, 90.0),
+    FixedPlacement("R503", "B", 35.8, 53.7),
+    FixedPlacement("R504", "B", 52.70, 57.50),
+    FixedPlacement("C503", "B", 48.55, 56.10, 180.0),
+    FixedPlacement("C504", "B", 52.30, 54.30, 180.0),
+    FixedPlacement("C507", "B", 45.60, 64.2, 90.0),
+    FixedPlacement("C508", "B", 47.20, 64.2, 90.0),
+    FixedPlacement("C509", "B", 49.50, 58.78, 90.0),
+    # High-voltage TAP probing stays beside the tuning bank, clear of J5/U12.
+    FixedPlacement("TP502", "B", 47.20, 67.00),
+    # Preserve accessible power probing without occupying the back-side LF
+    # island.  These are low-speed service pads and therefore live on F.Cu.
+    FixedPlacement("TP104", "F", 36.0, 72.0),
+    FixedPlacement("TP106", "F", 38.5, 62.2),
+    FixedPlacement("TP107", "F", 41.0, 62.2),
+    # Keep the displaced microSD pull-up in the back-side row between the LF
+    # trim bank and clock source; the other two pull-ups retain their sites.
+    FixedPlacement("R514", "B", 62.0, 57.8),
+    FixedPlacement("R515", "B", 65.0, 57.8, 90.0),
     # Re-home the displaced low-speed pull-ups, GPIO protection parts and
     # service test points in their former LF auto-placement sites.
     FixedPlacement("R517", "F", 33.74, 21.82),
@@ -226,12 +248,11 @@ FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     # lower-right edge.  J5.28 now carries the optional charger-NTC input.
     FixedPlacement("J5", "F", 56.0, 67.0, 0.0, True, True, True),
     FixedPlacement("SW6", "F", 102.5, 69.5, 0.0, False, True, False),
-    # The custom mechanical footprint models the bent leads and keeps every
-    # lens inside the original left edge.  The third centre is raised clear of
-    # the ISO-card corner radius, so every 5-mm body remains inside the outline.
-    FixedPlacement("D1", "F", 20.25, 55.78, 0.0, True, True, True),
-    FixedPlacement("D2", "F", 20.25, 62.20, 0.0, True, True, True),
-    FixedPlacement("D3", "F", 20.25, 68.62, 0.0, True, True, True),
+    # Factory-mounted side-view emitters face the left card edge.  Their
+    # 1.2-mm bodies stay inboard while their narrow optical axes remain clear.
+    FixedPlacement("D1", "F", 21.65, 55.78, 90.0, True, True, True),
+    FixedPlacement("D2", "F", 21.65, 62.20, 90.0, True, True, True),
+    FixedPlacement("D3", "F", 21.65, 68.62, 90.0, True, True, True),
     # The side-view receiver uses the free top-edge window.  Its optical face
     # is 0.325 mm inside the original card outline and its complete physical
     # body/pad row remains inboard; only the normal edge courtyard is relaxed.
@@ -239,9 +260,10 @@ FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     FixedPlacement("R604", "F", 60.8, 26.5, 90.0),
     FixedPlacement("C601", "F", 63.2, 26.5, 90.0),
     FixedPlacement("C602", "F", 65.6, 26.5, 90.0),
-    # Edge-access microSD under the ESP body.  Electrical pads retain
-    # 0.325 mm copper-to-edge clearance; the card intentionally projects out.
-    FixedPlacement("J2", "B", 99.25, 39.0, 90.0, False, True, False),
+    # Edge-access microSD under the ESP body.  The reviewed 0.175-mm inward
+    # adjustment keeps its electrical and shell pads at the configured
+    # 0.50-mm copper-to-edge clearance; the card intentionally projects out.
+    FixedPlacement("J2", "B", 99.10, 39.0, 90.0, False, True, False),
     # NFC controller just outside the loop annulus.
     FixedPlacement("U2", "F", 65.0, 42.6),
     # Keep the 27.12 MHz Pierce oscillator directly below U2.  The two load
@@ -272,7 +294,7 @@ FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     FixedPlacement("SW7", "F", 57.0, 55.15),
     FixedPlacement("SW4", "F", 63.0, 55.15),
     FixedPlacement("R607", "F", 68.70, 50.95),
-    FixedPlacement("R608", "B", 51.8, 55.5),
+    FixedPlacement("R608", "B", 55.25, 59.0, 90.0),
     FixedPlacement("R609", "B", 55.7, 55.5),
     # Strap/NFC test pads remain accessible on the front, but outside the
     # coupled USB escape corridor along U1's lower-left corner.
@@ -294,16 +316,14 @@ FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     # The slide actuator faces the lower card edge.  Switching U6 EN rather
     # than the battery current path keeps the small switch within its rating.
     FixedPlacement("SW5", "F", 92.9, 69.45),
-    # Put the IR pulse buffer, series resistor, LED and MOSFET in one local
-    # current loop.  R601 pad 2 faces D1; the two gate resistors sit beside Q1.
-    FixedPlacement("R601", "F", 75.0, 63.15, 270.0),
+    # Keep each compact ballast resistor directly behind its edge emitter.
+    # The pulse reservoir and MOSFET remain in the shared high-current island.
+    FixedPlacement("R601", "F", 25.0, 55.78, 0.0),
     FixedPlacement("C607", "F", 70.65, 61.50),
     FixedPlacement("C617", "B", 65.0, 62.15, 90.0),
     FixedPlacement("C608", "F", 64.825, 68.55, 90.0),
-    # R610 moves to the former LF-auto pocket; R611 retains the remaining
-    # hand-accessible 1210 site behind the left emitter bank.
-    FixedPlacement("R610", "F", 69.025, 28.025),
-    FixedPlacement("R611", "B", 46.9, 57.5),
+    FixedPlacement("R610", "F", 25.0, 62.20, 0.0),
+    FixedPlacement("R611", "F", 25.0, 68.62, 0.0),
     FixedPlacement("Q1", "F", 69.0, 64.8, 270.0),
     FixedPlacement("R602", "F", 66.2, 64.8, 90.0),
     FixedPlacement("R603", "F", 71.8, 64.8, 90.0),
@@ -341,8 +361,8 @@ FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     FixedPlacement("U6", "B", 67.0, 44.0),
     FixedPlacement("L6", "B", 62.5, 44.0, 90.0),
     FixedPlacement("C108", "B", 62.0, 39.8),
-    FixedPlacement("C123", "B", 66.6, 40.8, 180.0),
-    FixedPlacement("C124", "B", 67.95, 47.62, 270.0),
+    FixedPlacement("C123", "B", 66.8, 40.8, 180.0),
+    FixedPlacement("C124", "B", 67.95, 47.85, 270.0),
     FixedPlacement("C107", "B", 70.55, 44.6, 180.0),
     FixedPlacement("R116", "B", 70.3, 41.2, 90.0),
     FixedPlacement("R117", "B", 70.4, 47.4, 90.0),
@@ -358,7 +378,8 @@ FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     FixedPlacement("C113", "B", 86.4, 41.8, 270.0),
     FixedPlacement("R120", "B", 84.5, 41.8, 270.0),
     FixedPlacement("R121", "B", 84.5, 45.5, 270.0),
-    FixedPlacement("R122", "B", 84.0, 51.1),
+    FixedPlacement("R122", "B", 89.75, 44.5, 180.0),
+    FixedPlacement("R129", "B", 84.2, 49.1, 90.0),
     FixedPlacement("C114", "B", 81.1, 47.5),
     FixedPlacement("C115", "B", 81.3, 41.65, 180.0),
     FixedPlacement("C116", "B", 77.4, 51.1),
@@ -407,7 +428,8 @@ FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     # that matrix and to the right of the fully inboard IR emitter bodies.
     FixedPlacement("U12", "B", 42.0, 69.5, 180.0),
     FixedPlacement("Y701", "B", 35.5, 69.5, 270.0),
-    FixedPlacement("C706", "B", 46.3, 65.2, 180.0),
+    # Moved clear of the LF resonance row while staying beside U12.
+    FixedPlacement("C706", "B", 47.1, 71.4, 90.0),
     # The final 4 x 4 mm back-side pocket is used for a low-cost board NTC.
     # Both 0603 parts remain reachable for rework and sit beside the 5-V
     # converter area without crowding U25 below them.
@@ -443,10 +465,10 @@ FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     # Header-side I2C/SPI damping remains immediately above J5 while leaving
     # the LF reader and four-LED/capacitor row clear.
     # The two shunt ESD arrays sit beside their respective header-side series
-    # banks. U24 uses the narrow pocket below R730/R731 for I2C; U25 uses the
+    # banks. U24 uses the pocket immediately left of J5 for I2C; U25 uses the
     # back-side pocket opposite the SPI bank. No general-purpose GPIO is
     # consumed merely to fill the remaining clamp channels.
-    FixedPlacement("U24", "F", 35.75, 69.0, 90.0),
+    FixedPlacement("U24", "F", 46.3, 63.0, 90.0),
     FixedPlacement("U25", "B", 81.2, 58.59, 90.0),
     # J2 crosses immediately to the front-side ESD bank. R511/R512 flank the
     # opposite-side U5 thermal vias with 0.275 mm copper clearance, keeping
@@ -456,7 +478,7 @@ FIXED_PLACEMENTS: tuple[FixedPlacement, ...] = (
     FixedPlacement("R511", "F", 87.15, 51.4, 180.0),
     FixedPlacement("R512", "F", 82.2, 47.8, 270.0),
     FixedPlacement("R513", "F", 103.1, 42.55, 90.0),
-    # C510/C511 are local at the edge.  The larger C512 stays 1210 and uses
+    # C510/C511 are local at the edge.  The bulk C512 is now a smaller 1206 and uses
     # the solid L3 rail as lower-frequency write-current storage.
     FixedPlacement("C512", "B", 85.25, 29.0),
     FixedPlacement("C510", "F", 104.3, 34.47, 90.0, False, True, False),
@@ -746,6 +768,12 @@ def violates_reserved_area(reference: str, side: str, box: Box) -> str | None:
         SUBGHZ_ANTENNA_RESERVE
     ):
         return "Sub-GHz spring antenna anchor/notch keepout"
+    if (
+        side == "F"
+        and reference not in LF_SUPPORT_REFERENCES
+        and box.expanded(PLACEMENT_CLEARANCE).intersects(LF_SUPPORT_ROUTING_RESERVE)
+    ):
+        return "LF-RFID front-side power-routing reserve"
     return None
 
 
@@ -962,7 +990,7 @@ POWER_BUCK = refs(
     "C123", "C124",
 )
 POWER_BOOST = refs(
-    "R120", "R121", "R122", "C113", "C114", "C115", "C116"
+    "R120", "R121", "R122", "R129", "C113", "C114", "C115", "C116"
 )
 POWER_AUX = refs("R123", "R124", "R127", "C117", "C118", "C119")
 POWER_GAUGE = refs("R125", "C120")
@@ -1348,9 +1376,9 @@ def main() -> int:
 
     all_parts = load_design(design_path)
     populated_parts = [part for part in all_parts if str(part.get("footprint", ""))]
-    if len(all_parts) != 273 or len(populated_parts) != 266:
+    if len(all_parts) != 274 or len(populated_parts) != 267:
         raise RuntimeError(
-            f"Design count changed: expected 273 symbols / 266 footprints, got "
+            f"Design count changed: expected 274 symbols / 267 footprints, got "
             f"{len(all_parts)} / {len(populated_parts)}. Review placement assumptions first."
         )
 
@@ -1365,10 +1393,27 @@ def main() -> int:
     nets = create_nets(board, populated_parts)
     footprints: dict[str, pcbnew.FOOTPRINT] = {}
     parts_by_ref = {str(part["reference"]): part for part in populated_parts}
+    internally_commoned_footprints = {
+        "J1",
+        "J2",
+    }
     for part in populated_parts:
         footprint = load_footprint(hardware_dir, part)
         validate_footprint_pads(part, footprint)
         assign_pad_nets(part, footprint, nets)
+        reference = str(part["reference"])
+        if reference == "U7":
+            # The manufacturer's 0.5-mm-pitch SOT-563 land pattern has a
+            # native 0.15-mm copper gap. Store the bounded override on the
+            # lands themselves so CLI DRC and regenerated boards agree even
+            # when broader project rules are reordered.
+            for pad in footprint.Pads():
+                pad.SetLocalClearance(pcbnew.FromMM(0.15))
+        if str(part["reference"]) in internally_commoned_footprints:
+            # The USB-C and microSD connector footprints duplicate their
+            # continuous metal-shell contact. Identically numbered terminals
+            # are internally commoned by the physical part in both cases.
+            footprint.SetDuplicatePadNumbersAreJumpers(True)
         footprints[str(part["reference"])] = footprint
 
     # BOARD.Remove invalidates KiCad's short-lived PCB_IO plug-in wrapper in

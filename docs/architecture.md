@@ -19,7 +19,6 @@ flowchart LR
     REG33 --> TEMP[10-k NTC board-temperature divider]
     REG33 --> IOX[TCA9535 status/expansion I/O]
     REG33 --> CTL[TCA9534 internal control I/O]
-    REG33 --> OLED[0.42-inch OLED]
 
     REG5 --> RAW[+5V_RAW]
     RAW --> IR[940 nm IR driver]
@@ -34,7 +33,7 @@ flowchart LR
     MCU <-->|I2C| IOX
     MCU <-->|I2C| CTL
     TEMP -->|GPIO9 ADC| MCU
-    MCU -->|I2C| OLED
+    AUXBTN[Firmware-configurable AUX button] -->|GPIO21 active low| MCU
     MCU <-->|Shared SPI| SUB
     MCU <-->|Shared SPI| SD
     MCU <-->|3-wire level shifted| LF
@@ -76,9 +75,9 @@ system rail and all dependent functions are off.
 
 | Bus | Devices | Notes |
 |---|---|---|
-| I2C | PN532, OLED, TCA9535, TCA9534, optional BMI270/BMP390, PCF8563, MAX17048 | 3.3 V, one 3.3-kohm pull-up pair, 400 kHz target |
+| I2C | PN532, TCA9535, TCA9534, optional BMI270/BMP390, PCF8563, MAX17048 | 3.3 V, one 3.3-kohm pull-up pair, 400 kHz target |
 | SPI | E07 CC1101 module, microSD | Shared SCK/MOSI/MISO, dedicated chip selects |
-| LF three-wire | HTRC110 | GPIO18 SCLK, GPIO21 DOUT, GPIO35 DIN through level shifters |
+| LF three-wire | HTRC110 | Shared SPI SCK/MOSI/MISO through partial-power-down level shifters; firmware arbitrates LF access |
 | USB | ESP32-S3 native USB | Firmware upload, CDC and optional HID |
 
 ## RF floorplan rules

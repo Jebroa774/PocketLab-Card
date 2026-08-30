@@ -149,7 +149,7 @@ The module is 10 x 10 mm, uses 1.27 mm castellated-pad pitch, operates from
 | 3-5, 8-11, 17, 19 | NC | Leave unconnected as specified |
 | 6 | ANT | `SUBGHZ_RF_MOD` into C403/R405/C404 and A1 |
 | 12 | MISO/GDO1 | `SUB_MISO`, then R403 22 ohm to `SPI_MISO` |
-| 13 | MOSI | `SPI_MOSI` through R402 22 ohm |
+| 13 | MOSI | `SPI_MOSI` through R129 0 ohm crossover and R402 22 ohm |
 | 14 | CSN | `SUB_CS_N`; R404 22 ohm and R406 100-kohm pull-up |
 | 15 | SCK | `SPI_SCK` through R401 22 ohm |
 | 18 | GDO0 | `SUBGHZ_GDO0` / GPIO15 |
@@ -186,7 +186,7 @@ Official references:
 U4 is powered from switched `LF_5V`; U17/TPS22919 is enabled by U18 P4 only
 after the 5-V boost is stable. Y501 supplies the permitted 4-MHz CMOS clock.
 GPIO18 SCLK and GPIO35 DIN pass through U21/SN74AHCT125 for valid 5-V logic;
-U4 DOUT returns through U22/SN74LVC1G17 to GPIO21. MODE is grounded for the
+U4 DOUT returns through U22/SN74LVC1G126 to the shared SPI MISO line. MODE is grounded for the
 normal short local serial interface.
 
 ### Resonant path
@@ -287,24 +287,14 @@ off by default, enforce burst/envelope duty limits, prevent a stuck-on output,
 and block simultaneous unrestricted 5 V header load. Perform an IEC 62471
 optical safety review and do not view the emitter directly at close range.
 
-## Compact OLED
-
-J8 is a bare EastRising `ER-OLED0.42-1W` white OLED with an SSD1306B,
-72 x 40 pixels and a 12 x 11 x 1.25 mm glass envelope. It uses I2C address
-`0x3C` on the shared 3.3-V bus. The 16-way solder FPC has 0.65-mm pitch; it is
-soldered to the PCB first and the glass is then folded and bonded over the land
-pattern. It is not a removable daughterboard.
-
-C610/C611 are the 1-uF charge-pump flying capacitors. C612/C613 decouple VDD
-and C614-C616 support VCOMH/VCC. All seven parts are 0805 for hand rework.
-`ESP_EN` resets the display at power-up, while BS1, CS and D/C strap the panel
-for I2C. Inspect FPC pin 1, exposed-contact side and every solder joint before
-folding because a reversed panel cannot be corrected in firmware.
-
 SW3, SW7 and SW4 are the adjacent `UP`, `OK` and `DOWN` navigation controls.
 All three use the same C&K KMR221GLFS footprint as the RESET/BOOT service
 buttons. R608, R607 and R609 provide the respective 10-kohm pull-ups. SELECT
 uses U9/P07; it does not share the dedicated PAIR security input.
+
+SW8 is a compact C&K KXT311LHS AUX input on ESP32-S3 GPIO21. It is active low
+to GND and deliberately has no external pull-up; firmware must enable GPIO21's
+internal pull-up before using it. Its action is intentionally left configurable.
 
 ## U9/U18 I/O expanders
 
@@ -371,7 +361,7 @@ Official reference: [Bosch BMI270 data sheet](https://www.bosch-sensortec.com/me
 | 14 | SDX | `I2C_SDA` |
 
 Place the IMU in a mechanically quiet region near the card center, away from
-mounting holes, edge connectors, the OLED flex area, and board-flex hotspots. Add a
+mounting holes, edge connectors, switch openings, and board-flex hotspots. Add a
 clear X/Y axis marker to silkscreen. It is factory-assembled only.
 
 ### U11 BMP390
@@ -391,7 +381,7 @@ Official reference: [Bosch BMP390 data sheet](https://www.bosch-sensortec.com/me
 
 Do not put copper, via holes, paste, adhesive, conformal coating, or cleaning
 residue under the central pressure port. Keep it away from heat sources,
-boost/buck inductors, direct airflow, the OLED flex area, and flexible edges. The
+boost/buck inductors, direct airflow, switch openings, and flexible edges. The
 enclosure needs a protected pressure vent and at least 0.1 mm lid clearance.
 This LGA is factory-assembled only.
 
